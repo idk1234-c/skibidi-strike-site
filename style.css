@@ -130,7 +130,7 @@ details .mini{display:inline-block;margin:0 20px 14px 44px;font-size:.78rem;lett
 .mbtn:hover{border-color:#ff3b30;color:#fff;background:rgba(120,20,14,.5)}
 .hero-credits{color:var(--dim);font-size:.78rem;margin-top:26px;letter-spacing:.08em}
 .soon.hot{color:var(--accent2)}
-.fineprint{font-size:.62rem;color:#39434f;letter-spacing:.05em;margin-top:16px}
+.fineprint{font-size:.62rem;color:#4a5460;letter-spacing:.05em;margin-top:16px}
 .owner-gate{margin-top:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .owner-btn{background:transparent;border:1px solid #2a3542;color:var(--dim);padding:8px 16px;font-size:.68rem;letter-spacing:.25em;cursor:pointer;text-transform:uppercase;font-family:inherit}
 .owner-btn:hover{border-color:var(--accent);color:var(--accent)}
