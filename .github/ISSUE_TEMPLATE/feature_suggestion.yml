@@ -1,0 +1,30 @@
+name: Feature suggestion
+description: Suggest a feature or idea for Skibidi Strike
+title: "[Suggestion] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make Skibidi Strike better! The studio reads every suggestion.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What should the game have? What should it do?
+    validations:
+      required: true
+  - type: input
+    id: handle
+    attributes:
+      label: Your name or handle
+      description: Optional — how the studio can credit you if it gets in the game.
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Optional — details, examples, or links.
+    validations:
+      required: false
