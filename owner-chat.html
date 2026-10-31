@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Studio chats — Skibidi Strike</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="owner-chat.css">
+</head>
+<body class="oc-body">
+
+<div class="oc-login" id="ocLogin">
+  <div class="oc-login-box">
+    <div class="logo">SKIBIDI <span>STRIKE</span></div>
+    <h1>Studio chats</h1>
+    <p class="note">Owner only. Paste your GitHub key to open the chats. It stays in this browser only.</p>
+    <form id="ocLoginForm" autocomplete="off">
+      <input type="password" id="ocToken" placeholder="github_pat_..." spellcheck="false" autocapitalize="off" autocomplete="off">
+      <div class="oc-err" id="ocLoginErr" role="alert"></div>
+      <button type="submit" class="oc-btn" id="ocLoginBtn">Open chats</button>
+    </form>
+    <p class="oc-small">Don't have a key yet? Follow <b>OWNER_CHAT_SETUP.md</b> in the game's GitHub repo (website folder).</p>
+    <a class="oc-small oc-back" href="index.html">&larr; Back to the site</a>
+  </div>
+</div>
+
+<div class="oc-app" id="ocApp" hidden>
+  <header class="oc-top">
+    <a class="oc-back" href="index.html" aria-label="Back to the site">&larr; <span>Site</span></a>
+    <div class="logo">STUDIO <span>CHATS</span></div>
+    <button class="oc-ghost" id="ocLogout" type="button">Log out</button>
+  </header>
+  <div class="oc-main">
+    <aside class="oc-side" id="ocSide" aria-label="Chats"></aside>
+    <main class="oc-thread" id="ocThread">
+      <div class="oc-head">
+        <div class="oc-head-av" id="ocHeadAv"></div>
+        <div class="oc-head-txt">
+          <h2 id="ocTitle"></h2>
+          <div class="oc-status" id="ocStatus" aria-live="polite"></div>
+        </div>
+        <button class="oc-ghost oc-refresh" id="ocRefresh" type="button" aria-label="Refresh">&#8635;</button>
+      </div>
+      <div class="oc-note" id="ocNote" hidden></div>
+      <div class="oc-msgs" id="ocMsgs" role="log" aria-live="polite"></div>
+      <form class="oc-compose" id="ocCompose" autocomplete="off">
+        <textarea id="ocText" rows="1" maxlength="4000" placeholder="Message" aria-label="Message"></textarea>
+        <button type="submit" class="oc-send" id="ocSend" aria-label="Send">Send</button>
+      </form>
+    </main>
+  </div>
+</div>
+
+<script src="owner-chat.js"></script>
+</body>
+</html>
