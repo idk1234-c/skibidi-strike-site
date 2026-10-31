@@ -1,6 +1,6 @@
 // Skibidi Strike site
 // DEV CODE: change this to update the studio code (the dev panel can also set a new one)
-var DEV_CODE = "0000";
+var DEV_CODE = "Q7V4KX";
 
 var DEFAULT_ROADMAP = [
   {d:"OCT 25", t:"The repo goes live", b:"The first commit: the core wave shooter, 90 waves, wave rewards, the lobby."},
@@ -79,6 +79,15 @@ document.addEventListener("DOMContentLoaded", function(){
   if(hp) hp.addEventListener("click", function(ev){ ev.preventDefault(); });
   var sf = document.getElementById("sugForm");
   if(sf) sf.addEventListener("submit", sugSend);
+  var cl = document.getElementById("claimLink");
+  if(cl) cl.addEventListener("click", function(ev){
+    ev.preventDefault();
+    var t = document.getElementById("sugType");
+    if(t) t.value = "model credit claim";
+    showPage("community");
+    var f = document.getElementById("sugIdea");
+    if(f) setTimeout(function(){ f.focus(); }, 60);
+  });
   bgmSetup();
   var dot=document.getElementById("devDot");
   if(dot) dot.addEventListener("click", openDev);
@@ -123,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.7 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.8 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
@@ -153,6 +162,7 @@ function sugSend(ev){
   if(!idea){ msg.textContent = "Type your idea first."; return; }
   var handle = (document.getElementById("sugName").value || "").trim();
   var link = (document.getElementById("sugLink").value || "").trim();
+  var type = document.getElementById("sugType").value || "suggestion";
   var bot = document.querySelector("#sugForm input[name=botcheck]");
   if(bot && bot.checked){ return; }
   var btn = document.getElementById("sugSend");
@@ -162,7 +172,7 @@ function sugSend(ev){
     headers: {"Content-Type":"application/json","Accept":"application/json"},
     body: JSON.stringify({
       access_key: SUG_KEY,
-      subject: "Skibidi Strike suggestion" + (handle ? " from " + handle : ""),
+      subject: (type === "model credit claim" ? "Model credit claim" : "Skibidi Strike suggestion") + (handle ? " from " + handle : ""),
       from_name: "Skibidi Strike site",
       name: handle || "anonymous",
       idea: idea,
@@ -175,6 +185,7 @@ function sugSend(ev){
       document.getElementById("sugIdea").value = "";
       document.getElementById("sugName").value = "";
       document.getElementById("sugLink").value = "";
+      document.getElementById("sugType").value = "suggestion";
     } else {
       msg.textContent = "Didn't go through. Try again in a minute.";
     }
