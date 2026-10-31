@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.14 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.15 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
