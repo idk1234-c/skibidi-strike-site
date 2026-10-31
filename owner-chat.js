@@ -21,7 +21,7 @@ var THREADS = [
   {key:"coders",     file:"chat/coders.json",     title:"Titan TV Man \u2194 UTC Studios", short:"Coders",
    who:["Titan TV Man","UTC Studios"],
    note:"This is Titan TV Man and UTC Studios' own chat. You can read all of it, and you can post here too."},
-  {key:"amos-titan", file:"chat/amos-titan.json",  title:"Amos \u2194 Titan TV Man",        short:"Titan TV Man", who:["Titan TV Man"]},
+  {key:"amos-titan", file:"chat/amos-titan.json", title:"Amos \u2194 Titan TV Man",        short:"Titan TV Man", who:["Titan TV Man"]},
   {key:"amos-utc",  file:"chat/amos-utc.json",  title:"Amos \u2194 UTC Studios",        short:"UTC Studios", who:["UTC Studios"]},
   {key:"group",      file:"chat/group.json",      title:"Group chat",                       short:"Group",        who:["Titan TV Man","UTC Studios","Amos"]}
 ];
@@ -170,8 +170,9 @@ function refresh(t, quiet){
     if(!quiet || state.open === t.key) renderStatus();
   });
 }
-function sendMessage(t, text){
+function sendMessage(t, text, voice){
   var msg = {id: newId(), from: ME, text: text, time: new Date().toISOString()};
+  if(voice) msg.voice = true;  // dictated with the mic: coders, read it generously
   (state.pending[t.key] = state.pending[t.key] || []).push(msg);
   renderThread(); scrollBottom(true);
   var attempt = 0;
@@ -179,7 +180,7 @@ function sendMessage(t, text){
     attempt++;
     return readThread(t, false).then(function(r){
       var doc = r.doc;
-      if(!doc.messages.some(function(m){ return m && m.id === msg.id; })) doc.messages.push({id: msg.id, from: msg.from, text: msg.text, time: msg.time});
+      if(!doc.messages.some(function(m){ return m && m.id === msg.id; })) doc.messages.push(msg.voice ? {id: msg.id, from: msg.from, text: msg.text, time: msg.time, voice: true} : {id: msg.id, from: msg.from, text: msg.text, time: msg.time});
       var body = {
         message: "chat(" + t.key + "): message from " + ME,
         content: utf8ToB64(JSON.stringify(doc, null, 2) + "\n"),
@@ -260,6 +261,7 @@ function bubble(m, prev, next, t){
   if(startGroup && !mine) h += '<div class="oc-meta"><b class="' + person(m.from).cls + '">' + esc(m.from) + '</b> <time>' + esc(fmtTime(m.time)) + '</time></div>';
   if(startGroup && mine) h += '<div class="oc-meta"><time>' + esc(fmtTime(m.time)) + '</time></div>';
   h += '<div class="oc-bub' + (m.failed ? ' failed' : '') + (m.sending ? ' sending' : '') + '">' + linkify(m.text) + '</div>';
+  if(m.voice === true) h += '<div class="oc-sub oc-vtag">\ud83c\udfa4 voice note</div>';
   if(m.sending && !m.failed) h += '<div class="oc-sub">Sending\u2026</div>';
   if(m.failed) h += '<div class="oc-sub bad">Not sent. ' + esc(m.error || "") + ' <button type="button" class="oc-retry" data-id="' + esc(m.id) + '">Retry</button></div>';
   h += '</div></div>';
@@ -277,7 +279,7 @@ function renderThread(){
   var list = messagesOf(t.key);
   // file order = the order messages were appended (clocks can differ, so no sorting by time)
   var have = {}; list.forEach(function(m){ have[m.id] = 1; });
-  (state.pending[t.key] || []).forEach(function(p){ if(!have[p.id]) list.push({id:p.id, from:p.from, text:p.text, time:p.time, sending:true, failed:p.failed, error:p.error}); });
+  (state.pending[t.key] || []).forEach(function(p){ if(!have[p.id]) list.push({id:p.id, from:p.from, text:p.text, time:p.time, voice:p.voice, sending:true, failed:p.failed, error:p.error}); });
   var h = "", lastDay = "";
   if(!d || (!d.loadedAt && !d.error)) h = '<div class="oc-empty">Loading\u2026</div>';
   else if(!list.length) h = '<div class="oc-empty">' + (d.missing ? "This chat hasn't been started yet. Say something and it'll be created." : "No messages yet.") + '</div>';
@@ -303,6 +305,80 @@ function openThread(k, fromUser){
     if(on && side.scrollWidth > side.clientWidth) side.scrollLeft = on.offsetLeft - (side.clientWidth - on.offsetWidth)/2;
   }
 }
+
+
+// ---------- voice to text (mic) ----------
+// Uses the browser's own speech recognition (Chrome, Edge, Safari on iPhone 14.5+).
+// The text is cleaned up (SSVoice.clean: capitals, periods, no "um", Amos's mishear fixes from
+// the dev page) and put in the box so Amos can check it. It is NEVER sent automatically.
+var V = {rec: null, on: false, base: "", finals: "", interim: "", raw: "", cleaned: "", wantStop: false};
+function SR(){ return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+function voiceBar(msg, undo){
+  var bar = $("ocVoiceBar"); bar.hidden = false;
+  bar.classList.toggle("live", V.on);
+  $("ocVoiceTxt").textContent = msg;
+  $("ocVoiceUndo").hidden = !undo;
+}
+function hideVoiceBar(){ $("ocVoiceBar").hidden = true; $("ocVoiceBar").classList.remove("live"); }
+function growBox(){ var ta = $("ocText"); ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 140) + "px"; }
+function joinText(a, b){ a = a.replace(/\s+$/, ""); return a ? (b ? a + " " + b : a) : b; }
+function voiceFinish(){
+  var heard = (V.finals + " " + V.interim).replace(/\s+/g, " ").trim();
+  V.interim = "";
+  if(!heard){ voiceBar("Didn't catch anything. Tap the mic and try again.", false); return; }
+  var dict = window.SSVoice ? SSVoice.loadDict() : "";
+  V.raw = heard;
+  V.cleaned = window.SSVoice ? SSVoice.clean(heard, dict) : heard;
+  var ta = $("ocText"), u = $("ocVoiceUndo");
+  u.textContent = "Show what it heard"; u.removeAttribute("data-showing");
+  ta.value = joinText(V.base, V.cleaned); growBox();
+  $("ocVoiceNote").checked = true;
+  voiceBar("Cleaned up. Check it, then tap Send.", V.raw !== V.cleaned);
+  ta.focus();
+}
+function voiceStop(silent){
+  if(!V.on) return;
+  V.wantStop = true;
+  try { V.rec.stop(); } catch(e){}
+  if(silent){ V.on = false; setMicUI(); }
+}
+function setMicUI(){ var m = $("ocMic"); m.classList.toggle("on", V.on); m.setAttribute("aria-pressed", V.on ? "true" : "false"); m.setAttribute("aria-label", V.on ? "Stop listening" : "Talk to type"); }
+function voiceStart(){
+  var C = SR();
+  if(!C){ voiceBar("Voice typing doesn't work in this browser. Try Safari on your iPhone or Chrome on a computer.", false); return; }
+  var r = new C();
+  r.lang = "en-US"; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+  V.rec = r; V.on = true; V.wantStop = false; V.finals = ""; V.interim = ""; V.base = $("ocText").value;
+  r.onresult = function(ev){
+    var interim = "";
+    for(var i = ev.resultIndex; i < ev.results.length; i++){
+      var tx = ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) V.finals += " " + tx; else interim += tx;
+    }
+    V.interim = interim;
+    var live = (V.finals + " " + V.interim).replace(/\s+/g, " ").trim();
+    voiceBar(live || "Listening\u2026", false);
+  };
+  r.onerror = function(ev){
+    var e = ev && ev.error;
+    V.on = false; setMicUI();
+    if(e === "not-allowed" || e === "service-not-allowed") voiceBar("The mic is blocked. Allow the microphone for this site (iPhone: Settings > Safari > Microphone), then try again.", false);
+    else if(e === "no-speech") voiceBar("Didn't hear anything. Tap the mic and talk.", false);
+    else if(e === "network") voiceBar("Voice typing needs the internet. Check your connection.", false);
+    else if(e !== "aborted") voiceBar("Voice typing stopped (" + String(e || "unknown") + "). Tap the mic to try again.", false);
+  };
+  r.onend = function(){
+    var was = V.on;
+    V.on = false; setMicUI();
+    if(was || V.wantStop) voiceFinish();
+  };
+  try { r.start(); } catch(e){ V.on = false; voiceBar("Couldn't start the mic. Try again.", false); }
+  setMicUI();
+  if(V.on) voiceBar("Listening\u2026 tap the mic again when you're done.", false);
+}
+
+// ---------- owner mode only ----------
+function isOwner(){ return !window.SS || SS.role() === "owner"; }
 
 // ---------- login ----------
 function showLogin(msg){
@@ -374,8 +450,11 @@ document.addEventListener("DOMContentLoaded", function(){
     var text = ta.value.replace(/\s+$/,"");
     if(!text.trim()) return;
     var t = threadByKey(state.open); if(!t) return;
+    var voice = $("ocVoiceNote").checked;
+    voiceStop(true);
     ta.value = ""; grow(); ta.focus();
-    sendMessage(t, text);
+    $("ocVoiceNote").checked = false; hideVoiceBar();
+    sendMessage(t, text, voice);
   });
   $("ocMsgs").addEventListener("click", function(ev){
     var b = ev.target.closest ? ev.target.closest(".oc-retry") : null;
@@ -384,7 +463,7 @@ document.addEventListener("DOMContentLoaded", function(){
     var p = (state.pending[t.key] || []).filter(function(m){ return m.id === id; })[0];
     if(!p) return;
     removePending(t.key, id);
-    sendMessage(t, p.text);
+    sendMessage(t, p.text, p.voice);
   });
   window.addEventListener("hashchange", function(){
     var k = (location.hash || "").slice(1);
@@ -394,6 +473,17 @@ document.addEventListener("DOMContentLoaded", function(){
     if(!document.hidden && state.token){ var t = threadByKey(state.open); if(t) refresh(t, true); }
   });
 
+  $("ocMic").addEventListener("click", function(){ if(V.on) voiceStop(false); else voiceStart(); });
+  $("ocVoiceUndo").addEventListener("click", function(){
+    var ta = $("ocText");
+    if(this.getAttribute("data-showing") === "raw"){ ta.value = joinText(V.base, V.cleaned); this.textContent = "Show what it heard"; this.removeAttribute("data-showing"); }
+    else { ta.value = joinText(V.base, V.raw); this.textContent = "Use the cleaned-up version"; this.setAttribute("data-showing", "raw"); }
+    growBox();
+  });
+  if(!SR()) $("ocMic").classList.add("nosupport");
+
+  // chats are OWNER MODE only (dev mode can't open them)
+  if(!isOwner()){ $("ocNotOwner").hidden = false; $("ocLogin").hidden = true; $("ocApp").hidden = true; return; }
   state.token = localStorage.getItem(TOKEN_KEY);
   if(state.token) startApp(); else showLogin("");
 });

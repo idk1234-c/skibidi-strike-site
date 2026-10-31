@@ -1,9 +1,8 @@
 // Skibidi Strike site
-// DEV CODE: change this to update the studio code (the dev panel can also set a new one)
+// Owner / dev mode: the codes, sign-in and every dev-page customization live in ss-core.js
+// (owner code + dev code both start as 000000 and are changed on dev.html).
+// The owner email was taken out of this public file on Amos's request (it would get spammed).
 var DEV_CODE = "000000";
-
-// OWNER: only this address shows as owner in the dev panel
-var OWNER_EMAIL = "amosashby2@gmail.com";
 
 var DEFAULT_ROADMAP = [
   {d:"OCT 25", t:"The repo goes live", b:"The first commit: the core wave shooter, 90 waves, wave rewards, the lobby."},
@@ -51,7 +50,7 @@ function renderCredits(){
   host.innerHTML = html;
 }
 function creditsToText(){
-  return getCredits().map(function(c){return c.n+" | "+c.r;}).join("\n");
+  return getCredits().map(function(c){ return c.n + " | " + c.r; }).join("\n");
 }
 function textToCredits(txt){
   var out=[];
@@ -80,6 +79,16 @@ function renderRoadmap(){
   }
   host.innerHTML = html;
 }
+// In progress / Coming next can be edited on the dev page (saved in this browser only)
+function getList(key, fallback){
+  try{
+    var raw = localStorage.getItem(key);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return fallback;
+}
+function getProgress(){ return getList("ss_progress", IN_PROGRESS); }
+function getNext(){ return getList("ss_next", COMING_NEXT); }
 function renderGroup(hostId, items){
   var host = document.getElementById(hostId);
   if(!host) return;
@@ -91,24 +100,37 @@ function renderGroup(hostId, items){
   host.innerHTML = html;
 }
 function playNote(){
+  var P = window.SS ? SS.play() : {soon:true, title:"NOT DONE YET", msg:""};
+  if(!P.soon && P.url && /^https?:\/\//i.test(P.url)){ window.location.href = P.url; return; }
+  var box = document.getElementById("playSoon");
+  if(P.soon && box){
+    document.getElementById("psTitle").textContent = P.title || "NOT DONE YET";
+    document.getElementById("psMsg").textContent = P.msg || "";
+    box.classList.add("open");
+    var ok = document.getElementById("psOk"); if(ok) setTimeout(function(){ ok.focus(); }, 50);
+    return;
+  }
   var n=document.getElementById("playNote");
   if(n){ n.textContent="Still in the works. The playable web build lands the day it exists - the ROADMAP has the latest updates."; n.classList.add("hot"); }
   showPage("roadmap");
 }
+function closePlaySoon(){ var b=document.getElementById("playSoon"); if(b) b.classList.remove("open"); }
 function updateOwnerState(){
-  var owner = localStorage.getItem("ss_role")==="owner";
+  var role = window.SS ? SS.role() : null;
   var s=document.getElementById("ownerState");
-  if(s){ s.textContent = owner ? "Owner signed in" : ""; }
-  // owner only: Chats button + tap a coder's name in the credits to open your chat with them
+  if(s){ s.textContent = role==="owner" ? "Owner signed in" : (role==="dev" ? "Dev signed in" : ""); }
+  // Chats are OWNER ONLY (dev mode never sees them)
   var oc=document.getElementById("ownerChats");
-  if(oc) oc.hidden = !owner;
+  if(oc) oc.hidden = role!=="owner";
+  // owner only: tap a coder's name in the credits to open your chat with them
   var dds=document.querySelectorAll("dd[data-chat]");
   for(var i=0;i<dds.length;i++){
     var dd=dds[i], name=dd.getAttribute("data-name") || dd.textContent;
     dd.setAttribute("data-name", name);
-    if(owner) dd.innerHTML = '<a href="owner-chat.html#' + dd.getAttribute("data-chat") + '">' + esc(name) + '</a>';
+    if(role==="owner") dd.innerHTML = '<a href="owner-chat.html#' + dd.getAttribute("data-chat") + '">' + esc(name) + '</a>';
     else dd.textContent = name;
   }
+  if(window.SS) SS.badge();
 }
 function esc(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -126,32 +148,53 @@ function textToRoadmap(txt){
   return out;
 }
 
-// ---- dev gate ----
-function devCode(){ return localStorage.getItem("ss_devcode") || DEV_CODE; }
+// ---- owner / dev gate ----
+// Already signed in on this browser? Go straight to the dev page, no code box.
+// Not signed in? Ask for the code once (Owner or Dev), then open the dev page.
 var modal = document.getElementById("devModal");
-function openDev(){ modal.classList.add("open"); document.getElementById("devGate").style.display="block"; document.getElementById("devPanel").style.display="none"; document.getElementById("devErr").textContent=""; var c=document.getElementById("devCode"); c.value=""; setTimeout(function(){c.focus();},50); }
-function closeDev(){ modal.classList.remove("open"); }
+var gateRole = "owner";
+function setGateRole(r){
+  gateRole = r === "dev" ? "dev" : "owner";
+  var bs = document.querySelectorAll("#devRoles button");
+  for(var i=0;i<bs.length;i++){ var on = bs[i].getAttribute("data-role")===gateRole; bs[i].classList.toggle("on", on); bs[i].setAttribute("aria-pressed", on ? "true" : "false"); }
+  var h = document.getElementById("devRoleHint");
+  if(h) h.textContent = gateRole==="owner" ? "Owner mode: everything, including the chats. Amos only." : "Dev mode: customize the site. No chats.";
+}
+function openDev(){
+  if(window.SS && SS.role()){ window.location.href = "dev.html"; return; }
+  if(!modal) return;
+  modal.classList.add("open");
+  document.getElementById("devErr").textContent="";
+  setGateRole("owner");
+  var c=document.getElementById("devCode"); c.value=""; setTimeout(function(){c.focus();},50);
+}
+function closeDev(){ if(modal) modal.classList.remove("open"); }
 function tryEnter(){
   var v = document.getElementById("devCode").value.trim();
-  if(v === devCode()){
-    document.getElementById("devGate").style.display="none";
-    document.getElementById("devPanel").style.display="block";
-    document.getElementById("devRoadmap").value = roadmapToText();
-    var ol = document.getElementById("ownerLine");
-    if(ol) ol.textContent = "Owner: " + OWNER_EMAIL;
-    var dc = document.getElementById("devCredits");
-    if(dc) dc.value = creditsToText();
-    localStorage.setItem("ss_role", "owner");
+  if(window.SS && SS.checkCode(gateRole, v)){
+    SS.signIn(gateRole);
     updateOwnerState();
+    window.location.href = "dev.html";
   } else {
     document.getElementById("devErr").textContent = "Wrong code.";
   }
 }
-document.addEventListener("DOMContentLoaded", function(){
-  renderRoadmap();
-  renderGroup("progressList", IN_PROGRESS);
-  renderGroup("nextList", COMING_NEXT);
+// the dev page's live preview calls this after every change
+window.ssRefresh = function(){
   renderCredits();
+  renderRoadmap();
+  renderGroup("progressList", getProgress());
+  renderGroup("nextList", getNext());
+  if(window.SS) SS.applySite();
+  updateOwnerState();
+};
+document.addEventListener("DOMContentLoaded", function(){
+  if(!document.getElementById("play")) return; // only the home page (dev.html loads this file for the default lists)
+  renderCredits();
+  renderRoadmap();
+  renderGroup("progressList", getProgress());
+  renderGroup("nextList", getNext());
+  if(window.SS) SS.applySite();
   var bl = document.getElementById("buildLine");
   if(bl) bl.textContent = "BUILD " + SS_BUILD;
   var links = document.querySelectorAll("nav .links a");
@@ -236,51 +279,20 @@ document.addEventListener("DOMContentLoaded", function(){
   var e=document.getElementById("devEnter"); if(e) e.addEventListener("click", tryEnter);
   var input=document.getElementById("devCode");
   if(input) input.addEventListener("keydown", function(ev){ if(ev.key==="Enter") tryEnter(); });
-  modal.addEventListener("click", function(ev){ if(ev.target===modal) closeDev(); });
-  var ap=document.getElementById("devApply");
-  if(ap) ap.addEventListener("click", function(){
-    var items = textToRoadmap(document.getElementById("devRoadmap").value);
-    localStorage.setItem("ss_roadmap", JSON.stringify(items));
-    renderRoadmap();
-    document.getElementById("devErr").textContent="";
-    document.getElementById("devRoadmap").value = roadmapToText();
-  });
-  var rs=document.getElementById("devReset");
-  if(rs) rs.addEventListener("click", function(){
-    localStorage.removeItem("ss_roadmap");
-    document.getElementById("devRoadmap").value = roadmapToText();
-    renderRoadmap();
-  });
-  var cb=document.getElementById("devCodeBtn");
-  if(cb) cb.addEventListener("click", function(){
-    var f=document.getElementById("devNewCode");
-    f.style.display = f.style.display==="none" ? "block" : "none";
-    if(f.style.display==="block") f.focus();
-  });
-  var nc=document.getElementById("devNewCode");
-  if(nc) nc.addEventListener("keydown", function(ev){
-    if(ev.key==="Enter" && nc.value.trim()){
-      localStorage.setItem("ss_devcode", nc.value.trim());
-      nc.value=""; nc.blur();
-      document.getElementById("devErr").textContent="Code updated in this browser.";
-    }
-  });
-  var ca=document.getElementById("devCreditsApply");
-  if(ca) ca.addEventListener("click", function(){
-    var items = textToCredits(document.getElementById("devCredits").value);
-    localStorage.setItem("ss_credits", JSON.stringify(items));
-    renderCredits();
-    document.getElementById("devCredits").value = creditsToText();
-  });
-  var ex=document.getElementById("devExit");
-  if(ex) ex.addEventListener("click", closeDev);
+  if(modal) modal.addEventListener("click", function(ev){ if(ev.target===modal) closeDev(); });
+  var rb=document.querySelectorAll("#devRoles button");
+  for(var r=0;r<rb.length;r++) rb[r].addEventListener("click", function(){ setGateRole(this.getAttribute("data-role")); document.getElementById("devErr").textContent=""; document.getElementById("devCode").focus(); });
+  var ps=document.getElementById("playSoon");
+  if(ps) ps.addEventListener("click", function(ev){ if(ev.target===ps) closePlaySoon(); });
+  var pk=document.getElementById("psOk"); if(pk) pk.addEventListener("click", closePlaySoon);
+  var pr=document.getElementById("psRoad"); if(pr) pr.addEventListener("click", function(){ closePlaySoon(); showPage("roadmap"); });
   document.addEventListener("keydown", function(ev){
-    if(ev.key==="Escape") closeDev();
+    if(ev.key==="Escape"){ closeDev(); closePlaySoon(); }
   });
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.15 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.16 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){

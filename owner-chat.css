@@ -129,3 +129,37 @@ b.p-titan{color:#ff8a63}b.p-utc{color:#c48bff}b.p-amos{color:#5fb0ff}
   .oc-msgs{padding:10px 12px 14px}
   .oc-col{max-width:80%}
 }
+
+/* ---- v2: owner badge + voice to text (Titan TV Man) ---- */
+.oc-owner-badge{font-style:normal;font-size:.55rem;letter-spacing:.2em;color:var(--accent2);border:1px solid var(--accent2);border-radius:99px;padding:2px 7px;margin-left:6px;vertical-align:3px}
+.oc-btn-link{display:block;text-align:center;text-decoration:none;line-height:46px;margin-top:14px;padding:0}
+.oc-mic{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#05070a;color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.oc-mic:hover{border-color:var(--accent);color:var(--accent)}
+.oc-mic.on{background:#e5332a;border-color:#e5332a;color:#fff;animation:ocpulse 1.4s ease-in-out infinite}
+.oc-mic.nosupport{opacity:.45}
+@keyframes ocpulse{0%,100%{box-shadow:0 0 0 0 rgba(229,51,42,.55)}50%{box-shadow:0 0 0 8px rgba(229,51,42,0)}}
+.oc-voicebar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--line);background:#0a1119;font-size:.82rem;color:var(--dim);flex:none}
+.oc-voicetxt{flex:1;min-width:0;color:var(--txt);overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.oc-rec{display:none;width:9px;height:9px;border-radius:50%;background:#e5332a;flex:none;animation:ocblink 1s steps(2) infinite}
+.oc-voicebar.live .oc-rec{display:block}
+@keyframes ocblink{50%{opacity:.2}}
+.oc-link{background:none;border:none;color:var(--accent);font:inherit;font-size:.78rem;text-decoration:underline;cursor:pointer;flex:none;padding:4px 0}
+.oc-compose-tools{display:flex;align-items:center;padding:6px 14px 0;background:var(--bg2);border-top:1px solid var(--line);flex:none}
+.oc-compose-tools+.oc-compose{border-top:none}
+.oc-vn{display:inline-flex;align-items:center;gap:7px;font-size:.75rem;color:var(--dim);cursor:pointer;user-select:none;-webkit-user-select:none}
+.oc-vn input{position:absolute;opacity:0;pointer-events:none}
+.oc-vn-box{width:16px;height:16px;border:1px solid var(--line);border-radius:4px;background:#05070a;position:relative}
+.oc-vn input:checked+.oc-vn-box{background:var(--accent);border-color:var(--accent)}
+.oc-vn input:checked+.oc-vn-box::after{content:"";position:absolute;left:5px;top:1px;width:4px;height:9px;border:solid #00121a;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.oc-vn input:checked~span:last-child{color:var(--txt)}
+.oc-vn input:focus-visible+.oc-vn-box{outline:2px solid var(--accent)}
+.oc-vtag{opacity:.8}
+@media(max-width:760px){.oc-compose{gap:8px}.oc-voicebar,.oc-compose-tools{padding-left:12px;padding-right:12px}}
+
+/* themed scrollbars (Amos: match the site) */
+.oc-body *{scrollbar-width:thin;scrollbar-color:var(--accent) var(--bg2)}
+.oc-body ::-webkit-scrollbar{width:8px;height:8px}
+.oc-body ::-webkit-scrollbar-track{background:var(--bg2)}
+.oc-body ::-webkit-scrollbar-thumb{background:var(--accent);border-radius:8px;border:2px solid var(--bg2)}
+.oc-body ::-webkit-scrollbar-thumb:hover{background:#fff}
+.oc-body .oc-side::-webkit-scrollbar{display:none}

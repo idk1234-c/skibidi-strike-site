@@ -6,12 +6,22 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Studio chats — Skibidi Strike</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="owner-chat.css">
+<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="owner-chat.css?v=3">
 </head>
 <body class="oc-body">
 
-<div class="oc-login" id="ocLogin">
+<div class="oc-login" id="ocNotOwner" hidden>
+  <div class="oc-login-box">
+    <div class="logo">SKIBIDI <span>STRIKE</span></div>
+    <h1>Owner only</h1>
+    <p class="note">The chats are only for owner mode. Sign in as Owner on the dev page to open them.</p>
+    <a class="oc-btn oc-btn-link" href="dev.html">Go to the dev page</a>
+    <a class="oc-small oc-back" href="index.html">&larr; Back to the site</a>
+  </div>
+</div>
+
+<div class="oc-login" id="ocLogin" hidden>
   <div class="oc-login-box">
     <div class="logo">SKIBIDI <span>STRIKE</span></div>
     <h1>Studio chats</h1>
@@ -29,7 +39,7 @@
 <div class="oc-app" id="ocApp" hidden>
   <header class="oc-top">
     <a class="oc-back" href="index.html" aria-label="Back to the site">&larr; <span>Site</span></a>
-    <div class="logo">STUDIO <span>CHATS</span></div>
+    <div class="logo">STUDIO <span>CHATS</span> <i class="oc-owner-badge">OWNER</i></div>
     <button class="oc-ghost" id="ocLogout" type="button">Log out</button>
   </header>
   <div class="oc-main">
@@ -45,7 +55,20 @@
       </div>
       <div class="oc-note" id="ocNote" hidden></div>
       <div class="oc-msgs" id="ocMsgs" role="log" aria-live="polite"></div>
+      <div class="oc-voicebar" id="ocVoiceBar" hidden>
+        <span class="oc-rec" aria-hidden="true"></span>
+        <span class="oc-voicetxt" id="ocVoiceTxt" aria-live="polite">Listening&hellip;</span>
+        <button type="button" class="oc-link" id="ocVoiceUndo" hidden>Show what it heard</button>
+      </div>
+      <div class="oc-compose-tools">
+        <label class="oc-vn" title="Tags the message as dictated so the coders read it generously">
+          <input type="checkbox" id="ocVoiceNote"><span class="oc-vn-box" aria-hidden="true"></span><span>Send as voice note</span>
+        </label>
+      </div>
       <form class="oc-compose" id="ocCompose" autocomplete="off">
+        <button type="button" class="oc-mic" id="ocMic" aria-label="Talk to type" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 1 0-7 0v6A3.5 3.5 0 0 0 12 15Zm6-3.5a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.91V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.59a6 6 0 0 0 5-5.91Z"/></svg>
+        </button>
         <textarea id="ocText" rows="1" maxlength="4000" placeholder="Message" aria-label="Message"></textarea>
         <button type="submit" class="oc-send" id="ocSend" aria-label="Send">Send</button>
       </form>
@@ -53,6 +76,8 @@
   </div>
 </div>
 
-<script src="owner-chat.js"></script>
+<script src="ss-core.js?v=1"></script>
+<script src="voice-clean.js?v=1"></script>
+<script src="owner-chat.js?v=2"></script>
 </body>
 </html>

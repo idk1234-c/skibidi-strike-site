@@ -131,3 +131,12 @@ details .mini{display:inline-block;margin:0 20px 14px 44px;font-size:.78rem;lett
 
 /* owner box in the footer (every page) */
 .owner-box{margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* themed scrollbars site-wide (Amos: no white bars) */
+html{scrollbar-width:thin;scrollbar-color:var(--accent) var(--bg)}
+*{scrollbar-color:var(--accent) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:10px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#fff}
+::-webkit-scrollbar-corner{background:var(--bg)}

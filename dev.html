@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Dev mode — Skibidi Strike</title>
+<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="dev.css?v=1">
+</head>
+<body class="dv-body">
+
+<header class="dv-top">
+  <a class="dv-back" href="index.html" aria-label="Back to the site">&larr; <span>Site</span></a>
+  <div class="logo">SKIBIDI <span>STRIKE</span></div>
+  <span class="dv-badge" id="dvBadge" hidden></span>
+</header>
+
+<!-- not signed in: code box -->
+<div class="dv-gate" id="dvGate" hidden>
+  <div class="dv-gate-box">
+    <h1>Studio access</h1>
+    <div class="dv-seg" id="dvGateRoles" role="group" aria-label="Sign in as">
+      <button type="button" data-role="owner" class="on" aria-pressed="true">Owner</button>
+      <button type="button" data-role="dev" aria-pressed="false">Dev</button>
+    </div>
+    <p class="dv-small" id="dvGateHint">Owner mode: everything, including the chats. Amos only.</p>
+    <form id="dvGateForm" autocomplete="off">
+      <input type="password" id="dvGateCode" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off" aria-label="Code">
+      <div class="dv-err" id="dvGateErr" role="alert"></div>
+      <button class="dv-btn" type="submit">Enter</button>
+    </form>
+    <p class="dv-small">You only need the code once on this device.</p>
+  </div>
+</div>
+
+<!-- signed in -->
+<div class="dv-wrap" id="dvApp" hidden>
+  <main class="dv-main" id="dvMain"></main>
+  <aside class="dv-preview" id="dvPreview" aria-label="Live preview">
+    <div class="dv-preview-bar"><b>Live preview</b><span class="dv-small">only you see this</span><button type="button" class="dv-ghost" id="dvPreviewClose">Close</button></div>
+    <iframe id="dvFrame" title="Site preview"></iframe>
+  </aside>
+  <button type="button" class="dv-fab" id="dvPreviewOpen">Preview site</button>
+</div>
+
+<div class="dv-toast" id="dvToast" role="status" aria-live="polite"></div>
+
+<script src="ss-core.js?v=1"></script>
+<script src="voice-clean.js?v=1"></script>
+<script src="script.js?v=15"></script>
+<script src="dev.js?v=1"></script>
+</body>
+</html>

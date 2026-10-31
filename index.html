@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Skibidi Strike — Official Site</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body class="home">
 <nav>
@@ -146,32 +146,28 @@
   <div class="box">
     <div id="devGate">
       <h3>Studio access</h3>
-      <p class="note">Enter the studio code.</p>
+      <div class="role-pick" id="devRoles" role="group" aria-label="Sign in as">
+        <button type="button" data-role="owner" class="on" aria-pressed="true">Owner</button>
+        <button type="button" data-role="dev" aria-pressed="false">Dev</button>
+      </div>
+      <p class="note" id="devRoleHint">Owner mode: everything, including the chats. Amos only.</p>
       <input type="password" id="devCode" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
       <div class="err" id="devErr"></div>
       <div class="row"><button id="devEnter">Enter</button><button class="ghost" id="devClose">Close</button></div>
-    </div>
-    <div id="devPanel" style="display:none">
-      <h3>Dev mode</h3>
-      <p class="note owner-line" id="ownerLine" style="color:#ffd23f;letter-spacing:.08em"></p>
-      <p class="note">Roadmap editor. One entry per line, format: <b>date | title | description</b>. Changes show on your screen right away and are saved in this browser.</p>
-      <textarea id="devRoadmap" spellcheck="false"></textarea>
-      <div class="row">
-        <button id="devApply">Apply</button>
-        <button class="ghost" id="devReset">Reset to live</button>
-        <button class="ghost" id="devCodeBtn">Change code</button>
-      </div>
-      <input type="text" id="devNewCode" placeholder="new code" style="font-size:1rem;letter-spacing:.3em;margin-top:12px;display:none">
-      <p class="note" style="margin-top:16px">Credits: people who helped make this happen. One person per line: <b>name | what they did</b></p>
-      <textarea id="devCredits" spellcheck="false" style="min-height:110px"></textarea>
-      <div class="row"><button id="devCreditsApply">Apply credits</button></div>
-      <div class="row"><button class="ghost" id="devChats" onclick="location.href='owner-chat.html'">Chats</button></div>
-      <p class="hint">Draft changes live on your screen only. Tell Ttvm Studios and the update goes live for everyone.</p>
-      <div class="row" style="margin-top:16px"><button class="ghost" id="devExit">Exit dev mode</button></div>
+      <p class="hint">You only need the code once. After that this button takes you straight to the dev page.</p>
     </div>
   </div>
 </div>
 
-<script src="script.js?v=15"></script>
+<div class="modal" id="playSoon">
+  <div class="box ss-soonbox" role="dialog" aria-modal="true" aria-labelledby="psTitle">
+    <h3 id="psTitle">NOT DONE YET</h3>
+    <p id="psMsg"></p>
+    <div class="row"><button id="psRoad">SEE THE ROADMAP</button><button class="ghost" id="psOk">OK</button></div>
+  </div>
+</div>
+
+<script src="ss-core.js?v=1"></script>
+<script src="script.js?v=16"></script>
 </body>
 </html>
