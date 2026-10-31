@@ -1,6 +1,8 @@
 // Skibidi Strike site
 // DEV CODE: change this to update the studio code (the dev panel can also set a new one)
 var DEV_CODE = "000000";
+// The owner of Skibidi Strike (Ttvm Studios). Only this address counts as owner once real Google sign-in lands.
+var OWNER_EMAIL = "amosashby2@gmail.com";
 
 var DEFAULT_ROADMAP = [
   {d:"OCT 25", t:"The repo goes live", b:"The first commit: the core wave shooter, 90 waves, wave rewards, the lobby."},
@@ -25,6 +27,39 @@ var COMING_NEXT = [
   {t:"Astro secret", b:"The secret orb and the unlock behind it."},
   {t:"Studio accounts & notifications", b:"The big one: real accounts so the studio gets notification flags, and visitors can talk to the studio privately."}
 ];
+
+var DEFAULT_CREDITS = [
+  {n:"Ttvm Studios official", r:"the game"},
+  {n:"Titan TV Man", r:"code"},
+  {n:"UTCM Studios", r:"website + code"}
+];
+function getCredits(){
+  try{
+    var raw = localStorage.getItem("ss_credits");
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return DEFAULT_CREDITS;
+}
+function renderCredits(){
+  var host = document.getElementById("creditsPeople");
+  if(!host) return;
+  var html = "";
+  var list = getCredits();
+  for(var i=0;i<list.length;i++){ html += esc(list[i].n) + " &middot; " + esc(list[i].r) + "<br>"; }
+  host.innerHTML = html;
+}
+function creditsToText(){
+  return getCredits().map(function(c){ return c.n + " | " + c.r; }).join("\n");
+}
+function textToCredits(txt){
+  var out=[];
+  txt.split("\n").forEach(function(line){
+    if(!line.trim()) return;
+    var p = line.split("|");
+    if(p.length>=2) out.push({n:p[0].trim(), r:p.slice(1).join("|").trim()});
+  });
+  return out;
+}
 
 function getRoadmap(){
   try{
@@ -88,14 +123,20 @@ function tryEnter(){
   if(v === devCode()){
     document.getElementById("devGate").style.display="none";
     document.getElementById("devPanel").style.display="block";
+    var ol = document.getElementById("ownerLine");
+    if(ol) ol.textContent = "Owner: " + OWNER_EMAIL;
+    var dc = document.getElementById("devCredits");
+    if(dc) dc.value = creditsToText();
     document.getElementById("devRoadmap").value = roadmapToText();
     localStorage.setItem("ss_role", "owner");
+    localStorage.setItem("ss_owner", OWNER_EMAIL);
     updateOwnerState();
   } else {
     document.getElementById("devErr").textContent = "Wrong code.";
   }
 }
 document.addEventListener("DOMContentLoaded", function(){
+  renderCredits();
   renderRoadmap();
   renderGroup("progressList", IN_PROGRESS);
   renderGroup("nextList", COMING_NEXT);
@@ -179,6 +220,12 @@ document.addEventListener("DOMContentLoaded", function(){
   var input=document.getElementById("devCode");
   if(input) input.addEventListener("keydown", function(ev){ if(ev.key==="Enter") tryEnter(); });
   modal.addEventListener("click", function(ev){ if(ev.target===modal) closeDev(); });
+  var ca=document.getElementById("devCreditsApply");
+  if(ca) ca.addEventListener("click", function(){
+    localStorage.setItem("ss_credits", JSON.stringify(textToCredits(document.getElementById("devCredits").value)));
+    renderCredits();
+    document.getElementById("devCredits").value = creditsToText();
+  });
   var ap=document.getElementById("devApply");
   if(ap) ap.addEventListener("click", function(){
     var items = textToRoadmap(document.getElementById("devRoadmap").value);
@@ -215,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.11 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.12 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){

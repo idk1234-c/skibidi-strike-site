@@ -103,8 +103,7 @@
     <div><dt>YouTube</dt><dd><a href="https://www.youtube.com/@Ttvm_studios_Official">@Ttvm_studios_Official</a></dd></div>
     <div><dt>TikTok</dt><dd><a href="https://www.tiktok.com/@ttvm_studios_official">ttvm_studios_official</a></dd></div>
     <div><dt>Fan made</dt><dd>Always</dd></div>
-    <div><dt>Code help</dt><dd>Titan TV Man</dd></div>
-    <div><dt>Website + code</dt><dd>UTCM Studios</dd></div>
+    <div><dt>People who helped make this happen</dt><dd id="creditsPeople"></dd></div>
     <div><dt>Models</dt><dd>y-admin and countdown (YouTube, Prisma 3D) — most of the community models come from them. Anyone else with a model here: message the studio to claim credit or ask for removal</dd></div>
     <div><dt>Inspired by</dt><dd>DaFuq!?Boom!'s Skibidi Toilet series · #BringBoomBack</dd></div>
   </dl>
@@ -150,6 +149,7 @@
     </div>
     <div id="devPanel" style="display:none">
       <h3>Dev mode</h3>
+      <p class="note owner-line" id="ownerLine" style="color:#ffd23f;letter-spacing:.08em"></p>
       <p class="note">Roadmap editor. One entry per line, format: <b>date | title | description</b>. Changes show on your screen right away and are saved in this browser.</p>
       <textarea id="devRoadmap" spellcheck="false"></textarea>
       <div class="row">
@@ -158,6 +158,9 @@
         <button class="ghost" id="devCodeBtn">Change code</button>
       </div>
       <input type="text" id="devNewCode" placeholder="new code" style="font-size:1rem;letter-spacing:.3em;margin-top:12px;display:none">
+      <p class="note" style="margin-top:16px">Credits: people who helped make this happen. One person per line: <b>name | what they did</b></p>
+      <textarea id="devCredits" spellcheck="false" style="min-height:110px"></textarea>
+      <div class="row"><button id="devCreditsApply">Apply credits</button></div>
       <p class="hint">Draft changes live on your screen only. Tell the studio and the update goes live for everyone.</p>
       <div class="row" style="margin-top:16px"><button class="ghost" id="devExit">Exit dev mode</button></div>
     </div>
