@@ -97,13 +97,13 @@
 <section id="credits" class="page">
   <h2>Credits &amp; inspiration</h2>
   <p class="note" style="margin-top:20px">Made by fans, for fans, and staying free. This is an unofficial fan game and is not affiliated with or endorsed by the original creators.</p>
-  <div class="owner-gate"><button class="owner-btn" id="ownerBtn">Owner / dev mode</button><span class="owner-state" id="ownerState"></span></div>
+  <div class="owner-gate"><button class="owner-btn" id="ownerBtn">Owner / dev mode</button><span class="owner-state" id="ownerState"></span><a class="owner-btn" id="ownerChats" href="owner-chat.html" hidden>Chats</a></div>
   <dl class="wall">
     <div><dt>Game by</dt><dd>Ttvm Studios official</dd></div>
     <div><dt>YouTube</dt><dd><a href="https://www.youtube.com/@Ttvm_studios_Official">@Ttvm_studios_Official</a></dd></div>
     <div><dt>TikTok</dt><dd><a href="https://www.tiktok.com/@ttvm_studios_official">ttvm_studios_official</a></dd></div>
     <div><dt>Fan made</dt><dd>Always</dd></div>
-    <div><dt>People who helped make this happen</dt><dd id="creditsPeople">Ttvm Studios official &middot; the game<br>Titan TV Man &middot; code<br>UTCM Studios &middot; website + code</dd></div>
+    <div><dt>People who helped make this happen</dt><dd id="creditsPeople">Titan TV Man &middot; code<br>UTCM Studios &middot; website + code</dd></div>
     <div><dt>Models</dt><dd>y-admin and countdown (YouTube, Prisma 3D) — most of the community models come from them. Anyone else with a model here: message the studio to claim credit or ask for removal</dd></div>
     <div><dt>Inspired by</dt><dd>DaFuq!?Boom!'s Skibidi Toilet series · #BringBoomBack</dd></div>
   </dl>
@@ -133,6 +133,11 @@
     <a href="https://www.tiktok.com/@ttvm_studios_official">TikTok</a>
   </div>
   <div style="margin-top:10px">Skibidi Strike is a fan game by Ttvm Studios. Not affiliated with DaFuq!?Boom! · #BringBoomBack</div>
+  <div class="owner-box">
+    <a class="owner-btn" href="https://github.com/idk1234-c/skibidi-strike-site/issues/new?template=feature_suggestion.yml" target="_blank" rel="noopener">Add a suggestion</a>
+    <button class="owner-btn" id="talkOwner" type="button">Talk to the owner</button>
+    <p class="note" id="talkNote" style="display:none;max-width:560px;margin:8px auto 0;font-size:.72rem;color:#5b6875">Talking to the owner needs a verified Google sign-in, so nobody anonymous can reach him. That lands with the studio accounts build. Until then you can add a suggestion &mdash; suggestions are public.</p>
+  </div>
   <div class="build" id="buildLine"></div>
   <div class="fineprint">Skibidi Toilet IP owned by Invisible Narratives &middot; Game helped with AI &middot; Website helped with AI</div>
   <div class="dev-dot" id="devDot" title="studio">&bull;</div>
@@ -161,12 +166,13 @@
       <p class="note" style="margin-top:16px">Credits: people who helped make this happen. One person per line: <b>name | what they did</b></p>
       <textarea id="devCredits" spellcheck="false" style="min-height:110px"></textarea>
       <div class="row"><button id="devCreditsApply">Apply credits</button></div>
+      <div class="row"><button class="ghost" id="devChats" onclick="location.href='owner-chat.html'">Chats</button></div>
       <p class="hint">Draft changes live on your screen only. Tell Ttvm Studios and the update goes live for everyone.</p>
       <div class="row" style="margin-top:16px"><button class="ghost" id="devExit">Exit dev mode</button></div>
     </div>
   </div>
 </div>
 
-<script src="script.js?v=13"></script>
+<script src="script.js?v=14"></script>
 </body>
 </html>

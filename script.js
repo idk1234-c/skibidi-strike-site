@@ -1,7 +1,8 @@
 // Skibidi Strike site
 // DEV CODE: change this to update the studio code (the dev panel can also set a new one)
 var DEV_CODE = "000000";
-// The owner of Skibidi Strike (Ttvm Studios). Only this address counts as owner once real Google sign-in lands.
+
+// OWNER: only this address shows as owner in the dev panel
 var OWNER_EMAIL = "amosashby2@gmail.com";
 
 var DEFAULT_ROADMAP = [
@@ -29,7 +30,6 @@ var COMING_NEXT = [
 ];
 
 var DEFAULT_CREDITS = [
-  {n:"Ttvm Studios official", r:"the game"},
   {n:"Titan TV Man", r:"code"},
   {n:"UTCM Studios", r:"website + code"}
 ];
@@ -43,13 +43,15 @@ function getCredits(){
 function renderCredits(){
   var host = document.getElementById("creditsPeople");
   if(!host) return;
-  var html = "";
-  var list = getCredits();
-  for(var i=0;i<list.length;i++){ html += esc(list[i].n) + " &middot; " + esc(list[i].r) + "<br>"; }
+  var list = getCredits(), html = "";
+  for(var i=0;i<list.length;i++){
+    html += esc(list[i].n) + " &middot; " + esc(list[i].r);
+    if(i < list.length-1) html += "<br>";
+  }
   host.innerHTML = html;
 }
 function creditsToText(){
-  return getCredits().map(function(c){ return c.n + " | " + c.r; }).join("\n");
+  return getCredits().map(function(c){return c.n+" | "+c.r;}).join("\n");
 }
 function textToCredits(txt){
   var out=[];
@@ -58,7 +60,7 @@ function textToCredits(txt){
     var p = line.split("|");
     if(p.length>=2) out.push({n:p[0].trim(), r:p.slice(1).join("|").trim()});
   });
-  return out;
+  return out.length ? out : DEFAULT_CREDITS;
 }
 
 function getRoadmap(){
@@ -94,8 +96,19 @@ function playNote(){
   showPage("roadmap");
 }
 function updateOwnerState(){
+  var owner = localStorage.getItem("ss_role")==="owner";
   var s=document.getElementById("ownerState");
-  if(s){ s.textContent = localStorage.getItem("ss_role")==="owner" ? "Owner signed in" : ""; }
+  if(s){ s.textContent = owner ? "Owner signed in" : ""; }
+  // owner only: Chats button + tap a coder's name in the credits to open your chat with them
+  var oc=document.getElementById("ownerChats");
+  if(oc) oc.hidden = !owner;
+  var dds=document.querySelectorAll("dd[data-chat]");
+  for(var i=0;i<dds.length;i++){
+    var dd=dds[i], name=dd.getAttribute("data-name") || dd.textContent;
+    dd.setAttribute("data-name", name);
+    if(owner) dd.innerHTML = '<a href="owner-chat.html#' + dd.getAttribute("data-chat") + '">' + esc(name) + '</a>';
+    else dd.textContent = name;
+  }
 }
 function esc(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -123,23 +136,22 @@ function tryEnter(){
   if(v === devCode()){
     document.getElementById("devGate").style.display="none";
     document.getElementById("devPanel").style.display="block";
+    document.getElementById("devRoadmap").value = roadmapToText();
     var ol = document.getElementById("ownerLine");
     if(ol) ol.textContent = "Owner: " + OWNER_EMAIL;
     var dc = document.getElementById("devCredits");
     if(dc) dc.value = creditsToText();
-    document.getElementById("devRoadmap").value = roadmapToText();
     localStorage.setItem("ss_role", "owner");
-    localStorage.setItem("ss_owner", OWNER_EMAIL);
     updateOwnerState();
   } else {
     document.getElementById("devErr").textContent = "Wrong code.";
   }
 }
 document.addEventListener("DOMContentLoaded", function(){
-  renderCredits();
   renderRoadmap();
   renderGroup("progressList", IN_PROGRESS);
   renderGroup("nextList", COMING_NEXT);
+  renderCredits();
   var bl = document.getElementById("buildLine");
   if(bl) bl.textContent = "BUILD " + SS_BUILD;
   var links = document.querySelectorAll("nav .links a");
@@ -170,6 +182,11 @@ document.addEventListener("DOMContentLoaded", function(){
   updateOwnerState();
   var sf = document.getElementById("sugForm");
   if(sf) sf.addEventListener("submit", sugSend);
+  var to=document.getElementById("talkOwner");
+  if(to) to.addEventListener("click", function(){
+    var n=document.getElementById("talkNote");
+    if(n) n.style.display = (n.style.display==="none") ? "block" : "none";
+  });
   document.addEventListener("click", function(ev){
     var a = ev.target;
     while(a && a !== document.body && !(a.tagName === "A")) a = a.parentNode;
@@ -220,12 +237,6 @@ document.addEventListener("DOMContentLoaded", function(){
   var input=document.getElementById("devCode");
   if(input) input.addEventListener("keydown", function(ev){ if(ev.key==="Enter") tryEnter(); });
   modal.addEventListener("click", function(ev){ if(ev.target===modal) closeDev(); });
-  var ca=document.getElementById("devCreditsApply");
-  if(ca) ca.addEventListener("click", function(){
-    localStorage.setItem("ss_credits", JSON.stringify(textToCredits(document.getElementById("devCredits").value)));
-    renderCredits();
-    document.getElementById("devCredits").value = creditsToText();
-  });
   var ap=document.getElementById("devApply");
   if(ap) ap.addEventListener("click", function(){
     var items = textToRoadmap(document.getElementById("devRoadmap").value);
@@ -254,6 +265,13 @@ document.addEventListener("DOMContentLoaded", function(){
       document.getElementById("devErr").textContent="Code updated in this browser.";
     }
   });
+  var ca=document.getElementById("devCreditsApply");
+  if(ca) ca.addEventListener("click", function(){
+    var items = textToCredits(document.getElementById("devCredits").value);
+    localStorage.setItem("ss_credits", JSON.stringify(items));
+    renderCredits();
+    document.getElementById("devCredits").value = creditsToText();
+  });
   var ex=document.getElementById("devExit");
   if(ex) ex.addEventListener("click", closeDev);
   document.addEventListener("keydown", function(ev){
@@ -262,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.12 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.14 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
