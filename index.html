@@ -6,7 +6,7 @@
 <title>Skibidi Strike — Official Site</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="home">
 <nav>
   <div class="logo">SKIBIDI <span>STRIKE</span></div>
   <div class="links">
@@ -31,13 +31,13 @@
   </div>
 </header>
 
-<section id="roadmap">
+<section id="roadmap" class="page">
   <h2><span class="num">01</span>Roadmap — what shipped</h2>
   <p class="note">Tap any item to open it.</p>
   <div id="roadmapList" style="margin-top:20px"></div>
 </section>
 
-<section id="next">
+<section id="next" class="page">
   <h2><span class="num">02</span>What's coming next</h2>
   <ul class="list">
     <li><strong>Multiplayer.</strong> The next big one: take on the skibidis with friends.</li>
@@ -50,7 +50,7 @@
   </ul>
 </section>
 
-<section id="cast">
+<section id="cast" class="page">
   <h2><span class="num">03</span>Meet the cast</h2>
   <div class="tiles">
     <div class="tile"><span class="who">Playable now</span><h4>Cameraman</h4><p>The underdog with the camera head. Fast, scrappy, always rolling.</p></div>
@@ -59,7 +59,7 @@
   </div>
 </section>
 
-<section id="videos">
+<section id="videos" class="page">
   <h2><span class="num">04</span>Videos</h2>
   <div class="tiles">
     <div class="tile"><h4>Best runs</h4><p>Gameplay videos land here as they're recorded: real runs, real waves, no scripts.</p></div>
@@ -68,13 +68,13 @@
   </div>
 </section>
 
-<section id="music">
+<section id="music" class="page">
   <h2><span class="num">05</span>Music</h2>
-  <p class="note" style="margin-top:20px">Every track that goes into the game or this site gets a copyright check before it's used. If a track turns out to be copyrighted, it stays but it shows right here with full credit to whoever made it — and the game's settings menu gets a music toggle so you can turn all music off if you'd rather play without it.</p>
+  <p class="note" style="margin-top:20px">Every track that goes into the game or this site gets a copyright check before it's used. If a track turns out to be copyrighted, it stays up with full credit to whoever made it — and the game gets a settings toggle so you can play with all music off.</p>
   <div id="trackList" style="margin-top:20px"></div>
 </section>
 
-<section id="credits">
+<section id="credits" class="page">
   <h2><span class="num">06</span>Credits &amp; inspiration</h2>
   <p class="note" style="margin-top:20px">Made by fans, for fans, and staying free. This is an unofficial fan game and is not affiliated with or endorsed by the original creators.</p>
   <dl class="wall">
@@ -88,11 +88,18 @@
   </dl>
 </section>
 
-<section id="community">
+<section id="community" class="page">
   <h2><span class="num">07</span>Suggestions &amp; community</h2>
-  <p class="note" style="margin-top:20px">Got an idea for Skibidi Strike? Drop it below. Every suggestion lands on the studio's board and gets read — credit goes to whatever name you leave.</p>
-  <div style="margin-top:24px"><a class="btn primary" href="https://github.com/idk1234-c/skibidi-strike-site/issues/new?template=feature_suggestion.yml" target="_blank" rel="noopener">SUGGEST A FEATURE</a></div>
-  <p class="note">Posting takes a free GitHub account, which is what keeps the spam out. The studio reviews every suggestion; anything that shouldn't be there gets removed and its author banned.</p>
+  <p class="note" style="margin-top:20px">Got an idea for Skibidi Strike? Drop it right here — no account, no sign-up. Every suggestion lands on the studio's board and gets read, and if you leave a name you get the credit.</p>
+  <form id="sugForm" novalidate>
+    <input type="text" id="sugName" maxlength="60" placeholder="your name or handle (optional)" autocomplete="off">
+    <textarea id="sugIdea" rows="4" maxlength="2000" placeholder="your idea: what should the game or the site have?" required></textarea>
+    <input type="text" id="sugLink" maxlength="500" placeholder="got a picture, clip or file? paste the link (optional)" autocomplete="off">
+    <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
+    <div class="row"><button class="btn primary" type="submit" id="sugSend">SEND IT</button></div>
+    <p class="note" id="sugMsg" role="status"></p>
+  </form>
+  <p class="note">The studio reads every suggestion and checks anything you send before it goes anywhere. Anything that shouldn't be here gets removed and its author banned.</p>
   <ul class="list" style="margin-top:24px">
     <li><strong>The community tab.</strong> Still in the works — a space to talk, share clips and vibe about the game.</li>
   </ul>
@@ -104,6 +111,7 @@
     <a href="https://www.tiktok.com/@ttvm_studios_official">TikTok</a>
   </div>
   <div style="margin-top:10px">Skibidi Strike is a fan game by Ttvm Studios. Not affiliated with DaFuq!?Boom! · #BringBoomBack</div>
+  <div class="build" id="buildLine"></div>
   <div class="dev-dot" id="devDot" title="studio">&bull;</div>
 </footer>
 
