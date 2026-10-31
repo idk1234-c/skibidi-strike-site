@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Studio chats — Skibidi Strike</title>
-<link rel="stylesheet" href="style.css?v=15">
-<link rel="stylesheet" href="owner-chat.css?v=3">
+<link rel="stylesheet" href="style.css?v=17">
+<link rel="stylesheet" href="owner-chat.css?v=4">
 </head>
 <body class="oc-body">
 
@@ -51,33 +51,72 @@
           <h2 id="ocTitle"></h2>
           <div class="oc-status" id="ocStatus" aria-live="polite"></div>
         </div>
+        <button class="oc-ghost oc-pin" id="ocPin" type="button" aria-pressed="false" aria-label="Pin this chat" title="Pin to the top"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.6 2.6a1 1 0 0 0-1.6 1.1l.5 1-4.3 4.3-2.9-.6a1 1 0 0 0-.9.3l-1.2 1.2a1 1 0 0 0 0 1.4l3.2 3.2-4.6 4.6a1 1 0 1 0 1.4 1.4l4.6-4.6 3.2 3.2a1 1 0 0 0 1.4 0l1.2-1.2a1 1 0 0 0 .3-.9l-.6-2.9 4.3-4.3 1 .5a1 1 0 0 0 1.1-1.6l-5.1-5.1Z"/></svg></button>
         <button class="oc-ghost oc-refresh" id="ocRefresh" type="button" aria-label="Refresh">&#8635;</button>
       </div>
       <div class="oc-note" id="ocNote" hidden></div>
       <div class="oc-msgs" id="ocMsgs" role="log" aria-live="polite"></div>
+      <div class="oc-flash" id="ocFlash" role="status" aria-live="polite"></div>
       <div class="oc-voicebar" id="ocVoiceBar" hidden>
         <span class="oc-rec" aria-hidden="true"></span>
         <span class="oc-voicetxt" id="ocVoiceTxt" aria-live="polite">Listening&hellip;</span>
         <button type="button" class="oc-link" id="ocVoiceUndo" hidden>Show what it heard</button>
       </div>
+      <div class="oc-pop oc-menu oc-plusmenu" id="ocPlusMenu" hidden role="menu" aria-label="Chat tools">
+        <button type="button" role="menuitem" data-act="voice"><span aria-hidden="true">&#127908;</span> Voice</button>
+        <button type="button" role="menuitem" data-act="photo"><span aria-hidden="true">&#128247;</span> Photo</button>
+        <button type="button" role="menuitem" data-act="style"><span aria-hidden="true">&#127912;</span> Text style</button>
+        <button type="button" role="menuitem" data-act="sched"><span aria-hidden="true">&#9200;</span> Schedule</button>
+      </div>
+      <div class="oc-pop oc-menu oc-sendmenu" id="ocSendMenu" hidden role="menu" aria-label="Send options">
+        <button type="button" role="menuitem" data-act="now"><span aria-hidden="true">&#10148;</span> Send now</button>
+        <button type="button" role="menuitem" data-act="sched"><span aria-hidden="true">&#9200;</span> Schedule send&hellip;</button>
+      </div>
+      <div class="oc-pop oc-stylepop" id="ocStylePop" hidden role="dialog" aria-label="Text style">
+        <div class="oc-schedpop-top"><b>Text style</b><button type="button" class="oc-x" id="ocStyleClose" aria-label="Close">&times;</button></div>
+        <div id="ocStyleBody"></div>
+      </div>
+      <div class="oc-pop oc-schedpop" id="ocSchedPop" hidden role="dialog" aria-label="Send later">
+        <div class="oc-schedpop-top"><b>Send later</b><button type="button" class="oc-x" id="ocSchedClose" aria-label="Close">&times;</button></div>
+        <div class="oc-chips" id="ocSchedQuick"></div>
+        <label class="oc-schedlbl" for="ocSchedInput">Or pick a day and time</label>
+        <div class="oc-schedrow">
+          <input type="datetime-local" id="ocSchedInput">
+          <button type="button" class="oc-btn oc-btn-sm" id="ocSchedSet">Set time</button>
+        </div>
+        <div class="oc-err" id="ocSchedErr" role="alert"></div>
+        <p class="oc-schedhelp">It stays hidden (only you see it, greyed out) until that time, then it shows up in the chat.</p>
+      </div>
       <div class="oc-compose-tools">
         <label class="oc-vn" title="Tags the message as dictated so the coders read it generously">
           <input type="checkbox" id="ocVoiceNote"><span class="oc-vn-box" aria-hidden="true"></span><span>Send as voice note</span>
         </label>
+        <span class="oc-chipbar">
+          <span class="oc-tchip" id="ocPhotoChip" hidden><img id="ocPhotoThumb" alt="Photo to send"><span>Photo</span><button type="button" id="ocPhotoClear" aria-label="Remove photo">&times;</button></span>
+          <span class="oc-tchip" id="ocStyleChip" hidden>&#127912; <span id="ocStyleTxt"></span><button type="button" id="ocStyleClear" aria-label="Back to normal text">&times;</button></span>
+          <span class="oc-tchip oc-schedchip" id="ocSchedChip" hidden>&#9200; <span id="ocSchedTxt"></span><button type="button" id="ocSchedClear" aria-label="Don't schedule, send now">&times;</button></span>
+        </span>
+        <input type="file" id="ocPhotoIn" accept="image/*" class="oc-vh" tabindex="-1" aria-hidden="true">
       </div>
       <form class="oc-compose" id="ocCompose" autocomplete="off">
+        <button type="button" class="oc-plus" id="ocPlus" aria-label="Chat tools" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg></button>
         <button type="button" class="oc-mic" id="ocMic" aria-label="Talk to type" aria-pressed="false">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 1 0-7 0v6A3.5 3.5 0 0 0 12 15Zm6-3.5a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.91V20H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.59a6 6 0 0 0 5-5.91Z"/></svg>
         </button>
         <textarea id="ocText" rows="1" maxlength="4000" placeholder="Message" aria-label="Message"></textarea>
-        <button type="submit" class="oc-send" id="ocSend" aria-label="Send">Send</button>
+        <div class="oc-sendgrp">
+          <button type="submit" class="oc-send" id="ocSend" aria-label="Send">Send</button>
+          <button type="button" class="oc-sendmore" id="ocSendMore" aria-label="More send options" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg></button>
+        </div>
       </form>
     </main>
   </div>
 </div>
 
+<div class="oc-lightbox" id="ocLightbox" hidden role="dialog" aria-label="Photo"><img id="ocLightboxImg" alt="Photo"><span class="oc-lightbox-x" aria-hidden="true">&times;</span></div>
+
 <script src="ss-core.js?v=1"></script>
 <script src="voice-clean.js?v=1"></script>
-<script src="owner-chat.js?v=2"></script>
+<script src="owner-chat.js?v=3"></script>
 </body>
 </html>
