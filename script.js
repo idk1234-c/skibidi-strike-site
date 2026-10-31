@@ -22,7 +22,8 @@ var COMING_NEXT = [
   {t:"Save system", b:"Your bank, best wave and characters persist, with a reset-progress option and a no-save test mode."},
   {t:"Mobile version", b:"The game running on phones, after the PC build is solid."},
   {t:"Titan shop", b:"The Titan section plus a modular upgrade shop built on the 35 weapon models."},
-  {t:"Astro secret", b:"The secret orb and the unlock behind it."}
+  {t:"Astro secret", b:"The secret orb and the unlock behind it."},
+  {t:"Studio accounts & notifications", b:"The big one: real accounts so the studio gets notification flags, and visitors can talk to the studio privately."}
 ];
 
 function getRoadmap(){
@@ -136,6 +137,17 @@ document.addEventListener("DOMContentLoaded", function(){
     if(f) setTimeout(function(){ f.focus(); }, 60);
   });
   bgmSetup();
+  var bu=document.getElementById("burger"), sm=document.getElementById("sideMenu"), bk=document.getElementById("sideBack");
+  function sideClose(){ if(sm) sm.classList.remove("open"); if(bk) bk.classList.remove("open"); }
+  if(bu) bu.addEventListener("click", function(ev){ ev.stopPropagation(); sm.classList.add("open"); bk.classList.add("open"); });
+  if(bk) bk.addEventListener("click", sideClose);
+  if(sm) sm.querySelectorAll("a").forEach(function(a){
+    a.addEventListener("click", function(ev){
+      ev.preventDefault(); sideClose();
+      var id = (a.getAttribute("href") || "").slice(1);
+      if(id === "play") showPage(null); else showPage(id);
+    });
+  });
   var dot=document.getElementById("devDot");
   if(dot) dot.addEventListener("click", openDev);
   var c=document.getElementById("devClose"); if(c) c.addEventListener("click", closeDev);
@@ -179,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.9 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.10 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
