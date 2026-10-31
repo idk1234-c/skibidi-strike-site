@@ -12,6 +12,19 @@ var DEFAULT_ROADMAP = [
   {d:"OCT 31", t:"Balance pass", b:"Wave 1 is exactly five skibidis, and every toilet now comes in its own size."}
 ];
 
+var IN_PROGRESS = [
+  {t:"Rigged models & real animations", b:"Real skeletons with Idle/Walk/Run/Punch clips for Alliance Titan, Cameraman and the Astro UFO, built in Blender by Titan TV Man."},
+  {t:"Enemy upgrade ladder", b:"Skibidis that start with guns and climb through armor, jetpacks, rockets and lasers as the waves go on."}
+];
+var COMING_NEXT = [
+  {t:"Multiplayer", b:"The next big one: take on the skibidis with friends."},
+  {t:"Main menu redesign", b:"A screenshot background, bigger rounded buttons, the new layout."},
+  {t:"Save system", b:"Your bank, best wave and characters persist, with a reset-progress option and a no-save test mode."},
+  {t:"Mobile version", b:"The game running on phones, after the PC build is solid."},
+  {t:"Titan shop", b:"The Titan section plus a modular upgrade shop built on the 35 weapon models."},
+  {t:"Astro secret", b:"The secret orb and the unlock behind it."}
+];
+
 function getRoadmap(){
   try{
     var raw = localStorage.getItem("ss_roadmap");
@@ -26,6 +39,16 @@ function renderRoadmap(){
   for(var i=0;i<items.length;i++){
     var it = items[i];
     html += "<details><summary><span class='d'>"+esc(it.d)+"</span> "+esc(it.t)+"</summary><p>"+esc(it.b)+"</p></details>";
+  }
+  host.innerHTML = html;
+}
+function renderGroup(hostId, items){
+  var host = document.getElementById(hostId);
+  if(!host) return;
+  var html = "";
+  for(var i=0;i<items.length;i++){
+    var it = items[i];
+    html += "<details><summary><span class='d'>"+esc(it.d||"")+"</span> "+esc(it.t)+"</summary><p>"+esc(it.b)+"</p><a class='mini' data-preset='Idea for "+esc(it.t)+": ' href='#community'>suggest something for this</a></details>";
   }
   host.innerHTML = html;
 }
@@ -62,6 +85,8 @@ function tryEnter(){
 }
 document.addEventListener("DOMContentLoaded", function(){
   renderRoadmap();
+  renderGroup("progressList", IN_PROGRESS);
+  renderGroup("nextList", COMING_NEXT);
   var bl = document.getElementById("buildLine");
   if(bl) bl.textContent = "BUILD " + SS_BUILD;
   var links = document.querySelectorAll("nav .links a");
@@ -79,6 +104,28 @@ document.addEventListener("DOMContentLoaded", function(){
   if(hp) hp.addEventListener("click", function(ev){ ev.preventDefault(); });
   var sf = document.getElementById("sugForm");
   if(sf) sf.addEventListener("submit", sugSend);
+  document.addEventListener("click", function(ev){
+    var a = ev.target;
+    while(a && a !== document.body && !(a.tagName === "A")) a = a.parentNode;
+    if(!a || a.tagName !== "A") return;
+    var preset = a.getAttribute("data-preset");
+    if(preset){
+      ev.preventDefault();
+      var f = document.getElementById("sugIdea");
+      if(f){ f.value = preset; }
+      var t = document.getElementById("sugType");
+      if(t) t.value = "suggestion";
+      showPage("community");
+      if(f) setTimeout(function(){ f.focus(); }, 60);
+      return;
+    }
+    if(a.classList.contains("goSug")){
+      ev.preventDefault();
+      showPage("community");
+      var f2 = document.getElementById("sugIdea");
+      if(f2) setTimeout(function(){ f2.focus(); }, 60);
+    }
+  });
   var cl = document.getElementById("claimLink");
   if(cl) cl.addEventListener("click", function(ev){
     ev.preventDefault();
@@ -132,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.8 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.9 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
@@ -162,7 +209,6 @@ function sugSend(ev){
   if(!idea){ msg.textContent = "Type your idea first."; return; }
   var handle = (document.getElementById("sugName").value || "").trim();
   var link = (document.getElementById("sugLink").value || "").trim();
-  var type = document.getElementById("sugType").value || "suggestion";
   var bot = document.querySelector("#sugForm input[name=botcheck]");
   if(bot && bot.checked){ return; }
   var btn = document.getElementById("sugSend");
@@ -172,7 +218,7 @@ function sugSend(ev){
     headers: {"Content-Type":"application/json","Accept":"application/json"},
     body: JSON.stringify({
       access_key: SUG_KEY,
-      subject: (type === "model credit claim" ? "Model credit claim" : "Skibidi Strike suggestion") + (handle ? " from " + handle : ""),
+      subject: (document.getElementById("sugType").value === "model credit claim" ? "Model credit claim" : "Skibidi Strike suggestion") + (handle ? " from " + handle : ""),
       from_name: "Skibidi Strike site",
       name: handle || "anonymous",
       idea: idea,
@@ -182,10 +228,10 @@ function sugSend(ev){
   }).then(function(r){ return r.json(); }).then(function(d){
     if(d && d.success){
       msg.textContent = "Sent. The studio has it - thanks!";
+      document.getElementById("sugType").value = "suggestion";
       document.getElementById("sugIdea").value = "";
       document.getElementById("sugName").value = "";
       document.getElementById("sugLink").value = "";
-      document.getElementById("sugType").value = "suggestion";
     } else {
       msg.textContent = "Didn't go through. Try again in a minute.";
     }
