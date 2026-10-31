@@ -62,9 +62,9 @@ footer a{margin:0 10px}
 .modal button.ghost{background:transparent;border:1px solid var(--line);color:var(--dim)}
 .modal .err{color:var(--danger);font-size:.85rem;min-height:1.2em}
 .modal .hint{color:var(--dim);font-size:.8rem;margin-top:10px}
-@media(max-width:720px){nav .links{display:none}.burger{display:block;margin-left:auto}}
 .burger{display:none;background:none;border:1px solid var(--line);color:var(--accent);font-size:1.2rem;padding:6px 12px;cursor:pointer}
 .burger:hover{border-color:var(--accent)}
+@media(max-width:720px){nav{gap:12px;padding:12px 14px}nav .logo{font-size:.8rem;letter-spacing:.12em}nav .links{display:none}nav .btn.primary{padding:8px 12px;font-size:.72rem}.burger{display:block;margin-left:auto;padding:8px 14px;font-size:1.35rem;background:var(--panel)}}
 .sidemenu{position:fixed;top:0;right:-280px;width:250px;height:100vh;background:var(--bg2);border-left:1px solid var(--line);z-index:95;transition:right .25s ease;display:flex;flex-direction:column;padding:84px 24px 24px;overflow-y:auto}
 .sidemenu.open{right:0}
 .sidemenu a{padding:14px 0;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-size:.85rem;border-bottom:1px solid var(--line)}
@@ -124,8 +124,10 @@ details .mini{display:inline-block;margin:0 20px 14px 44px;font-size:.78rem;lett
 .soon.hot{color:var(--accent2)}
 .fineprint{font-size:.62rem;color:#4a5460;letter-spacing:.05em;margin-top:16px}
 .owner-gate{margin-top:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.owner-btn{background:transparent;border:1px solid #2a3542;color:var(--dim);padding:8px 16px;font-size:.68rem;letter-spacing:.25em;cursor:pointer;text-transform:uppercase;font-family:inherit;text-decoration:none;display:inline-block}
+.owner-btn{background:transparent;border:1px solid #2a3542;color:var(--dim);padding:8px 16px;font-size:.68rem;letter-spacing:.25em;cursor:pointer;text-transform:uppercase;font-family:inherit}
 .owner-btn:hover{border-color:var(--accent);color:var(--accent)}
 .owner-state{color:var(--accent2);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase}
-.owner-box{margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 @media(max-width:720px){.menu-btns{grid-template-columns:repeat(2,1fr);width:100%;max-width:340px;margin-left:auto;margin-right:auto}}
+
+/* owner box in the footer (every page) */
+.owner-box{margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
