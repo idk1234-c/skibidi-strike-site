@@ -1,13 +1,14 @@
 // Skibidi Strike site
 // DEV CODE: change this to update the studio code (the dev panel can also set a new one)
-var DEV_CODE = "Q7V4KX";
+var DEV_CODE = "000000";
 
 var DEFAULT_ROADMAP = [
   {d:"OCT 25", t:"The repo goes live", b:"The first commit: the core wave shooter, 90 waves, wave rewards, the lobby."},
   {d:"OCT 26", t:"Alliance Titan joins the fight", b:"His scripts, his model, his card in the character select."},
   {d:"OCT 30", t:"The arsenal is staged", b:"35+ weapon models land in the vault, ready to be wired into gameplay."},
   {d:"OCT 30", t:"Dev mode", b:"A hidden test menu: points, characters, god mode, jump to any wave."},
-  {d:"OCT 31", t:"The cast gets real", b:"Cameraman, Alliance Titan and the Astro UFO rebuilt from code with genuinely swinging legs and arms."},
+  {d:"OCT 31", t:"The characters get real", b:"Cameraman, Alliance Titan and the Astro UFO rebuilt from code with genuinely swinging legs and arms."},
+  {d:"OCT 31", t:"Main menu redesign", b:"Bigger rounded buttons, a new title-screen backdrop with the city and a skibidi watching over it, and a WEBSITE button linking the game to this site."},
   {d:"OCT 31", t:"The city falls", b:"A destroyed-city battle map: ruined buildings, fires, smoke and dusty haze."},
   {d:"OCT 31", t:"Balance pass", b:"Wave 1 is exactly five skibidis, and every toilet now comes in its own size."}
 ];
@@ -18,7 +19,6 @@ var IN_PROGRESS = [
 ];
 var COMING_NEXT = [
   {t:"Multiplayer", b:"The next big one: take on the skibidis with friends."},
-  {t:"Main menu redesign", b:"A screenshot background, bigger rounded buttons, the new layout."},
   {t:"Save system", b:"Your bank, best wave and characters persist, with a reset-progress option and a no-save test mode."},
   {t:"Mobile version", b:"The game running on phones, after the PC build is solid."},
   {t:"Titan shop", b:"The Titan section plus a modular upgrade shop built on the 35 weapon models."},
@@ -53,6 +53,15 @@ function renderGroup(hostId, items){
   }
   host.innerHTML = html;
 }
+function playNote(){
+  var n=document.getElementById("playNote");
+  if(n){ n.textContent="Still in the works. The playable web build lands the day it exists - the ROADMAP has the latest updates."; n.classList.add("hot"); }
+  showPage("roadmap");
+}
+function updateOwnerState(){
+  var s=document.getElementById("ownerState");
+  if(s){ s.textContent = localStorage.getItem("ss_role")==="owner" ? "Owner signed in" : ""; }
+}
 function esc(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
@@ -80,6 +89,8 @@ function tryEnter(){
     document.getElementById("devGate").style.display="none";
     document.getElementById("devPanel").style.display="block";
     document.getElementById("devRoadmap").value = roadmapToText();
+    localStorage.setItem("ss_role", "owner");
+    updateOwnerState();
   } else {
     document.getElementById("devErr").textContent = "Wrong code.";
   }
@@ -100,9 +111,22 @@ document.addEventListener("DOMContentLoaded", function(){
   var logo = document.querySelector("nav .logo");
   if(logo) logo.addEventListener("click", function(){ showPage(null); });
   var pb = document.getElementById("playBtn");
-  if(pb) pb.addEventListener("click", function(ev){ ev.preventDefault(); showPage(null); });
+  if(pb) pb.addEventListener("click", function(ev){ ev.preventDefault(); playNote(); });
   var hp = document.getElementById("heroPlay");
-  if(hp) hp.addEventListener("click", function(ev){ ev.preventDefault(); });
+  if(hp) hp.addEventListener("click", function(ev){ ev.preventDefault(); playNote(); });
+  var mbtns = document.querySelectorAll(".mbtn");
+  for(var m=0;m<mbtns.length;m++){
+    (function(b){
+      b.addEventListener("click", function(ev){
+        var id=(b.getAttribute("href")||"").slice(1);
+        if(b.id==="heroPlay"){ ev.preventDefault(); playNote(); return; }
+        if(id && document.getElementById(id) && document.getElementById(id).classList.contains("page")){ ev.preventDefault(); showPage(id); }
+      });
+    })(mbtns[m]);
+  }
+  var ob=document.getElementById("ownerBtn");
+  if(ob) ob.addEventListener("click", function(){ openDev(); });
+  updateOwnerState();
   var sf = document.getElementById("sugForm");
   if(sf) sf.addEventListener("submit", sugSend);
   document.addEventListener("click", function(ev){
@@ -191,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.10 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.11 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
