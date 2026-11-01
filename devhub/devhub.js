@@ -1,4 +1,5 @@
-/* Dev section: the hub, the community board and the Owner / Moderator / Dev panels */
+/* Dev section: the hub, the community board and the Owner / Moderator / Dev panels
+ * Hub, panels and experiments are locked (acct.js lock card) unless signed in with Google as staff from data/roles.json. */
 (function(){
 "use strict";
 var T = window.TTVM, esc = T.esc, $ = function(id){ return document.getElementById(id); };
@@ -7,7 +8,6 @@ var SUG_KEY = "23423945-20f5-4cfb-9d9f-6b6f73f0f3ea";   // same inbox as the sit
 var HOUR = 3600e3, DAY = 24 * HOUR;
 
 function savedMsg(res, what){
-  if(res.saved === "demo"){ T.toast("Preview only: " + what + " (nothing was really saved)"); return; }
   if(res.saved === "live"){ T.toast(what + ". Live on the site in about a minute."); return; }
   if(res.saved === "studio"){ T.toast(what + ". Saved to the studio repo; it reaches the live site once Titan syncs it."); return; }
   T.modal('<div class="pn-copy"><h2 class="ac-h2">Almost done</h2><p>' + (res.error ? esc(res.error) + ". " : "") +
@@ -19,6 +19,7 @@ function savedMsg(res, what){
 
 // =============================== hub ===============================
 function hub(S){
+  if(!T.allowed("staff")) return;   // guests and members only ever see the lock card
   var r = S.role, R = S.restricted;
   var panelName = r === "owner" ? "Owner panel" : r === "mod" ? "Moderator panel" : r === "dev" ? "Dev panel" : "Studio panels";
   $("dhPanelName").textContent = panelName;
@@ -55,12 +56,11 @@ function community(S){
     e.preventDefault();
     var text = $("cmText").value.trim(); if(!text) return;
     var me = T.me(), msg = $("cmMsg");
-    if(T.RANK[S.role] >= 2 && (T.token() || S.demo)){
+    if(T.allowed("staff") && T.token()){
       T.save("community", function(d){ d.posts.unshift({id:"p" + Date.now().toString(36), name:me.name, role:S.role, date:T.iso(), text:text.slice(0, 500)}); }, "Community post from " + me.name)
         .then(function(res){ savedMsg(res, "Posted"); $("cmText").value = ""; community(T.state); });
       return;
     }
-    if(S.demo){ msg.textContent = "Preview: this would be sent to the studio to check."; return; }
     msg.textContent = "Sending...";
     fetch("https://api.web3forms.com/submit", {method:"POST", headers:{"Content-Type":"application/json", "Accept":"application/json"},
       body:JSON.stringify({access_key:SUG_KEY, subject:"Community post from " + me.name, from_name:"TTVM Studios site", name:me.name, account:(S.session.hint || ""), post:text, page:location.href})})
@@ -81,10 +81,10 @@ function people(){
   Object.keys(mod.people).forEach(function(h){ add(h, mod.people[h].name, mod.people[h].hint); });
   Object.keys(profs.people).forEach(function(h){ add(h, profs.people[h].name); });
   Object.keys(act.people).forEach(function(h){ add(h, act.people[h].name); });
-  if(!T.state.demo) Object.keys(seen).forEach(function(h){ add(h, seen[h].name); });
+  Object.keys(seen).forEach(function(h){ add(h, seen[h].name); });
   Object.keys(P.extra).forEach(function(h){ add(h, P.extra[h].name, P.extra[h].hint); });
   return Object.keys(map).map(function(h){
-    var p = map[h], m = mod.people[h] || {}, a = act.people[h] || (seen[h] && !T.state.demo ? seen[h] : {}) || {};
+    var p = map[h], m = mod.people[h] || {}, a = act.people[h] || (seen[h] ? seen[h] : {}) || {};
     p.role = T.roleOf(h, roles); p.mod = m; p.act = a; p.prof = profs.people[h] || {};
     p.name = (p.prof.name || p.name || "Unknown");
     p.R = T.restriction(m); p.warns = T.activeWarnings(m);
@@ -107,16 +107,10 @@ function spark(days){
 function canAct(actor, p){ return T.RANK[actor] >= 3 && p.role !== "owner" && T.RANK[actor] > T.RANK[p.role] && p.h !== T.state.h; }
 
 function panel(S){
-  var root = $("pnRoot"), r = S.role;
-  if(S.restricted){ root.innerHTML = '<div class="ac-card">' + T.blockHtml("open the studio panels") + '</div>'; return; }
-  if(!T.READY && !S.demo){
-    root.innerHTML = '<div class="ac-card"><h1 class="ac-h1">Studio <span>panels</span></h1><p class="ac-lead">Google sign-in is coming soon. Once it\'s on, signing in with the owner\'s Google account opens the Owner panel, moderators get the Moderator panel, and devs get the Dev panel.</p>' +
-      '<ul class="dh-roles">' + roleList() + '</ul><p class="ac-row" style="margin-top:16px"><a class="acct-btn ghost" href="?demo=owner">Preview the Owner panel</a><a class="acct-btn ghost" href="../dev.html">Old dev page (studio code)</a></p></div>';
-    return;
-  }
-  if(!S.session){ root.innerHTML = '<div class="ac-card"><h1 class="ac-h1">Studio <span>panels</span></h1><p class="ac-lead">Sign in with the Google account the studio added you with.</p><a class="acct-btn" href="../signin/?next=' + encodeURIComponent(location.pathname) + '">Sign in</a></div>'; return; }
-  if(T.RANK[r] < 2){ root.innerHTML = '<div class="ac-card"><h1 class="ac-h1">Studio <span>panels</span></h1><p class="ac-lead">The panels are for the studio team (owner, moderators and devs). If you help out with the games, ask the owner to add you as a dev.</p><ul class="dh-roles">' + roleList() + '</ul></div>'; return; }
-  loadFiles(false).then(function(){ draw(S); openFromUrl(); });
+  // Only a signed-in owner / moderator / dev (data/roles.json) gets past here. Everyone else only ever
+  // sees the lock card from acct.js, and no people, warnings or activity data is fetched for them.
+  if(!T.allowed("staff") || !$("pnRoot")) return;
+  loadFiles(false).then(function(){ if(T.allowed("staff")){ draw(S); openFromUrl(); } });
 }
 function roleList(){
   return '<li><i class="acct-role r-owner">OWNER</i><span>Everything. Can switch between Owner mode and Dev mode.</span></li>' +
@@ -126,6 +120,7 @@ function roleList(){
     '<li><i class="acct-role r-guest">GUEST</i><span>Not signed in. Can look around and play.</span></li>';
 }
 function draw(S){
+  if(!T.allowed("staff")) return;
   var r = S.role, root = $("pnRoot"), list = people();
   var title = r === "owner" ? "Owner" : r === "mod" ? "Moderator" : "Dev";
   var h = '<div class="pn-top"><h1 class="ac-h1">' + title + ' <span>panel</span></h1><span class="pn-badge ' + r + '">' + title.toUpperCase() + '</span>' +
@@ -159,7 +154,7 @@ function draw(S){
     }).join("") : '<li style="padding:16px" class="pf-empty">Nobody here.</li>') + '</ul>';
     h += '<div class="ac-card" style="margin-top:14px"><h2 class="ac-h2">Add someone</h2><p class="acct-small" style="margin-bottom:10px">Type their Google email to warn, ban or give them a role. Only a fingerprint of the email is saved, never the email itself.</p>' +
       '<form class="ac-row" id="pnAdd"><input class="ac-in" style="flex:2;min-width:200px" id="pnAddEmail" type="email" placeholder="their.email@gmail.com" required><input class="ac-in" style="flex:1;min-width:140px" id="pnAddName" type="text" maxlength="32" placeholder="Name to show"><button class="acct-btn" type="submit">Add</button></form></div>';
-    h += '<p class="pf-note" style="margin-top:14px">' + (T.token() || S.demo ? "Saving is on: changes save to the site's files." : 'Changes need your GitHub key on this device to save (the same key as Chats). Without it you get a copy to send to Titan.') +
+    h += '<p class="pf-note" style="margin-top:14px">' + (T.token() ? "Saving is on: changes save to the site's files." : 'Changes need your GitHub key on this device to save (the same key as Chats). Without it you get a copy to send to Titan.') +
       ' Activity shows for staff and for anyone who signed in on this device.</p>';
   }
   root.innerHTML = h;
@@ -187,6 +182,7 @@ function openFromUrl(){ var m = /[?&]u=([a-z0-9-]+)/.exec(location.search); if(m
 
 // ---------- one person ----------
 function openDrawer(h){
+  if(!T.allowed("staff")) return;
   var S = T.state, list = people(), p = list.filter(function(x){ return x.h === h; })[0];
   if(!p){ p = {h:h, name:"Unknown", role:"user", mod:{}, act:{}, prof:{}, warns:[], R:null}; }
   P.open = h;

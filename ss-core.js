@@ -1,20 +1,16 @@
 // Skibidi Strike — shared owner/dev core (loaded by index.html, dev.html and owner-chat.html)
 //
-// HONEST NOTE ABOUT SECURITY: the owner code and the dev code are checked IN THE BROWSER.
-// They keep casual visitors out, but anyone who reads this file (or edits their own
-// localStorage) can get past them. That's OK because nothing here is secret: every edit made
-// in owner/dev mode only changes what THAT browser shows until a coder makes it live.
+// ROLES: there are no owner/dev codes any more (they used to start as 000000, so anyone could get in).
+// SS.role() now comes ONLY from a verified Google sign-in checked against data/roles.json (js/acct.js).
+// No saved flag, link or code gives anyone owner or dev. Edits made in owner/dev mode still only
+// change what THAT browser shows until a coder makes them live.
 // The chats stay private for real: owner-chat.html can only read them with Amos's own
 // GitHub key, and the chat files live in the private repo, never on the public site.
 (function(w){
 "use strict";
 
-var DEFAULT_CODE = "000000";
 var K = {
-  role: "ss_role",            // "owner" | "dev" (signed in on this browser)
-  ownerCode: "ss_ownercode",
-  devCode: "ss_devcode",
-  migrated: "ss_codes_v2",
+  role: "ss_role",            // old code-based role flag: no longer trusted, removed on load
   site: "ss_site"              // every customization from the dev page (JSON)
 };
 
@@ -26,21 +22,21 @@ function esc(s){
   return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
-// before v1.14 there was one code (ss_devcode) and it meant "owner". Keep that working.
-(function migrate(){
-  if(get(K.migrated)) return;
-  var old = get(K.devCode);
-  if(old && !get(K.ownerCode)) set(K.ownerCode, old);
-  set(K.migrated, "1");
-})();
+// old code-based sign-in flags: never trusted again, so clean them off this browser
+(function(){ ["ss_role", "ss_ownercode", "ss_devcode", "ss_codes_v2"].forEach(del); })();
 
 // ---------- roles ----------
-function role(){ var r = get(K.role); return (r === "owner" || r === "dev") ? r : null; }
-function code(r){ return get(r === "owner" ? K.ownerCode : K.devCode) || DEFAULT_CODE; }
-function setCode(r, v){ v = String(v || "").trim(); if(!v) return false; set(r === "owner" ? K.ownerCode : K.devCode, v); return true; }
-function checkCode(r, v){ return String(v || "").trim() === code(r); }
-function signIn(r){ set(K.role, r === "owner" ? "owner" : "dev"); }
-function signOut(){ del(K.role); }
+// "owner" | "dev" | null, from the Google sign-in (TTVM.state). Guests and members are null.
+function role(){
+  var T = w.TTVM, S = T && T.state;
+  if(!S || !S.loaded || !S.session || S.restricted || !T.allowed || !T.allowed("staff")) return null;
+  if(S.role === "owner") return "owner";
+  if(S.role === "mod" || S.role === "dev") return "dev";
+  return null;
+}
+function checkCode(){ return false; }   // codes are gone
+function signIn(){}                       // roles come from Google sign-in only
+function signOut(){ if(w.TTVM) w.TTVM.signOut(); }
 
 // ---------- customizations ----------
 // Every editable piece of text on the home page. Defaults are read from the live HTML,
@@ -259,9 +255,9 @@ function badge(doc){
 }
 
 w.SS = {
-  DEFAULT_CODE: DEFAULT_CODE, KEYS: K, SECTIONS: SECTIONS, FIELDS: FIELDS,
+  KEYS: K, SECTIONS: SECTIONS, FIELDS: FIELDS,
   THEME_DEFAULTS: THEME_DEFAULTS, PLAY_DEFAULTS: PLAY_DEFAULTS, BANNER_DEFAULTS: BANNER_DEFAULTS, LINK_DEFAULTS: LINK_DEFAULTS,
-  role: role, code: code, setCode: setCode, checkCode: checkCode, signIn: signIn, signOut: signOut,
+  role: role, checkCode: checkCode, signIn: signIn, signOut: signOut,
   loadSite: loadSite, saveSite: saveSite, play: play, banner: banner, links: links, safeUrl: safeUrl,
   readField: readField, defaultsFrom: defaultsFrom, applySite: applySite, badge: badge, esc: esc
 };

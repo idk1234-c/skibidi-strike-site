@@ -314,3 +314,29 @@ body.xp-daynight .sun{animation:xpSun 40s linear infinite}
 .xp-prev-lod .r3{width:104px;height:104px;background:#2c4a1c}.xp-prev-lod .r2{width:74px;height:74px;background:#3f6b27}.xp-prev-lod .r1{width:38px;height:38px;background:#6aa83e}.xp-prev-lod .me{width:7px;height:7px;background:#ffd84a;border-radius:0}
 .xp-prev-sky{background:linear-gradient(90deg,#7db8f3 0%,#b8dcfb 30%,#f0a35e 50%,#3a2c5a 70%,#0b1030 100%)}
 .xp-prev-sky i{position:absolute;left:22%;top:26px;width:22px;height:22px;background:#fff6c4}
+
+
+/* ---------- studio lock (v4) ----------
+   Studio links and tools only show for a signed-in owner / moderator / dev (acct.js puts
+   .acct-staff / .acct-owner on <html>). Guests and members never see them. */
+html:not(.acct-staff) .acct-staffonly,
+html:not(.acct-staff) a[href$="devhub/"],
+html:not(.acct-staff) a[href*="devhub/index"],
+html:not(.acct-staff) a[href*="devhub/panel"],
+html:not(.acct-staff) a[href*="devhub/experiments"],
+html:not(.acct-staff) a[href*="dev.html"],
+html:not(.acct-staff) #ssBadge,
+html:not(.acct-staff) #xpBar,
+html:not(.acct-owner) a[href*="owner-chat.html"]{display:none!important}
+/* locked pages stay blank until the sign-in check is done, then show only the lock card */
+body[data-acct-lock]:not(.acct-decided) main,
+body[data-acct-lock]:not(.acct-decided) [data-acct-lockarea],
+body[data-acct-lock]:not(.acct-decided) .pn-drawer{visibility:hidden}
+.acct-locked{max-width:560px;margin:40px auto;text-align:center;padding:28px 22px}
+.acct-locked .ac-h1{margin:6px 0 10px}
+.acct-locked .ac-lead{margin:0 0 16px}
+.acct-locked .ac-row{justify-content:center}
+.acct-locked .acct-btn{flex:0 0 auto}
+.acct-lockico{width:54px;height:54px;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:var(--ac-panel2);border:1px solid var(--ac-line);color:#ff6b5e}
+.acct-lockico svg{width:26px;height:26px}
+.dv-body.acct-is-locked .dv-lockarea{padding:70px 16px}

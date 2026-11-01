@@ -7,9 +7,9 @@
 <title>Dev mode — Skibidi Strike</title>
 <link rel="stylesheet" href="style.css?v=18">
 <link rel="stylesheet" href="dev.css?v=2">
-<link rel="stylesheet" href="acct.css?v=3">
+<link rel="stylesheet" href="acct.css?v=4">
 </head>
-<body class="dv-body">
+<body class="dv-body" data-acct-lock="staff">
 
 <header class="dv-top">
   <a class="dv-back" href="index.html" aria-label="Back to the site">&larr; <span>Site</span></a>
@@ -18,24 +18,8 @@
   <span class="dv-badge" id="dvBadge" hidden></span>
 </header>
 
-<!-- not signed in: code box -->
-<div class="dv-gate" id="dvGate" hidden>
-  <div class="dv-gate-box">
-    <h1>Studio access</h1>
-    <div class="dv-seg" id="dvGateRoles" role="group" aria-label="Sign in as">
-      <button type="button" data-role="owner" class="on" aria-pressed="true">Owner</button>
-      <button type="button" data-role="dev" aria-pressed="false">Dev</button>
-    </div>
-    <p class="dv-small" id="dvGateHint">Owner mode: everything, including the chats. Amos only.</p>
-    <form id="dvGateForm" autocomplete="off">
-      <input type="password" id="dvGateCode" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off" aria-label="Code">
-      <div class="dv-err" id="dvGateErr" role="alert"></div>
-      <button class="dv-btn" type="submit">Enter</button>
-    </form>
-    <p class="dv-small">You only need the code once on this device.</p>
-  </div>
-</div>
-
+<!-- Page editor: only for a signed-in owner / moderator / dev (Google + data/roles.json). Everyone else gets the lock card. -->
+<div class="dv-lockarea" data-acct-lockarea>
 <!-- signed in -->
 <div class="dv-wrap" id="dvApp" hidden>
   <main class="dv-main" id="dvMain"></main>
@@ -45,14 +29,15 @@
   </aside>
   <button type="button" class="dv-fab" id="dvPreviewOpen">Preview site</button>
 </div>
+</div>
 
 <div class="dv-toast" id="dvToast" role="status" aria-live="polite"></div>
 
-<script src="ss-core.js?v=4"></script>
+<script src="ss-core.js?v=5"></script>
 <script src="js/auth-config.js?v=1"></script>
-<script src="js/acct.js?v=3"></script>
+<script src="js/acct.js?v=4"></script>
 <script src="voice-clean.js?v=1"></script>
-<script src="script.js?v=19"></script>
-<script src="dev.js?v=3"></script>
+<script src="script.js?v=20"></script>
+<script src="dev.js?v=4"></script>
 </body>
 </html>

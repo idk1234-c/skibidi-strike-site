@@ -15,7 +15,7 @@ function warnCard(S){
 }
 function render(S, files){
   var roles = files[0], mod = files[1], profs = files[2], act = files[3];
-  var own = !target || target === S.h;
+  var own = !target || target === S.h || !S.session;   // guests only ever get their own Guest card
   var h = own ? S.h : target;
   var R = own ? S.restricted : T.restriction(mod.people[h]);
   var guest = own && (!S.session || !!R);
@@ -43,12 +43,12 @@ function render(S, files){
   $("pfAv").innerHTML = T.avatar({h:h, name:name, picture:p.picture || ""}, "xl");
   $("pfName").innerHTML = esc(name) + " " + (role !== "user" ? T.roleTag(role) : "");
   var last = (act.people[h] || {}).last || (own ? new Date().toISOString() : null);
-  $("pfMeta").textContent = own ? (T.ROLE_NAME[role] + " \u00b7 signed in with Google" + (S.demo ? " (preview)" : "")) : (T.ROLE_NAME[role] + (last ? " \u00b7 last seen " + T.when(last) : ""));
+  $("pfMeta").textContent = own ? (T.ROLE_NAME[role] + " \u00b7 signed in with Google") : (T.ROLE_NAME[role] + (last ? " \u00b7 last seen " + T.when(last) : ""));
   $("pfBio").textContent = p.bio || (own ? "No bio yet. Tap Customize to add one." : "");
   if(p.link) $("pfBio").insertAdjacentHTML("beforeend", (p.bio ? "\n" : "") + '<a href="' + esc(p.link) + '" target="_blank" rel="noopener" style="color:#ff6b5e">' + esc(p.link.replace(/^https?:\/\//, "")) + '</a>');
   var a = "";
-  if(own) a += '<button type="button" class="acct-btn" id="pfEditBtn">Customize</button><a class="acct-btn ghost" href="../devhub/">Dev</a>';
-  if(!own && T.RANK[S.role] >= 3) a += '<a class="acct-btn gold" href="../devhub/panel.html?u=' + encodeURIComponent(h) + '">Open in ' + (S.role === "owner" ? "owner" : "moderator") + ' panel</a>';
+  if(own) a += '<button type="button" class="acct-btn" id="pfEditBtn">Customize</button>' + (T.allowed("staff") ? '<a class="acct-btn ghost" href="../devhub/">Dev</a>' : '');
+  if(!own && T.allowed("staff") && T.RANK[S.role] >= 3) a += '<a class="acct-btn gold" href="../devhub/panel.html?u=' + encodeURIComponent(h) + '">Open in ' + (S.role === "owner" ? "owner" : "moderator") + ' panel</a>';
   if(!own) a += '<a class="acct-btn ghost" href="../profile/">My profile</a>';
   acts.innerHTML = a;
   var m = "";
@@ -59,7 +59,7 @@ function render(S, files){
       '<li>Role <span>' + T.ROLE_NAME[S.role] + (S.realRole === "owner" ? " (" + S.mode + " mode)" : "") + '</span></li>' +
       '<li>Google account <span>' + esc(S.session.hint || T.maskEmail(S.session.email)) + '</span></li>' +
       '<li>Status <span style="color:#5fd47a">Good standing</span></li></ul>' +
-      '<p style="margin-top:12px"><button type="button" class="acct-btn ghost sm" id="pfOut">' + (S.demo ? "Exit preview" : "Sign out") + '</button></p></section></div>';
+      '<p style="margin-top:12px"><button type="button" class="acct-btn ghost sm" id="pfOut">' + "Sign out" + '</button></p></section></div>';
   }
   more.innerHTML = m;
   if(own){
@@ -117,7 +117,10 @@ function wire(p, name){
   };
 }
 var files = null;
+var BLANK = [{owners:[], mods:[], devs:[]}, {people:{}}, {people:{}}, {people:{}}];
 T.on(function(S){
+  // guests: just the basic Guest card, no people / moderation / activity files are fetched
+  if(!S.session){ render(S, BLANK); return; }
   if(files){ render(S, files); return; }
   Promise.all([T.data("roles"), T.data("moderation"), T.data("profiles"), T.data("activity")]).then(function(f){ files = f; render(T.state, f); });
 });

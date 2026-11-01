@@ -7,10 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="../acct.css?v=3">
+<link rel="stylesheet" href="../acct.css?v=4">
 <meta name="robots" content="noindex,nofollow">
 </head>
-<body class="ac-page" data-page="experiments">
+<body class="ac-page" data-page="experiments" data-acct-lock="staff">
 <header class="ac-bar">
   <div class="acct" data-acct><a class="acct-chip is-guest" href="../profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
   <a class="ac-logo" href="../">SKIBIDI <span>STRIKE</span></a>
@@ -22,12 +22,12 @@
   <p class="ac-lead">Try features before they launch. Turn on Test mode, then switch each feature on or off. Only you see them, on this device.</p>
   <div id="xpRoot"><p class="pf-empty">Loading...</p></div>
 </main>
-<footer class="ac-foot">TTVM Studios &middot; <a href="../games/">Games</a> &middot; <a href="../devhub/">Dev</a> &middot; <a href="../">Skibidi Strike</a></footer>
+<footer class="ac-foot">TTVM Studios &middot; <a href="../games/">Games</a> <span class="acct-staffonly">&middot; <a href="../devhub/">Dev</a> </span>&middot; <a href="../">Skibidi Strike</a></footer>
 <script src="../js/auth-config.js?v=1"></script>
-<script src="../js/acct.js?v=3"></script>
+<script src="../js/acct.js?v=4"></script>
 <script>
 (function(){
-  var T = TTVM, esc = T.esc, root = document.getElementById("xpRoot");
+  var T = TTVM, esc = T.esc, root = null;
   var GAMES = {site:"The site", skibidi:"Skibidi Strike", blockworld:"Blockworld"};
   var ST = {idea:"Idea", building:"Being built", testing:"Testing"};
   function preview(x){
@@ -38,12 +38,9 @@
     return '<div class="xp-prev"></div>';
   }
   function draw(list){
-    var S = T.state;
-    if(S.restricted){ root.innerHTML = '<div class="ac-card">' + T.blockHtml("try experiments") + '</div>'; return; }
-    if(!T.exp.allowed()){
-      root.innerHTML = '<div class="ac-card"><h2 class="ac-h2">For the studio team</h2><p>Experiments are for the owner, moderators and devs.' + (T.READY ? '' : ' Google sign-in is coming soon; until then you can <a href="?demo=dev" style="color:#ff6b5e">preview this page as a dev</a>.') + '</p></div>' + listHtml(list, false);
-      return;
-    }
+    var S = T.state; root = document.getElementById("xpRoot");
+    // signed-in staff only (acct.js shows everyone else the lock card instead of this page)
+    if(!T.allowed("staff") || !root || !document.contains(root)) return;
     var st = T.exp.state();
     root.innerHTML = '<div class="ac-card xp-master"><div><h2 class="ac-h2" style="margin:0">Test / Experimental mode</h2><p class="acct-small">' + (st.on ? 'On. An EXPERIMENTAL tag shows at the bottom of every page.' : 'Off. Everything looks normal.') + '</p></div>' +
       '<button type="button" class="xp-sw' + (st.on ? ' on' : '') + '" id="xpMaster" role="switch" aria-checked="' + !!st.on + '" aria-label="Test mode"><i></i></button></div>' + listHtml(list, true);
@@ -63,9 +60,12 @@
       }).join("") + '</div>';
     }).join("");
   }
-  var list = null;
-  T.exp.list().then(function(l){ list = l; draw(l); });
-  T.on(function(){ if(list) draw(list); });
+  var list = null, asked = false;
+  T.on(function(){
+    if(!T.allowed("staff")) return;
+    if(list){ draw(list); return; }
+    if(!asked){ asked = true; T.exp.list().then(function(l){ list = l; draw(l); }); }
+  });
 })();
 </script>
 </body>

@@ -1,7 +1,8 @@
 // Skibidi Strike — dev page (owner + dev mode)
 // Everything here saves in THIS browser (localStorage) and shows on this browser's copy of the site.
 // "Export changes" turns it into a note a coder (UTC Studios) can apply to make it live for everyone.
-// Reminder: the owner/dev codes are client-side only (see ss-core.js). Nothing here is secret.
+// Who can open it: ONLY a Google-signed-in owner / moderator / dev from data/roles.json (see js/acct.js).
+// There are no codes any more. Everyone else sees the lock card instead of this page.
 (function(){
 "use strict";
 
@@ -9,7 +10,6 @@ function $(id){ return document.getElementById(id); }
 var esc = SS.esc;
 var DEFAULTS = null;            // live text of the home page (read from index.html)
 var role = null;
-var gateRole = "owner";
 var LS = window.localStorage;
 
 var GROUPS = [
@@ -162,13 +162,6 @@ function creditsBody(){
     '<div class="dv-row"><button type="button" class="dv-btn" id="crApply">Apply credits</button><button type="button" class="dv-ghost" id="crReset">Reset to live</button></div>';
 }
 
-// ---------- codes ----------
-function codesBody(){
-  var h = '<form class="dv-codeform" data-code="dev" autocomplete="off"><label class="dv-field"><span>New DEV code <small>(for helpers you trust)</small></span><input type="text" inputmode="numeric" maxlength="8" class="dv-code" placeholder="new dev code"></label><button class="dv-btn" type="submit">Save</button></form>';
-  if(role === "owner") h += '<form class="dv-codeform" data-code="owner" autocomplete="off"><label class="dv-field"><span>New OWNER code <small>(only you)</small></span><input type="text" inputmode="numeric" maxlength="8" class="dv-code" placeholder="new owner code"></label><button class="dv-btn" type="submit">Save</button></form>';
-  return h + '<p class="dv-small">Both start as 000000. Codes are saved on this device only, so set them on each device you use. Heads-up: these codes keep visitors out but they aren\'t bank-level security (anyone who reads the site\'s code could get past them). That\'s fine, because edits here only change your own screen, and the chats need your GitHub key.</p>';
-}
-
 // ---------- owner tools ----------
 function ownerBody(){
   var hasKey = !!LS.getItem("ss_chat_token");
@@ -223,8 +216,8 @@ function modeCard(){
     '<div class="dv-hero-t"><h1>DEV MODE</h1><span class="dv-badge big ' + role + '">' + (owner ? 'OWNER' : 'DEV') + '</span></div>' +
     '<p class="dv-desc">' + (owner ? 'You\'re in <b>Owner mode</b>: every tool, plus the chats and owner tools.' : 'You\'re in <b>Dev mode</b>: you can customize the whole site. Chats and owner tools are owner-only.') + ' Changes show on this device right away.</p>' +
     '<div class="dv-modes"><div class="dv-mode' + (!owner ? ' on' : '') + '"><b>DEV</b><span>Customize the site</span></div><div class="dv-mode' + (owner ? ' on' : '') + '"><b>OWNER</b><span>Everything + chats</span></div></div>' +
-    (owner ? '<div class="dv-row"><button type="button" class="dv-ghost" id="toDev">Switch to Dev mode</button></div><p class="dv-small">Handing the phone to a helper? Switch to Dev mode. You\'ll need the owner code to come back.</p>'
-           : '<form class="dv-row" id="toOwnerForm" autocomplete="off"><input type="password" id="toOwnerCode" inputmode="numeric" maxlength="8" placeholder="owner code" aria-label="Owner code"><button class="dv-btn" type="submit">Switch to Owner mode</button></form><div class="dv-err" id="toOwnerErr"></div>') +
+    (owner ? '<div class="dv-row"><button type="button" class="dv-ghost" id="toDev">Switch to Dev mode</button></div>'
+           : (window.TTVM && TTVM.state.realRole === "owner" ? '<div class="dv-row"><button type="button" class="dv-btn" id="toOwner">Switch to Owner mode</button></div>' : '')) +
     '<div class="dv-row"><a class="dv-ghost" href="index.html">View site</a><button type="button" class="dv-ghost" id="signOut">Sign out</button></div>' +
     '</div>';
 }
@@ -232,12 +225,8 @@ function modeCard(){
 function render(){
   role = SS.role();
   var b = $("dvBadge");
-  if(!role){
-    $("dvApp").hidden = true; $("dvGate").hidden = false; b.hidden = true;
-    setTimeout(function(){ $("dvGateCode").focus(); }, 50);
-    return;
-  }
-  $("dvGate").hidden = true; $("dvApp").hidden = false;
+  if(!role || !$("dvApp")) return;   // locked: acct.js shows the lock card instead
+  $("dvApp").hidden = false;
   b.hidden = false; b.className = "dv-badge " + role; b.textContent = role === "owner" ? "OWNER" : "DEV";
   document.body.classList.toggle("is-owner", role === "owner");
   var h = modeCard();
@@ -249,7 +238,6 @@ function render(){
   h += card("links", "Links", "", linksBody());
   h += card("roadmap", "Roadmap", "", roadmapBody());
   h += card("credits", "Credits", "People who helped make this happen.", creditsBody());
-  h += card("codes", "Codes", "", codesBody());
   if(role === "owner") h += card("owner", "Owner tools", "Only you can see these.", ownerBody(), {owner: true});
   h += card("export", "Export changes", "", exportBody(), {open: true});
   $("dvMain").innerHTML = h;
@@ -301,19 +289,7 @@ function loadFrame(){ var f = $("dvFrame"); if(!f.getAttribute("src")) f.setAttr
 function wide(){ return window.matchMedia("(min-width:1100px)").matches; }
 
 // ---------- events ----------
-function setGateRole(r){
-  gateRole = r === "dev" ? "dev" : "owner";
-  Array.prototype.forEach.call(document.querySelectorAll("#dvGateRoles button"), function(b){ var on = b.getAttribute("data-role") === gateRole; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
-  $("dvGateHint").textContent = gateRole === "owner" ? "Owner mode: everything, including the chats. Amos only." : "Dev mode: customize the site. No chats.";
-}
-
-document.addEventListener("DOMContentLoaded", function(){
-  $("dvGateRoles").addEventListener("click", function(ev){ var b = ev.target.closest("button"); if(b){ setGateRole(b.getAttribute("data-role")); $("dvGateErr").textContent = ""; $("dvGateCode").focus(); } });
-  $("dvGateForm").addEventListener("submit", function(ev){
-    ev.preventDefault();
-    if(SS.checkCode(gateRole, $("dvGateCode").value)){ SS.signIn(gateRole); $("dvGateCode").value = ""; render(); if(wide()) loadFrame(); }
-    else $("dvGateErr").textContent = "Wrong code.";
-  });
+function start(){
 
   var main = $("dvMain");
   main.addEventListener("input", function(ev){
@@ -338,18 +314,6 @@ document.addEventListener("DOMContentLoaded", function(){
   });
   main.addEventListener("submit", function(ev){
     var f = ev.target; ev.preventDefault();
-    if(f.id === "toOwnerForm"){
-      if(SS.checkCode("owner", $("toOwnerCode").value)){ SS.signIn("owner"); render(); refreshPreview(); toast("Owner mode on"); window.scrollTo(0, 0); }
-      else $("toOwnerErr").textContent = "Wrong owner code.";
-      return;
-    }
-    if(f.classList.contains("dv-codeform")){
-      var which = f.getAttribute("data-code"), inp = f.querySelector("input");
-      if(which === "owner" && role !== "owner") return;
-      if(!/^\d{4,8}$/.test(inp.value.trim())){ toast("Use 4 to 8 numbers"); return; }
-      SS.setCode(which, inp.value); inp.value = ""; inp.blur();
-      toast((which === "owner" ? "Owner" : "Dev") + " code saved on this device");
-    }
   });
   main.addEventListener("click", function(ev){
     var t = ev.target.closest("button, a"); if(!t) return;
@@ -415,12 +379,13 @@ document.addEventListener("DOMContentLoaded", function(){
       return;
     }
     if(id === "exClear"){
-      if(!confirm("Undo ALL your site changes on this device? (Codes and chat key stay.)")) return;
+      if(!confirm("Undo ALL your site changes on this device? (Your chat key stays.)")) return;
       ["ss_site", "ss_roadmap", "ss_progress", "ss_next", "ss_credits"].forEach(function(k){ LS.removeItem(k); });
       render(); refreshPreview(); toast("All changes undone"); return;
     }
-    if(id === "toDev"){ SS.signIn("dev"); render(); refreshPreview(); toast("Dev mode on"); window.scrollTo(0, 0); return; }
-    if(id === "signOut"){ SS.signOut(); window.location.href = "index.html"; return; }
+    if(id === "toDev"){ TTVM.setMode("dev"); toast("Dev mode on"); window.scrollTo(0, 0); return; }
+    if(id === "toOwner"){ TTVM.setMode("owner"); toast("Owner mode on"); window.scrollTo(0, 0); return; }
+    if(id === "signOut"){ TTVM.signOut(); window.location.href = "index.html"; return; }
   });
 
   function openPreview(){ loadFrame(); $("dvPreview").classList.add("open"); document.body.classList.add("dv-noscroll"); }
@@ -428,7 +393,6 @@ document.addEventListener("DOMContentLoaded", function(){
   $("dvPreviewOpen").addEventListener("click", openPreview);
   $("dvPreviewClose").addEventListener("click", function(){ $("dvPreview").classList.remove("open"); document.body.classList.remove("dv-noscroll"); });
   $("dvFrame").addEventListener("load", refreshPreview);
-  window.addEventListener("storage", function(e){ if(e.key === SS.KEYS.role) render(); });
 
   // live defaults straight from the home page, so the editors always start from the real text
   render();
@@ -441,5 +405,17 @@ document.addEventListener("DOMContentLoaded", function(){
       open.forEach(function(id){ var d = $(id); if(d) d.open = true; });
     }
   }).catch(function(){});
-});
+}
+
+// start only once acct.js has checked the Google sign-in against data/roles.json
+var started = false;
+function boot(){
+  if(!window.TTVM) return;
+  TTVM.on(function(){
+    if(!TTVM.allowed("staff")) return;
+    if(!started){ started = true; start(); }
+    else { render(); refreshPreview(); }
+  });
+}
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();

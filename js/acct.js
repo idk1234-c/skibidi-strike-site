@@ -19,7 +19,7 @@ var READY = w.AUTH_READY === true && /\.apps\.googleusercontent\.com$/.test(CLIE
 var REPO_PRIVATE = {repo:"idk1234-c/skibidi-strike", dir:"website/data/"};
 var REPO_PUBLIC  = {repo:"idk1234-c/skibidi-strike-site", dir:"data/"};
 var TOKEN_KEY = "ss_chat_token";           // same GitHub key the chats page uses
-var K = {session:"ttvm_session", mode:"ttvm_mode", seen:"ttvm_seen", warnSeen:"ttvm_warn_seen", local:"ttvm_profile_", demo:"ttvm_demo", demoDb:"ttvm_demo_db", restrict:"ttvm_restricted"};
+var K = {session:"ttvm_session", mode:"ttvm_mode", seen:"ttvm_seen", warnSeen:"ttvm_warn_seen", local:"ttvm_profile_", restrict:"ttvm_restricted"};
 
 var RANK = {guest:0, user:1, dev:2, mod:3, owner:4};
 var ROLE_NAME = {guest:"Guest", user:"Member", dev:"Dev", mod:"Moderator", owner:"Owner"};
@@ -57,61 +57,10 @@ function sha(text){
 }
 function emailHash(email){ return sha("ttvm|" + String(email || "").trim().toLowerCase()); }
 
-// ---------- preview mode (?demo=owner|mod|dev|user|restricted) — only while sign-in is off ----------
-var DEMO = null;
-(function(){
-  if(READY){ put(K.demo, null, "s"); return; }
-  var m = /[?&]demo=([a-z]+)/.exec(location.search);
-  if(m){ if(m[1] === "off") { put(K.demo, null, "s"); put(K.demoDb, null, "s"); } else if(m[1] in RANK || m[1] === "restricted") put(K.demo, m[1], "s"); }
-  DEMO = get(K.demo, "s");
-  if(DEMO === "guest") DEMO = null;
-})();
-var DEMO_PEOPLE = {
-  owner:{h:"demo-amos", name:"Amos", email:"owner@example.com"},
-  mod:{h:"demo-utc", name:"UTC Studios", email:"utc@example.com"},
-  dev:{h:"demo-titan", name:"Titan TV Man", email:"titan@example.com"},
-  user:{h:"demo-cam", name:"CameraFan22", email:"cam@example.com"},
-  restricted:{h:"demo-rex", name:"RexToilet", email:"rex@example.com"}
-};
-function demoDb(){
-  var db = get(K.demoDb, "s"); if(db) return db;
-  var t = now(), H = 3600e3, D = 24 * H, day = function(n){ return new Date(t - n * D).toISOString().slice(0, 10); };
-  function days(arr){ var o = {}; arr.forEach(function(c, i){ if(c) o[day(i)] = c; }); return o; }
-  db = {
-    roles:{owners:[{h:"demo-amos", name:"Amos", hint:"am\u2022\u2022\u2022@gmail.com"}], mods:[{h:"demo-utc", name:"UTC Studios", hint:"ut\u2022\u2022\u2022@gmail.com"}], devs:[{h:"demo-titan", name:"Titan TV Man", hint:"ti\u2022\u2022\u2022@gmail.com"}, {h:"demo-block", name:"BlockBuilder", hint:"bl\u2022\u2022\u2022@gmail.com"}]},
-    moderation:{people:{
-      "demo-cam":{name:"CameraFan22", hint:"ca\u2022\u2022\u2022@gmail.com", warnings:[{id:"w1", reason:"Spamming the community board with the same post 8 times", by:"UTC Studios", date:iso(t - 2 * D)}]},
-      "demo-rex":{name:"RexToilet", hint:"re\u2022\u2022\u2022@gmail.com", bans:1, warnings:[
-        {id:"w2", reason:"Rude to another player in the community board", by:"Amos", date:iso(t - 6 * D)},
-        {id:"w3", reason:"Posted someone's private info", by:"UTC Studios", date:iso(t - 3 * D)},
-        {id:"w4", reason:"Hate speech in a post", by:"Amos", date:iso(t - 20 * H)}],
-        ban:{type:"temp", until:iso(t + 22 * H), reason:"3 warnings", by:"Amos", date:iso(t - 20 * H)}},
-      "demo-gus":{name:"GusPlays", hint:"gu\u2022\u2022\u2022@gmail.com", paused:{until:iso(t + 5 * H), reason:"Cool-off after an argument", by:"UTC Studios", date:iso(t - H)}}
-    }},
-    profiles:{people:{
-      "demo-amos":{name:"Amos", bio:"Owner of TTVM Studios. Making Skibidi Strike and Blockworld.", banner:"#3a0d0b", link:"https://www.youtube.com/@Ttvm_studios_Official"},
-      "demo-utc":{name:"UTC Studios", bio:"Moderator dev. Building levels and keeping the board clean.", banner:"#0f2a44"},
-      "demo-titan":{name:"Titan TV Man", bio:"Dev. Code, website and the change log.", banner:"#1b1b22"},
-      "demo-cam":{name:"CameraFan22", bio:"Cameraman main. Wave 61 best.", banner:"#123d1c"}
-    }},
-    activity:{people:{
-      "demo-amos":{name:"Amos", last:iso(t - 4 * 60e3), days:days([9, 14, 6, 11, 0, 8, 12])},
-      "demo-utc":{name:"UTC Studios", last:iso(t - 35 * 60e3), days:days([5, 7, 9, 0, 3, 6, 4])},
-      "demo-titan":{name:"Titan TV Man", last:iso(t - 3 * H), days:days([4, 2, 6, 5, 3, 0, 2])},
-      "demo-block":{name:"BlockBuilder", last:iso(t - 2 * D), days:days([0, 0, 3, 1, 0, 2, 0])},
-      "demo-cam":{name:"CameraFan22", last:iso(t - 26 * 60e3), days:days([3, 4, 2, 6, 1, 0, 2])},
-      "demo-rex":{name:"RexToilet", last:iso(t - D), days:days([0, 2, 0, 1, 4, 0, 0])},
-      "demo-gus":{name:"GusPlays", last:iso(t - 70 * 60e3), days:days([1, 0, 2, 1, 0, 0, 1])}
-    }},
-    community:{posts:[
-      {id:"d3", name:"CameraFan22", role:"user", date:iso(t - 40 * 60e3), text:"Made it to wave 61 with Cameraman, the Astro UFO on 60 is no joke"},
-      {id:"d2", name:"UTC Studios", role:"mod", date:iso(t - 5 * H), text:"Blockworld test build tonight. Post any pink textures or FPS drops here."},
-      {id:"d1", name:"Amos", role:"owner", date:iso(t - D), text:"Welcome to the community board! Keep it friendly. 3 warnings is a ban."}
-    ]}
-  };
-  put(K.demoDb, db, "s");
-  return db;
-}
+// ---------- no preview / test-role mode ----------
+// Roles come ONLY from a verified Google sign-in checked against data/roles.json.
+// No link (?demo=...), saved flag or console trick gives anyone a role. Clean up old preview flags.
+(function(){ try { w.sessionStorage.removeItem("ttvm_demo"); w.sessionStorage.removeItem("ttvm_demo_db"); } catch(e){} })();
 
 // ---------- data files ----------
 var cache = {};
@@ -128,7 +77,6 @@ function norm(name, o){
   return o;
 }
 function data(name, fresh){
-  if(DEMO) return Promise.resolve(norm(name, JSON.parse(JSON.stringify(demoDb()[name] || blank(name)))));
   if(cache[name] && !fresh) return cache[name];
   var p = fetch(ROOT + "data/" + name + ".json?t=" + now(), {cache:"no-store"})
     .then(function(r){ return r.ok ? r.json() : blank(name); })
@@ -165,13 +113,10 @@ function rmw(target, name, change, message){
   }
   return once();
 }
-// change(doc) edits the doc in place. Resolves {doc, saved:"live"|"studio"|"demo"|"none", json, error}
+// change(doc) edits the doc in place. Resolves {doc, saved:"live"|"studio"|"none", json, error}
 function save(name, change, message){
   message = (message || ("Update " + name)) + " (site panel)";
-  if(DEMO){
-    var db = demoDb(); db[name] = norm(name, db[name]); change(db[name]); put(K.demoDb, db, "s");
-    return Promise.resolve({doc:db[name], saved:"demo"});
-  }
+  if(!S.session || RANK[S.realRole] < 2) return Promise.reject(new Error("Sign in as studio staff first"));
   if(!token()){
     return data(name, true).then(function(doc){ doc = JSON.parse(JSON.stringify(doc)); change(doc); return {doc:doc, saved:"none", json:JSON.stringify(doc, null, 2)}; });
   }
@@ -187,19 +132,84 @@ function save(name, change, message){
 function decodeJwt(t){
   try { var p = t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); while(p.length % 4) p += "="; return JSON.parse(decodeURIComponent(escape(atob(p)))); } catch(e){ return null; }
 }
-var S = {ready:READY, demo:DEMO, session:null, h:null, realRole:"guest", role:"guest", mode:"owner", restricted:null, warnings:[], person:null, loaded:false};
+var S = {ready:READY, session:null, h:null, realRole:"guest", role:"guest", mode:"owner", restricted:null, warnings:[], person:null, loaded:false};
 var subs = [];
-function emit(){ subs.forEach(function(f){ try { f(S); } catch(e){ console.error(e); } }); render(); }
+function emit(){ staffFlags(); applyLock(); subs.forEach(function(f){ try { f(S); } catch(e){ console.error(e); } }); render(); }
 
+// ---------- who may open the studio tools ----------
+// "staff" = owner, moderator or dev; "owner" = owner. Always needs a verified Google sign-in that is in data/roles.json.
+function allowed(level){
+  if(!S.loaded || !S.session || S.restricted) return false;
+  return level === "owner" ? S.realRole === "owner" : RANK[S.realRole] >= 2;
+}
+function staffFlags(){
+  var de = d.documentElement; if(!de || !de.classList) return;
+  de.classList.toggle("acct-staff", allowed("staff"));
+  de.classList.toggle("acct-owner", allowed("owner"));
+}
+function lockHtml(level){
+  var who = level === "owner" ? "Owner only" : "Owner/Dev only";
+  return '<div class="ac-card acct-locked" data-acct-locked><div class="acct-lockico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></div>' +
+    '<h1 class="ac-h1">' + who + '</h1><p class="ac-lead">' + who + ' \u2014 sign in with an approved Google account.</p>' +
+    (READY ? '<p><a class="acct-btn" href="' + link("signin/?next=" + encodeURIComponent(location.pathname)) + '">Sign in with Google</a></p>' : '<p class="acct-small">Google sign-in isn\'t switched on yet, so the studio tools are locked for everyone.</p>') +
+    '<p class="ac-row" style="margin-top:16px"><a class="acct-btn ghost" href="' + link("") + '">Home</a><a class="acct-btn ghost" href="' + link("games/") + '">Games</a><a class="acct-btn ghost" href="' + link("blockworld/") + '">Blockworld</a><a class="acct-btn ghost" href="' + link("devhub/community.html") + '">Community board</a></p></div>';
+}
+// pages marked <body data-acct-lock="staff|owner"> show ONLY the lock card until a signed-in staff member opens them
+var lockState = null;
+function applyLock(){
+  var level = d.body && d.body.getAttribute("data-acct-lock"); if(!level) return;
+  var ok = allowed(level);
+  if(lockState === "locked" && ok){ location.reload(); return; }
+  if(lockState === "open" && !ok){ location.reload(); return; }
+  if(lockState) return;
+  if(!ok){
+    var area = d.querySelector("[data-acct-lockarea]") || d.querySelector("main");
+    Array.prototype.forEach.call(d.querySelectorAll("[data-acct-lockhide]"), function(el){ el.remove(); });
+    if(area) area.innerHTML = lockHtml(level);
+    d.body.classList.add("acct-is-locked");
+    lockState = "locked";
+  } else lockState = "open";
+  d.body.classList.add("acct-decided");
+}
+
+// A saved sign-in is only trusted if it carries the Google-signed ID token for THIS site.
+// The email fingerprint is worked out again from the signed token on every page load, so editing
+// the saved session (for example pasting the owner's fingerprint from roles.json) gets you nothing.
+var certsP = null;
+function googleKeys(){
+  if(!certsP) certsP = fetch("https://www.googleapis.com/oauth2/v3/certs", {cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw new Error("keys"); return r.json(); })
+    .catch(function(e){ certsP = null; throw e; });
+  return certsP;
+}
+function b64u(s){ s = String(s).replace(/-/g, "+").replace(/_/g, "/"); while(s.length % 4) s += "="; var b = atob(s), u = new Uint8Array(b.length); for(var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+// resolves the token's payload only when Google's signature, this site's client id and Google as issuer all check out; otherwise null
+function verifyIdToken(tok){
+  try {
+    var parts = String(tok || "").split("."); if(parts.length !== 3) return Promise.resolve(null);
+    var hd = JSON.parse(new TextDecoder().decode(b64u(parts[0]))), p = decodeJwt(tok);
+    if(!hd || hd.alg !== "RS256" || !hd.kid || !p) return Promise.resolve(null);
+    if(p.aud !== CLIENT_ID || (p.iss !== "accounts.google.com" && p.iss !== "https://accounts.google.com") || !p.email || p.email_verified === false) return Promise.resolve(null);
+    if(!(w.crypto && w.crypto.subtle && w.TextEncoder)) return Promise.resolve(null);
+    return googleKeys().then(function(j){
+      var jwk = (j.keys || []).filter(function(k){ return k.kid === hd.kid; })[0];
+      if(!jwk) return null;
+      return w.crypto.subtle.importKey("jwk", {kty:"RSA", n:jwk.n, e:jwk.e, alg:"RS256", ext:true}, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, false, ["verify"])
+        .then(function(key){ return w.crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64u(parts[2]), new TextEncoder().encode(parts[0] + "." + parts[1])); })
+        .then(function(ok){ return ok ? p : null; });
+    }).catch(function(){ return null; });
+  } catch(e){ return Promise.resolve(null); }
+}
 function loadSession(){
-  if(DEMO){
-    var p = DEMO_PEOPLE[DEMO];
-    return Promise.resolve({h:p.h, name:p.name, email:p.email, picture:"", at:now() - 3600e3, demo:true});
-  }
   if(!READY) return Promise.resolve(null);
   var s = get(K.session);
-  if(!s || !s.h || (s.at && now() - s.at > 30 * 864e5)) { put(K.session, null); return Promise.resolve(null); }
-  return Promise.resolve(s);
+  if(!s || !s.cred){ if(s) put(K.session, null); return Promise.resolve(null); }
+  return verifyIdToken(s.cred).then(function(p){
+    if(!p || !p.iat || now() - p.iat * 1000 > 30 * 864e5){ put(K.session, null); return null; }
+    return emailHash(p.email).then(function(h){
+      return {h:h, sub:p.sub, name:p.name || p.given_name || "Player", email:p.email, hint:maskEmail(p.email), picture:p.picture || "", at:p.iat * 1000, cred:s.cred};
+    });
+  });
 }
 function roleOf(h, roles){
   if(!h) return "guest";
@@ -222,23 +232,23 @@ function restriction(p){
 function refresh(){
   return loadSession().then(function(sess){
     S.session = sess; S.h = sess ? sess.h : null;
-    return Promise.all([data("roles"), data("moderation")]).then(function(r){
+    // guests: nothing to look up, so the roles / moderation files aren't even fetched
+    var need = sess ? Promise.all([data("roles"), data("moderation")]) : Promise.resolve([blank("roles"), blank("moderation")]);
+    return need.then(function(r){
       var roles = r[0], mod = r[1];
       S.person = S.h ? (mod.people[S.h] || null) : null;
       // a kick signs the person out once
-      if(sess && !sess.demo && S.person && S.person.kickAt && ms(S.person.kickAt) > (sess.at || 0)){
+      if(sess && S.person && S.person.kickAt && ms(S.person.kickAt) > (sess.at || 0)){
         put(K.session, null); S.session = null; S.h = null; S.person = null;
         toast("A moderator signed you out. You can sign in again.");
       }
       S.realRole = roleOf(S.h, roles);
-      if(DEMO === "restricted") S.realRole = "user";
       S.mode = (get(K.mode) === "dev") ? "dev" : "owner";
       S.role = (S.realRole === "owner" && S.mode === "dev") ? "dev" : S.realRole;
       S.restricted = S.h ? restriction(S.person) : null;
       if(S.restricted) put(K.restrict, {h:S.h, kind:S.restricted.kind, until:S.restricted.until, reason:S.restricted.reason}); else if(S.h) put(K.restrict, null);
       S.warnings = activeWarnings(S.person);
       S.loaded = true;
-      syncOldOwnerMode();
       seen();
       emit();
       warnToast();
@@ -246,15 +256,8 @@ function refresh(){
     });
   });
 }
-// signed-in Google owner also opens the old code-based owner tools (chats) on this browser
-function syncOldOwnerMode(){
-  if(!READY || !S.h) return;
-  var s = store(); if(!s) return;
-  if(S.realRole === "owner") s.setItem("ss_role", S.mode === "dev" ? "dev" : "owner");
-  else if((S.realRole === "mod" || S.realRole === "dev") && s.getItem("ss_role") === "owner") s.setItem("ss_role", "dev");
-}
 function seen(){
-  if(!S.h || S.demo) return;
+  if(!S.h) return;
   var all = get(K.seen) || {}, day = new Date().toISOString().slice(0, 10), me = all[S.h] || {days:{}};
   me.name = S.session.name; me.last = iso(); me.days = me.days || {}; me.days[day] = (me.days[day] || 0) + (me._d === day ? 0 : 1); me._d = day;
   all[S.h] = me; put(K.seen, all);
@@ -288,16 +291,17 @@ function gis(){
   return gisP;
 }
 function onCredential(resp){
-  var p = decodeJwt(resp && resp.credential);
-  if(!p || !p.email || p.aud !== CLIENT_ID){ toast("Sign-in didn't work. Try again."); return; }
-  emailHash(p.email).then(function(h){
-    put(K.session, {h:h, sub:p.sub, name:p.name || p.given_name || "Player", email:p.email, hint:maskEmail(p.email), picture:p.picture || "", at:now()});
+  var cred = resp && resp.credential;
+  verifyIdToken(cred).then(function(p){
+    if(!p){ toast("Sign-in didn't work. Try again."); return; }
+    put(K.session, {cred:cred, at:now()});
     cache = {};
     closeMenus();
-    return refresh();
-  }).then(function(){
-    toast("Signed in as " + S.session.name);
-    if(d.body.hasAttribute("data-acct-signin")){ var back = /[?&]next=([^&]+)/.exec(location.search); setTimeout(function(){ location.href = back ? decodeURIComponent(back[1]) : link("profile/#edit"); }, 600); }
+    return refresh().then(function(){
+      if(!S.session){ toast("Sign-in didn't work. Try again."); return; }
+      toast("Signed in as " + S.session.name);
+      if(d.body.hasAttribute("data-acct-signin")){ var back = /[?&]next=([^&]+)/.exec(location.search); var to = back ? decodeURIComponent(back[1]) : ""; if(!/^\/[^\/]/.test(to)) to = link("profile/#edit"); setTimeout(function(){ location.href = to; }, 600); }
+    });
   });
 }
 function renderGoogleButton(el, opts){
@@ -307,10 +311,8 @@ function renderGoogleButton(el, opts){
     .catch(function(){ el.innerHTML = '<p class="acct-small">Google sign-in couldn\'t load. Check your connection and reload.</p>'; });
 }
 function signOut(){
-  if(DEMO){ put(K.demo, null, "s"); DEMO = null; S.demo = null; location.href = location.pathname; return; }
   put(K.session, null);
   try { w.google && w.google.accounts.id.disableAutoSelect(); } catch(e){}
-  var s = store(); if(s && s.getItem("ss_role") && READY) s.removeItem("ss_role");
   toast("Signed out");
   refresh();
 }
@@ -343,7 +345,7 @@ function subline(){
   var R = S.restricted, rr = S.realRole;
   if(R) return "Restricted";
   if(!S.session) return "Not signed in";
-  return ROLE_NAME[S.role] + (rr === "owner" && S.mode === "dev" ? " (dev mode)" : "") + (S.demo ? " \u00b7 preview" : "");
+  return ROLE_NAME[S.role] + (rr === "owner" && S.mode === "dev" ? " (dev mode)" : "");
 }
 function chipHtml(){
   var m = me(), restricted = !!S.restricted;
@@ -372,17 +374,18 @@ function menuHtml(){
   if(R) h += '<a class="acct-warnline" href="' + link("profile/#status") + '">' + (R.kind === "pause" ? "Paused " : R.kind === "cut" ? "Cut off from the site" : "Banned ") + esc(R.kind === "cut" ? "" : until(R.until)) + ' \u2192</a>';
   else if(S.warnings.length && S.session) h += '<a class="acct-warnline" href="' + link("profile/#warnings") + '">' + S.warnings.length + ' of 3 warnings \u00b7 tap to see why \u2192</a>';
   h += '<a role="menuitem" href="' + link("games/") + '">TTVM Studios Games</a>';
-  h += '<a role="menuitem" href="' + link("devhub/") + '">Dev <small>chats \u00b7 community \u00b7 credits</small></a>';
-  if(RANK[r] >= 2 && !R) h += '<a role="menuitem" href="' + link("devhub/panel.html") + '">' + (r === "owner" ? "Owner panel" : r === "mod" ? "Moderator panel" : "Dev panel") + '</a>';
-  if(RANK[rr] >= 2 && !R){
+  // studio links (Dev hub, panels, experiments, mode switch) only for signed-in staff from data/roles.json
+  if(RANK[rr] >= 2 && !R && S.session) h += '<a role="menuitem" href="' + link("devhub/") + '">Dev <small>' + (rr === "owner" ? "chats \u00b7 " : "") + 'community \u00b7 credits</small></a>';
+  if(RANK[r] >= 2 && !R && S.session) h += '<a role="menuitem" href="' + link("devhub/panel.html") + '">' + (r === "owner" ? "Owner panel" : r === "mod" ? "Moderator panel" : "Dev panel") + '</a>';
+  if(RANK[rr] >= 2 && !R && S.session){
     var xs = expState().on;
     h += '<div class="acct-mode acct-xp"><span>Test mode</span><button type="button" data-xp class="' + (xs ? "on" : "") + '" aria-pressed="' + (!!xs) + '">' + (xs ? "On" : "Off") + '</button><a href="' + link("devhub/experiments.html") + '">Experiments</a></div>';
   }
-  if(rr === "owner" && !R){
+  if(rr === "owner" && !R && S.session){
     h += '<div class="acct-mode" role="group" aria-label="Mode"><span>Mode</span><button type="button" data-mode="owner" class="' + (S.mode === "owner" ? "on" : "") + '">Owner</button><button type="button" data-mode="dev" class="' + (S.mode === "dev" ? "on" : "") + '">Dev</button></div>';
   }
   if(!S.session) h += '<a role="menuitem" class="acct-signin" href="' + link("signin/") + '">Sign in with Google</a>';
-  else h += '<button type="button" role="menuitem" class="acct-out" data-signout>' + (S.demo ? "Exit preview" : "Sign out") + '</button>';
+  else h += '<button type="button" role="menuitem" class="acct-out" data-signout>' + "Sign out" + '</button>';
   h += '</div>';
   return h;
 }
@@ -405,7 +408,6 @@ function render(){
   d.documentElement.classList.toggle("ttvm-restricted", !!S.restricted);
   d.documentElement.setAttribute("data-ttvm-role", S.restricted ? "restricted" : S.role);
   notice();
-  previewPill();
   applyExperiments();
 }
 d.addEventListener("click", closeMenus);
@@ -429,7 +431,7 @@ var gate = {resolve:null, p:null};
 // play pages call TTVM.gate(): resolves right away for guests / clean accounts, never for restricted ones
 function gateFn(){
   if(gate.p) return gate.p;
-  var quick = !DEMO && (!READY || !get(K.session)) && !get(K.restrict);
+  var quick = (!READY || !get(K.session)) && !get(K.restrict);
   gate.p = quick ? Promise.resolve(true) : new Promise(function(res){
     var done = false;
     function check(){ if(done) return; if(!S.loaded) return; done = true; if(S.restricted){ showGateBlock(); } else res(true); }
@@ -475,13 +477,6 @@ function warnToast(){
     put(key, S.warnings.length);
   }
 }
-function previewPill(){
-  var p = d.getElementById("acctPreview");
-  if(!S.demo){ if(p) p.remove(); return; }
-  if(!p){ p = d.createElement("a"); p.id = "acctPreview"; p.className = "acct-preview"; d.body.appendChild(p); }
-  p.href = location.pathname + "?demo=off";
-  p.innerHTML = "Preview: signed in as " + esc(DEMO === "restricted" ? "a banned account" : ROLE_NAME[DEMO]) + " <b>exit</b>";
-}
 var toastT = null;
 function toast(msg, href){
   var t = d.getElementById("acctToast");
@@ -494,7 +489,7 @@ function toast(msg, href){
 // ---------- Test / Experimental mode (owner, moderators and devs) ----------
 var EXPK = "ttvm_exp", expApplied = {}, expList = null;
 function expState(){ var s = get(EXPK) || {}; s.off = s.off || {}; return s; }
-function expAllowed(){ return S.loaded && RANK[S.realRole] >= 2 && !S.restricted; }
+function expAllowed(){ return allowed("staff"); }
 function expOn(id){ var s = expState(); return expAllowed() && !!s.on && !s.off[id]; }
 function expSet(patch){ var s = expState(); if("on" in patch) s.on = !!patch.on; if(patch.id) { if(patch.value) delete s.off[patch.id]; else s.off[patch.id] = 1; } put(EXPK, s); emit(); }
 function experiments(){
@@ -598,6 +593,7 @@ w.TTVM = {
   emailHash:emailHash, maskEmail:maskEmail, roleOf:roleOf, restriction:restriction, activeWarnings:activeWarnings,
   profileOf:profileOf, localProfile:localProfile, saveLocalProfile:function(p){ if(S.h){ put(K.local + S.h, p); emit(); } },
   me:me, avatar:avatar, bannerStyle:bannerStyle, subline:subline, roleTag:roleTag, esc:esc, when:when, until:until, ms:ms, iso:iso, hue:hue,
+  allowed:allowed, locked:function(){ return lockState !== "open"; }, lockHtml:lockHtml,
   blockHtml:blockHtml, warnItem:warnItem, toast:toast, modal:modal, gate:gateFn, link:link,
   localSeen:function(){ return get(K.seen) || {}; },
   exp:{state:expState, set:expSet, on:expOn, allowed:expAllowed, list:experiments}

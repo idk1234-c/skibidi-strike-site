@@ -942,8 +942,10 @@ function voiceStart(){
   if(V.on) voiceBar("Listening\u2026 tap the mic again when you're done.", false);
 }
 
-// ---------- owner mode only ----------
-function isOwner(){ return !window.SS || SS.role() === "owner"; }
+// ---------- owner only ----------
+// The real lock is the GitHub key: the chats live in the PRIVATE repo, so nothing loads without
+// Amos's own key (checked against GitHub before anything is shown). The page isn't linked for guests.
+function isOwner(){ return true; }
 
 // ---------- login ----------
 function showLogin(msg){
@@ -1155,7 +1157,7 @@ document.addEventListener("DOMContentLoaded", function(){
   });
   if(!SR()) $("ocMic").classList.add("nosupport");
 
-  // chats are OWNER MODE only (dev mode can't open them)
+  // chats are owner only: the key screen below is the gate
   if(!isOwner()){ $("ocNotOwner").hidden = false; $("ocLogin").hidden = true; $("ocApp").hidden = true; return; }
   buildThreads();
   state.token = localStorage.getItem(TOKEN_KEY);

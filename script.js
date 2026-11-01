@@ -1,8 +1,7 @@
 // Skibidi Strike site
-// Owner / dev mode: the codes, sign-in and every dev-page customization live in ss-core.js
-// (owner code + dev code both start as 000000 and are changed on dev.html).
+// Owner / dev mode: only for a Google-signed-in owner / moderator / dev from data/roles.json
+// (js/acct.js). There are no codes any more. Dev-page customizations live in ss-core.js.
 // The owner email was taken out of this public file on Amos's request (it would get spammed).
-var DEV_CODE = "000000";
 
 var DEFAULT_ROADMAP = [
   {d:"OCT 25", t:"The repo goes live", b:"The first commit: the core wave shooter, 90 waves, wave rewards, the lobby."},
@@ -156,37 +155,13 @@ function textToRoadmap(txt){
   return out;
 }
 
-// ---- owner / dev gate ----
-// Already signed in on this browser? Go straight to the dev page, no code box.
-// Not signed in? Ask for the code once (Owner or Dev), then open the dev page.
-var modal = document.getElementById("devModal");
-var gateRole = "owner";
-function setGateRole(r){
-  gateRole = r === "dev" ? "dev" : "owner";
-  var bs = document.querySelectorAll("#devRoles button");
-  for(var i=0;i<bs.length;i++){ var on = bs[i].getAttribute("data-role")===gateRole; bs[i].classList.toggle("on", on); bs[i].setAttribute("aria-pressed", on ? "true" : "false"); }
-  var h = document.getElementById("devRoleHint");
-  if(h) h.textContent = gateRole==="owner" ? "Owner mode: everything, including the chats. Amos only." : "Dev mode: customize the site. No chats.";
-}
+// ---- owner / dev tools ----
+// The button only shows for signed-in staff (acct.js). Nobody else can get in: no codes.
 function openDev(){
   if(window.SS && SS.role()){ window.location.href = "dev.html"; return; }
-  if(!modal) return;
-  modal.classList.add("open");
-  document.getElementById("devErr").textContent="";
-  setGateRole("owner");
-  var c=document.getElementById("devCode"); c.value=""; setTimeout(function(){c.focus();},50);
+  if(window.TTVM) TTVM.toast("Owner/Dev only \u2014 sign in with an approved Google account.");
 }
-function closeDev(){ if(modal) modal.classList.remove("open"); }
-function tryEnter(){
-  var v = document.getElementById("devCode").value.trim();
-  if(window.SS && SS.checkCode(gateRole, v)){
-    SS.signIn(gateRole);
-    updateOwnerState();
-    window.location.href = "dev.html";
-  } else {
-    document.getElementById("devErr").textContent = "Wrong code.";
-  }
-}
+function closeDev(){}
 // the dev page's live preview calls this after every change
 window.ssRefresh = function(){
   renderCredits();
@@ -288,13 +263,8 @@ document.addEventListener("DOMContentLoaded", function(){
   });
   var dot=document.getElementById("devDot");
   if(dot) dot.addEventListener("click", openDev);
-  var c=document.getElementById("devClose"); if(c) c.addEventListener("click", closeDev);
-  var e=document.getElementById("devEnter"); if(e) e.addEventListener("click", tryEnter);
-  var input=document.getElementById("devCode");
-  if(input) input.addEventListener("keydown", function(ev){ if(ev.key==="Enter") tryEnter(); });
-  if(modal) modal.addEventListener("click", function(ev){ if(ev.target===modal) closeDev(); });
-  var rb=document.querySelectorAll("#devRoles button");
-  for(var r=0;r<rb.length;r++) rb[r].addEventListener("click", function(){ setGateRole(this.getAttribute("data-role")); document.getElementById("devErr").textContent=""; document.getElementById("devCode").focus(); });
+  // owner / dev links follow the Google sign-in once acct.js has checked it
+  if(window.TTVM) TTVM.on(function(){ updateOwnerState(); });
   var ps=document.getElementById("playSoon");
   if(ps) ps.addEventListener("click", function(ev){ if(ev.target===ps) closePlaySoon(); });
   var pk=document.getElementById("psOk"); if(pk) pk.addEventListener("click", closePlaySoon);

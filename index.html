@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Skibidi Strike — Official Site</title>
 <link rel="stylesheet" href="style.css?v=21">
-<link rel="stylesheet" href="acct.css?v=3">
+<link rel="stylesheet" href="acct.css?v=4">
 </head>
 <body class="home">
 <nav>
@@ -13,7 +13,7 @@
   <div class="logo">SKIBIDI <span>STRIKE</span></div>
   <div class="links">
     <a href="games/" data-pin>Games</a>
-    <a href="devhub/" data-pin>Dev</a>
+    <a href="devhub/" data-pin class="acct-staffonly">Dev</a>
     <a href="#roadmap">Roadmap</a>
     <a href="#characters">Characters</a>
     <a href="#videos">Videos</a>
@@ -26,7 +26,7 @@
 </nav>
 <aside class="sidemenu" id="sideMenu">
   <a href="games/" data-pin class="sm-studio"><span class="av" aria-hidden="true">TT</span>TTVM Studios Games</a>
-  <a href="devhub/" data-pin>Dev</a>
+  <a href="devhub/" data-pin class="acct-staffonly">Dev</a>
   <a href="#roadmap">Roadmap</a>
   <a href="#characters">Characters</a>
   <a href="#videos">Videos</a>
@@ -131,7 +131,7 @@
 <section id="credits" class="page">
   <h2>Credits &amp; inspiration</h2>
   <p class="note" style="margin-top:20px">Made by fans, for fans, and staying free. This is an unofficial fan game and is not affiliated with or endorsed by the original creators.</p>
-  <div class="owner-gate"><button class="owner-btn" id="ownerBtn">Owner / dev mode</button><span class="owner-state" id="ownerState"></span><a class="owner-btn" id="ownerChats" href="owner-chat.html" hidden>Chats</a></div>
+  <div class="owner-gate acct-staffonly"><button class="owner-btn" id="ownerBtn">Owner / dev mode</button><span class="owner-state" id="ownerState"></span><a class="owner-btn" id="ownerChats" href="owner-chat.html" hidden>Chats</a></div>
   <dl class="wall">
     <div><dt>Game by</dt><dd>Ttvm Studios official</dd></div>
     <div><dt>YouTube</dt><dd><a href="https://www.youtube.com/@Ttvm_studios_Official">@Ttvm_studios_Official</a></dd></div>
@@ -174,25 +174,8 @@
   </div>
   <div class="build" id="buildLine"></div>
   <div class="fineprint">Skibidi Toilet IP owned by Invisible Narratives &middot; Game helped with AI &middot; Website helped with AI</div>
-  <div class="dev-dot" id="devDot" title="studio">&bull;</div>
+  <div class="dev-dot acct-staffonly" id="devDot" title="studio">&bull;</div>
 </footer>
-
-<div class="modal" id="devModal">
-  <div class="box">
-    <div id="devGate">
-      <h3>Studio access</h3>
-      <div class="role-pick" id="devRoles" role="group" aria-label="Sign in as">
-        <button type="button" data-role="owner" class="on" aria-pressed="true">Owner</button>
-        <button type="button" data-role="dev" aria-pressed="false">Dev</button>
-      </div>
-      <p class="note" id="devRoleHint">Owner mode: everything, including the chats. Amos only.</p>
-      <input type="password" id="devCode" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
-      <div class="err" id="devErr"></div>
-      <div class="row"><button id="devEnter">Enter</button><button class="ghost" id="devClose">Close</button></div>
-      <p class="hint">You only need the code once. After that this button takes you straight to the dev page.</p>
-    </div>
-  </div>
-</div>
 
 <div class="modal" id="playSoon">
   <div class="box ss-soonbox" role="dialog" aria-modal="true" aria-labelledby="psTitle">
@@ -202,10 +185,10 @@
   </div>
 </div>
 
-<script src="ss-core.js?v=4"></script>
+<script src="ss-core.js?v=5"></script>
 <script src="js/auth-config.js?v=1"></script>
-<script src="js/acct.js?v=3"></script>
-<script src="script.js?v=19"></script>
+<script src="js/acct.js?v=4"></script>
+<script src="script.js?v=20"></script>
 <script src="blockworld/game.js?v=1"></script>
 </body>
 </html>
