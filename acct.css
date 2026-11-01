@@ -383,3 +383,13 @@ body[data-acct-lock]:not(.acct-decided) .pn-drawer{visibility:hidden}
 .pn-cr li b{color:#ffd933}
 .pn-cr li .acct-btn{align-self:flex-start;margin-top:4px}
 .pn-crform .acct-small{display:block;margin-bottom:8px}
+
+/* Dev hub: update banner lines (tag + text, one row each) */
+.an-list{display:flex;flex-direction:column;gap:8px}
+.an-row{display:grid;grid-template-columns:150px 1fr auto;gap:8px;align-items:center}
+.an-row .ac-in{padding:9px 10px}
+.an-row select.ac-in{font:600 13px var(--ac-ui,inherit);letter-spacing:.08em;text-transform:uppercase;appearance:auto}
+.an-btns{display:flex;gap:6px}
+.an-btns .acct-btn{min-width:38px;justify-content:center;padding-left:0;padding-right:0}
+.an-btns .acct-btn[disabled]{opacity:.35;pointer-events:none}
+@media(max-width:560px){.an-row{grid-template-columns:1fr auto;padding:10px;border:1px solid var(--ac-line);border-radius:10px;background:rgba(255,255,255,.02)}.an-row .an-txt{grid-column:1 / -1;grid-row:2}}

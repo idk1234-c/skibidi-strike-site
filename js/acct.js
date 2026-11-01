@@ -89,7 +89,12 @@ function norm(name, o){
   o = (o && typeof o === "object") ? o : blank(name);
   if(name === "roles"){ ["owners","mods","devs"].forEach(function(k){ if(!Array.isArray(o[k])) o[k] = []; }); }
   else if(name === "community"){ if(!Array.isArray(o.posts)) o.posts = []; }
-  else if(name === "announce"){ o.id = String(o.id || ""); o.text = String(o.text || ""); o.active = o.active === true; }
+  else if(name === "announce"){
+    o.id = String(o.id || ""); o.text = String(o.text || ""); o.active = o.active === true;
+    // a list of items, each with its own tag ("BIG UPDATE", "NEW GAME", "IN PROGRESS", ...). The old single "text" still works.
+    o.items = (Array.isArray(o.items) ? o.items : []).filter(function(x){ return x && String(x.text || "").trim(); })
+      .map(function(x){ return {tag:String(x.tag || "UPDATE").toUpperCase().slice(0, 24), text:String(x.text).trim().slice(0, 200), active:x.active !== false}; });
+  }
   else if(name === "team"){ if(!Array.isArray(o.team)) o.team = []; }
   else if(!o.people || typeof o.people !== "object") o.people = {};
   return o;
@@ -134,7 +139,7 @@ function rmw(target, name, change, message){
 // change(doc) edits the doc in place. Resolves {doc, saved:"live"|"studio"|"none", json, error}
 function save(name, change, message){
   message = (message || ("Update " + name)) + " (site panel)";
-  if(!S.session || RANK[S.realRole] < 2) return Promise.reject(new Error("Sign in as studio staff first"));
+  if(!S.session || RANK[effectiveRole()] < 2) return Promise.reject(new Error("Sign in as studio staff first"));
   if(!token()){
     return data(name, true).then(function(doc){ doc = JSON.parse(JSON.stringify(doc)); change(doc); return {doc:doc, saved:"none", json:JSON.stringify(doc, null, 2)}; });
   }
@@ -156,9 +161,22 @@ function emit(){ staffFlags(); applyLock(); subs.forEach(function(f){ try { f(S)
 
 // ---------- who may open the studio tools ----------
 // "staff" = owner, moderator or dev; "owner" = owner. Always needs a verified Google sign-in that is in data/roles.json.
+// ---------- the ONE role check: the effective (view) role ----------
+// realRole = what the verified Google sign-in + data/roles.json say. It never changes here.
+// The owner can switch the view to Dev mode: then the whole site treats them EXACTLY like a dev
+// (every owner card, link, page and tool hidden or locked, Dev badge). It's a view-only downgrade:
+// it can never raise anyone (a dev can't switch to owner), and owner protection from warnings and bans
+// stays on whatever the view (that comes from the account, not the view).
+function devView(){ return !!S.session && S.realRole === "owner" && S.mode === "dev"; }
+function effectiveRole(){
+  if(!S.session) return "guest";
+  return devView() ? "dev" : S.realRole;
+}
+function canSwitchMode(){ return !!S.session && S.realRole === "owner" && !S.restricted; }
 function allowed(level){
   if(!S.loaded || !S.session || S.restricted) return false;
-  return level === "owner" ? S.realRole === "owner" : RANK[S.realRole] >= 2;
+  var r = effectiveRole();
+  return level === "owner" ? r === "owner" : RANK[r] >= 2;
 }
 function staffFlags(){
   var de = d.documentElement; if(!de || !de.classList) return;
@@ -177,8 +195,8 @@ var lockState = null;
 function applyLock(){
   var level = d.body && d.body.getAttribute("data-acct-lock"); if(!level) return;
   var ok = allowed(level);
-  if(lockState === "locked" && ok){ location.reload(); return; }
-  if(lockState === "open" && !ok){ location.reload(); return; }
+  if(lockState === "locked" && ok){ reloading = true; location.reload(); return; }
+  if(lockState === "open" && !ok){ reloading = true; location.reload(); return; }
   if(lockState) return;
   if(!ok){
     var area = d.querySelector("[data-acct-lockarea]") || d.querySelector("main");
@@ -266,8 +284,8 @@ function refresh(){
         toast("A moderator signed you out. You can sign in again.");
       }
       S.realRole = roleOf(S.h, roles);
-      S.mode = (get(K.mode) === "dev") ? "dev" : "owner";
-      S.role = (S.realRole === "owner" && S.mode === "dev") ? "dev" : S.realRole;
+      S.mode = (S.realRole === "owner" && get(K.mode) === "dev") ? "dev" : "owner";
+      S.role = effectiveRole();
       S.restricted = (S.h && !S.prot) ? restriction(S.person, S.h) : null;
       if(S.restricted) put(K.restrict, {h:S.h, kind:S.restricted.kind, until:S.restricted.until, reason:S.restricted.reason}); else if(S.h) put(K.restrict, null);
       S.warnings = S.prot ? [] : activeWarnings(S.person, S.h);
@@ -339,7 +357,18 @@ function signOut(){
   toast("Signed out");
   refresh();
 }
-function setMode(m){ put(K.mode, m === "dev" ? "dev" : null); refresh(); }
+// Owner <-> Dev view. Only a verified owner can switch; switching never raises anyone's role.
+var MODE_MSG = {dev:"Dev mode on \u00b7 you're seeing the site as a dev", owner:"Owner mode on \u00b7 all owner tools are back"};
+var TOAST_NEXT = "ttvm_toast_next", reloading = false;
+function setMode(m){
+  m = m === "dev" ? "dev" : "owner";
+  if(!canSwitchMode()) return Promise.resolve(S);
+  if(m === S.mode){ toast(MODE_MSG[m]); return Promise.resolve(S); }
+  put(K.mode, m === "dev" ? "dev" : null);
+  put(TOAST_NEXT, MODE_MSG[m], "s");      // shown once, even if the page reloads to lock/unlock itself
+  return refresh().then(function(r){ flushToast(); return r; });
+}
+function flushToast(){ if(reloading) return; var t = get(TOAST_NEXT, "s"); if(t){ put(TOAST_NEXT, null, "s"); toast(t); } }
 
 // ---------- profiles ----------
 function localProfile(h){ return get(K.local + h) || {}; }
@@ -375,10 +404,9 @@ d.addEventListener("error", function(e){
 function link(path){ return ROOT + path; }
 function roleTag(r, small){ return r === "guest" || r === "user" ? "" : '<i class="acct-role r-' + r + (small ? " sm" : "") + '">' + (r === "mod" ? "MOD" : r.toUpperCase()) + '</i>'; }
 function subline(){
-  var R = S.restricted, rr = S.realRole;
-  if(R) return "Restricted";
+  if(S.restricted) return "Restricted";
   if(!S.session) return "Not signed in";
-  return ROLE_NAME[S.role] + (rr === "owner" && S.mode === "dev" ? " (dev mode)" : "");
+  return ROLE_NAME[effectiveRole()];
 }
 function chipHtml(){
   var m = me(), restricted = !!S.restricted;
@@ -396,7 +424,7 @@ function bannerStyle(p){
   return 'background:' + (/^#[0-9a-f]{3,8}$/i.test(b || "") ? b : "#000");
 }
 function menuHtml(){
-  var m = me(), r = S.role, rr = S.realRole, R = S.restricted, guest = !S.session || !!R;
+  var m = me(), r = effectiveRole(), R = S.restricted, guest = !S.session || !!R;
   var lp = S.h ? localProfile(S.h) : {};
   var h = '<div class="acct-menu" role="menu" hidden>';
   h += '<div class="acct-card"><div class="acct-cban" style="' + (guest ? "background:#000" : bannerStyle({banner:lp.banner || "#000", bannerImage:lp.bannerImage})) + '"></div>' +
@@ -408,13 +436,14 @@ function menuHtml(){
   else if(S.warnings.length && S.session) h += '<a class="acct-warnline" href="' + link("profile/#warnings") + '">' + S.warnings.length + ' of 3 warnings \u00b7 tap to see why \u2192</a>';
   h += '<a role="menuitem" href="' + link("games/") + '">TTVM Studios Games</a>';
   // studio links (Dev hub, panels, experiments, mode switch) only for signed-in staff from data/roles.json
-  if(RANK[rr] >= 2 && !R && S.session) h += '<a role="menuitem" href="' + link("devhub/") + '">Dev <small>' + (rr === "owner" ? "chats \u00b7 " : "") + 'community \u00b7 credits</small></a>';
+  if(RANK[r] >= 2 && !R && S.session) h += '<a role="menuitem" href="' + link("devhub/") + '">Dev <small>' + (r === "owner" ? "chats \u00b7 " : "") + 'community \u00b7 credits</small></a>';
   if(RANK[r] >= 2 && !R && S.session) h += '<a role="menuitem" href="' + link("devhub/panel.html") + '">' + (r === "owner" ? "Owner panel" : r === "mod" ? "Moderator panel" : "Dev panel") + '</a>';
-  if(RANK[rr] >= 2 && !R && S.session){
+  if(RANK[r] >= 2 && !R && S.session){
     var xs = expState().on;
     h += '<div class="acct-mode acct-xp"><span>Test mode</span><button type="button" data-xp class="' + (xs ? "on" : "") + '" aria-pressed="' + (!!xs) + '">' + (xs ? "On" : "Off") + '</button><a href="' + link("devhub/experiments.html") + '">Experiments</a></div>';
   }
-  if(rr === "owner" && !R && S.session){
+  // the only owner-only thing a Dev-mode owner still sees: the switch back (in their own account menu)
+  if(canSwitchMode()){
     h += '<div class="acct-mode" role="group" aria-label="Mode"><span>Mode</span><button type="button" data-mode="owner" class="' + (S.mode === "owner" ? "on" : "") + '">Owner</button><button type="button" data-mode="dev" class="' + (S.mode === "dev" ? "on" : "") + '">Dev</button></div>';
   }
   if(!S.session) h += '<a role="menuitem" class="acct-signin" href="' + link("signin/") + '">Sign in with Google</a>';
@@ -434,7 +463,7 @@ function render(){
       var open = mm.hidden; closeMenus(); mm.hidden = !open; b.setAttribute("aria-expanded", String(open));
     });
     mm.addEventListener("click", function(ev){ ev.stopPropagation(); });
-    Array.prototype.forEach.call(mm.querySelectorAll("[data-mode]"), function(x){ x.addEventListener("click", function(){ setMode(x.getAttribute("data-mode")); toast(x.getAttribute("data-mode") === "dev" ? "Dev mode on" : "Owner mode on"); }); });
+    Array.prototype.forEach.call(mm.querySelectorAll("[data-mode]"), function(x){ x.addEventListener("click", function(){ closeMenus(); setMode(x.getAttribute("data-mode")); }); });
     var xb = mm.querySelector("[data-xp]"); if(xb) xb.addEventListener("click", function(){ var v = !expState().on; expSet({on:v}); toast(v ? "Experimental mode on" : "Experimental mode off"); });
     var so = mm.querySelector("[data-signout]"); if(so) so.addEventListener("click", signOut);
   });
@@ -661,6 +690,7 @@ w.TTVM = {
   on:function(f){ subs.push(f); if(S.loaded) f(S); },
   data:data, save:save, token:token, refresh:refresh,
   signOut:signOut, setMode:setMode, renderGoogleButton:renderGoogleButton,
+  effectiveRole:effectiveRole, devView:devView, canSwitchMode:canSwitchMode,
   emailHash:emailHash, maskEmail:maskEmail, roleOf:roleOf, restriction:restriction, activeWarnings:activeWarnings,
   profileOf:profileOf, localProfile:localProfile, saveLocalProfile:function(p){ if(S.h){ put(K.local + S.h, p); emit(); } },
   me:me, avatar:avatar, bannerStyle:bannerStyle, subline:subline, roleTag:roleTag, esc:esc, when:when, until:until, ms:ms, iso:iso, hue:hue,
@@ -671,6 +701,6 @@ w.TTVM = {
   isProtected:isProtected, isLockedOwner:isLockedOwner, teamHtml:teamHtml, fillTeam:fillTeam,
   activeNotices:activeNotices, copyrightHtml:copyrightHtml, initials:initials
 };
-function boot(){ render(); interceptPlay(); refresh(); fillTeam(); }
+function boot(){ render(); interceptPlay(); refresh().then(flushToast, flushToast); fillTeam(); }
 if(d.readyState === "loading") d.addEventListener("DOMContentLoaded", boot); else boot();
 })(window, document);

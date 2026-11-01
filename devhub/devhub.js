@@ -20,40 +20,82 @@ function savedMsg(res, what){
 // =============================== hub ===============================
 function hub(S){
   if(!T.allowed("staff")) return;   // guests and members only ever see the lock card
-  var r = S.role, R = S.restricted;
+  var r = T.effectiveRole(), R = S.restricted;
   var panelName = r === "owner" ? "Owner panel" : r === "mod" ? "Moderator panel" : r === "dev" ? "Dev panel" : "Studio panels";
   $("dhPanelName").textContent = panelName;
   $("dhPanelText").textContent = r === "owner" ? "Everyone who signs in, warnings, bans, roles and site activity." :
     r === "mod" ? "Warn, pause, kick and ban members and devs." : r === "dev" ? "Help and the tools devs can use." : "For the studio team: owner, moderators and devs.";
-  $("dhMode").innerHTML = S.realRole === "owner" && !R ? 'You\'re in <b>' + (S.mode === "dev" ? "Dev" : "Owner") + ' mode</b>. <button type="button" class="acct-btn ghost sm" id="dhSwap">Switch to ' + (S.mode === "dev" ? "Owner" : "Dev") + ' mode</button>' : "";
-  var sw = $("dhSwap"); if(sw) sw.onclick = function(){ T.setMode(S.mode === "dev" ? "owner" : "dev"); };
+  // Owner mode only. In Dev mode the hub looks exactly like a dev's (switch back from your account menu).
+  $("dhMode").innerHTML = r === "owner" && T.canSwitchMode() ? 'You\'re in <b>Owner mode</b>. <button type="button" class="acct-btn ghost sm" id="dhSwap">Switch to Dev mode</button> <span class="acct-small">see the site exactly like a dev does</span>' : "";
+  var sw = $("dhSwap"); if(sw) sw.onclick = function(){ T.setMode("dev"); };
   announceEditor(S);
 }
 // ---------- update banner (data/announce.json): owners, moderators and devs can set it here ----------
+// A list of items, each with its own tag ("BIG UPDATE", "NEW GAME", "IN PROGRESS", ...). They scroll one after another.
+var AN_TAGS = ["BIG UPDATE", "UPDATE", "NEW GAME", "IN PROGRESS", "COMING SOON", "EVENT"];
+function anItems(doc){
+  if(doc && Array.isArray(doc.items) && doc.items.length) return doc.items.map(function(x){ return {tag:String(x.tag || "UPDATE").toUpperCase(), text:String(x.text || ""), active:x.active !== false}; });
+  var t = doc && String(doc.text || "").trim(); if(!t) return [];
+  var m = /^([A-Z][A-Z0-9 ]{1,22}):\s*(.+)$/.exec(t);
+  return [{tag:m ? m[1].trim() : "UPDATE", text:m ? m[2] : t, active:true}];
+}
+function anSig(items){ return items.filter(function(x){ return x.active !== false; }).map(function(x){ return x.tag + "|" + x.text; }).join("\n"); }
 function announceEditor(S){
   var box = $("dhAnnounce");
   if(!box || !T.allowed("staff") || box.getAttribute("data-on")) return;
   box.setAttribute("data-on", "1");
   T.data("announce", true).then(function(doc){
+    var items = anItems(doc);
+    if(!items.length) items = [{tag:"BIG UPDATE", text:"", active:true}];
     box.hidden = false;
-    box.innerHTML = '<h2 class="ac-h2">Update banner</h2><p class="acct-small" style="margin-bottom:10px">The scrolling strip across the top of every page. Use it for big updates. People can close it; a new update shows again for everyone.</p>' +
-      '<form id="anForm"><textarea class="ac-in" id="anText" maxlength="240" rows="2" placeholder="BIG UPDATE: ...">' + esc(doc.text) + '</textarea>' +
-      '<label class="acct-small" style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" id="anOn"' + (doc.active ? " checked" : "") + '> Show the banner</label>' +
+    box.innerHTML = '<h2 class="ac-h2">Update banner</h2><p class="acct-small" style="margin-bottom:10px">The scrolling strip across the top of every page: big updates, new games and games in progress. Each line gets its own tag and they scroll one after another. People can close it; when any line changes it shows again for everyone.</p>' +
+      '<form id="anForm" autocomplete="off"><div class="an-list" id="anList"></div>' +
+      '<div class="ac-row" style="margin-top:8px"><button class="acct-btn ghost sm" type="button" id="anAdd">+ Add a line</button></div>' +
+      '<label class="acct-small" style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="anOn"' + (doc.active ? " checked" : "") + '> Show the banner</label>' +
       '<div class="ac-row" style="margin-top:10px"><button class="acct-btn" type="submit">Save banner</button><button class="acct-btn ghost sm" type="button" id="anPrev">Preview here</button><span class="acct-small" id="anMsg" role="status"></span></div></form>';
+    function opts(cur){
+      var list = AN_TAGS.indexOf(cur) < 0 && cur ? AN_TAGS.concat([cur]) : AN_TAGS;
+      return list.map(function(t){ return '<option value="' + esc(t) + '"' + (t === cur ? " selected" : "") + '>' + esc(t) + '</option>'; }).join("");
+    }
+    function read(){
+      return Array.prototype.map.call($("anList").querySelectorAll(".an-row"), function(row){
+        return {tag:row.querySelector(".an-tag").value, text:row.querySelector(".an-txt").value.trim().slice(0, 160), active:true};
+      });
+    }
+    function draw(){
+      $("anList").innerHTML = items.map(function(x, i){
+        return '<div class="an-row" data-i="' + i + '"><select class="ac-in an-tag" aria-label="Tag for line ' + (i + 1) + '">' + opts(x.tag) + '</select>' +
+          '<input class="ac-in an-txt" type="text" maxlength="160" value="' + esc(x.text) + '" placeholder="' + (i ? "Blockworld \u2014 Alpha, in progress" : "Google sign-in is live") + '" aria-label="Text for line ' + (i + 1) + '">' +
+          '<span class="an-btns"><button type="button" class="acct-btn ghost sm" data-up="' + i + '" aria-label="Move line ' + (i + 1) + ' up"' + (i ? "" : " disabled") + '>&uarr;</button>' +
+          '<button type="button" class="acct-btn ghost sm" data-del="' + i + '" aria-label="Remove line ' + (i + 1) + '">&times;</button></span></div>';
+      }).join("") || '<p class="acct-small">No lines yet. Add one below.</p>';
+    }
+    draw();
+    $("anList").onclick = function(e){
+      var b = e.target.closest("button"); if(!b) return;
+      items = read();
+      if(b.hasAttribute("data-del")){ items.splice(+b.getAttribute("data-del"), 1); }
+      else if(b.hasAttribute("data-up")){ var k = +b.getAttribute("data-up"); if(k > 0){ var t = items[k]; items[k] = items[k - 1]; items[k - 1] = t; } }
+      draw();
+    };
+    $("anAdd").onclick = function(){ items = read(); if(items.length >= 8){ $("anMsg").textContent = "8 lines max"; return; } items.push({tag:"NEW GAME", text:"", active:true}); draw(); var all = $("anList").querySelectorAll(".an-txt"); if(all.length) all[all.length - 1].focus(); };
     $("anPrev").onclick = function(){
-      if(window.TTVM_TICKER) window.TTVM_TICKER.show({id:"preview", text:$("anText").value.trim() || doc.text, active:true}, true);
+      var list = read().filter(function(x){ return x.text; });
+      if(window.TTVM_TICKER) window.TTVM_TICKER.show({id:"preview", items:list.length ? list : anItems(doc), active:true}, true);
       window.scrollTo({top:0, behavior:"smooth"});
     };
     $("anForm").onsubmit = function(e){
       e.preventDefault();
-      var text = $("anText").value.trim().slice(0, 240), on = $("anOn").checked;
-      if(on && !text){ $("anMsg").textContent = "Add the update text first"; return; }
+      var list = read().filter(function(x){ return x.text; }), on = $("anOn").checked;
+      if(on && !list.length){ $("anMsg").textContent = "Add at least one line first"; return; }
       T.save("announce", function(d2){
-        if(text !== d2.text || (on && !d2.active)) d2.id = "u" + Date.now().toString(36);   // a new update shows again for people who closed the old one
-        d2.text = text; d2.active = on;
-      }, "Update banner: " + (on ? text.slice(0, 60) : "off")).then(function(res){
+        if(anSig(anItems(d2)) !== anSig(list) || (on && !d2.active)) d2.id = "u" + Date.now().toString(36);   // anything changed: it shows again for people who closed it
+        d2.items = list; d2.active = on;
+        d2.text = list.map(function(x){ return x.tag + ": " + x.text; }).join("  \u00b7  ");   // older pages still read the single line
+      }, "Update banner: " + (on ? list.map(function(x){ return x.tag; }).join(", ") : "off")).then(function(res){
         savedMsg(res, on ? "Banner saved" : "Banner turned off");
         $("anMsg").textContent = res.saved === "live" ? "Saved. Live for everyone in about a minute." : res.saved === "studio" ? "Saved to the studio copy." : "Not saved yet (needs your GitHub key on this device).";
+        items = list.length ? list : items;
         if(window.TTVM_TICKER) window.TTVM_TICKER.show(res.doc, true);
       }, function(err){ $("anMsg").textContent = err.message; });
     };
@@ -63,7 +105,7 @@ function announceEditor(S){
 // =============================== community ===============================
 function community(S){
   T.data("community", true).then(function(doc){
-    var canDel = T.RANK[S.role] >= 3 && !S.restricted;
+    var canDel = T.RANK[T.effectiveRole()] >= 3 && !S.restricted;
     var posts = doc.posts.slice().sort(function(a, b){ return T.ms(b.date) - T.ms(a.date); });
     $("cmList").innerHTML = posts.length ? posts.map(function(p){
       return '<article class="cm-post">' + T.avatar({h:"p" + p.name, name:p.name}) + '<div style="flex:1;min-width:0"><div class="who"><b>' + esc(p.name) + '</b>' + (p.role && p.role !== "user" ? T.roleTag(p.role, true) : "") +
@@ -88,7 +130,7 @@ function community(S){
     var text = $("cmText").value.trim(); if(!text) return;
     var me = T.me(), msg = $("cmMsg");
     if(T.allowed("staff") && T.token()){
-      T.save("community", function(d){ d.posts.unshift({id:"p" + Date.now().toString(36), name:me.name, role:S.role, date:T.iso(), text:text.slice(0, 500)}); }, "Community post from " + me.name)
+      T.save("community", function(d){ d.posts.unshift({id:"p" + Date.now().toString(36), name:me.name, role:T.effectiveRole(), date:T.iso(), text:text.slice(0, 500)}); }, "Community post from " + me.name)
         .then(function(res){ savedMsg(res, "Posted"); $("cmText").value = ""; community(T.state); });
       return;
     }
@@ -157,10 +199,10 @@ function roleList(){
 }
 function draw(S){
   if(!T.allowed("staff")) return;
-  var r = S.role, root = $("pnRoot"), list = people();
+  var r = T.effectiveRole(), root = $("pnRoot"), list = people();
   var title = r === "owner" ? "Owner" : r === "mod" ? "Moderator" : "Dev";
   var h = '<div class="pn-top"><h1 class="ac-h1">' + title + ' <span>panel</span></h1><span class="pn-badge ' + r + '">' + title.toUpperCase() + '</span>' +
-    (S.realRole === "owner" ? '<button type="button" class="acct-btn ghost sm" id="pnSwap" style="margin-left:auto">Switch to ' + (S.mode === "dev" ? "Owner" : "Dev") + ' mode</button>' : "") + '</div>';
+    (r === "owner" && T.canSwitchMode() ? '<button type="button" class="acct-btn ghost sm" id="pnSwap" style="margin-left:auto">Switch to Dev mode</button>' : "") + '</div>';
   if(r === "dev"){
     root.innerHTML = h + devPanel(S);
     wireSwap(S); return;
@@ -208,15 +250,14 @@ function draw(S){
     T.emailHash(em).then(function(h){ P.extra[h] = {name:nm || em.split("@")[0], hint:T.maskEmail(em)}; draw(T.state); openDrawer(h); });
   };
 }
-function wireSwap(S){ var s = $("pnSwap"); if(s) s.onclick = function(){ T.setMode(S.mode === "dev" ? "owner" : "dev"); }; }
+function wireSwap(S){ var s = $("pnSwap"); if(s) s.onclick = function(){ T.setMode("dev"); }; }
 function devPanel(S){
   return '<div class="ac-card"><h2 class="ac-h2">Dev help</h2><div class="pn-help">' +
     '<p><b>What devs can do.</b> Help build the games and the site, use the page editor and try experimental features. Moderating people is for moderators and the owner.</p>' +
     '<p><b>Page editor.</b> Change words, buttons, colours and the announcement bar on the home page. Edits show on your device; send them to Titan to make them live for everyone.</p>' +
     '<p><b>Experiments.</b> Turn on preview features before they launch, for Skibidi Strike, Blockworld and the site.</p>' +
     '<p><b>Need something bigger?</b> Ask the owner or a moderator. Roles and bans can only be changed by them.</p></div>' +
-    '<div class="ac-row" style="margin-top:6px"><a class="acct-btn" href="../dev.html">Open the page editor</a><a class="acct-btn ghost" href="experiments.html">Experiments</a><a class="acct-btn ghost" href="community.html">Community board</a></div></div>' +
-    (S.realRole === "owner" ? '<p class="pf-note" style="margin-top:12px">You\'re the owner in Dev mode. Switch back to Owner mode for the full panel.</p>' : "");
+    '<div class="ac-row" style="margin-top:6px"><a class="acct-btn" href="../dev.html">Open the page editor</a><a class="acct-btn ghost" href="experiments.html">Experiments</a><a class="acct-btn ghost" href="community.html">Community board</a></div></div>';
 }
 function openFromUrl(){ var m = /[?&]u=([a-z0-9-]+)/.exec(location.search); if(m) openDrawer(m[1]); }
 
@@ -226,7 +267,7 @@ function openDrawer(h){
   var S = T.state, list = people(), p = list.filter(function(x){ return x.h === h; })[0];
   if(!p){ p = {h:h, name:"Unknown", role:"user", mod:{}, act:{}, prof:{}, warns:[], R:null}; }
   P.open = h;
-  var dr = $("pnDrawer"), act = canAct(S.role, p), owner = S.role === "owner";
+  var dr = $("pnDrawer"), act = canAct(T.effectiveRole(), p), owner = T.effectiveRole() === "owner";
   var st = statusOf(p);
   var x = '<div class="pn-sheet" role="dialog" aria-modal="true" aria-label="' + esc(p.name) + '"><div class="ac-row" style="justify-content:space-between"><a class="acct-btn ghost sm" href="../profile/?u=' + encodeURIComponent(h) + '">Open site profile</a><button type="button" class="acct-btn ghost sm" id="pnClose">Close</button></div>' +
     '<div class="ac-row" style="margin-top:16px;flex-wrap:nowrap">' + T.avatar({h:h, name:p.name, picture:p.prof.picture || (h === T.state.h ? T.me().picture : "")}, "lg") + '<div style="min-width:0"><b style="font:700 1.3rem var(--ac-ui);letter-spacing:.06em;text-transform:uppercase;color:#fff">' + esc(p.name) + '</b> ' + T.roleTag(p.role) +
@@ -236,7 +277,7 @@ function openDrawer(h){
     (p.R.reason ? '<div class="acct-small">Reason: ' + esc(p.R.reason) + ' \u00b7 by ' + esc(p.R.by || "?") + '</div>' : "") + (p.R.pendingOwner ? '<div class="acct-small" style="color:#ffd933">Waiting for the owner to pick how long.</div>' : "") + '</div>';
   if(p.prot){
     x += '<div class="pn-sec pn-prot"><h4>Protected owner account</h4><p>Owner accounts can\'t be warned, paused, kicked, restricted or banned. Nothing in the moderation file ever applies to them.</p></div>';
-    x += copySec(p, owner && S.realRole === "owner");
+    x += copySec(p, owner);
   } else {
   // warnings
   x += '<div class="pn-sec"><h4>Warnings (' + p.warns.length + ' of 3)</h4>' + (p.warns.length ? '<ul class="acct-wlist">' + p.warns.map(T.warnItem).join("") + '</ul>' : '<p class="pf-empty">None.</p>');
@@ -294,7 +335,7 @@ function copySec(p, canEdit){
 }
 function wireCopy(p){
   var S = T.state, f = $("pnCr");
-  function ok(){ return S.realRole === "owner" && S.role === "owner" && p.prot; }
+  function ok(){ return T.effectiveRole() === "owner" && p.prot; }
   if(f){
     $("pnCrProof").onchange = function(){ $("pnCrGo").disabled = !this.checked; };
     f.onsubmit = function(e){
@@ -343,7 +384,7 @@ function commit(p, what, change, file){
   file = file || "moderation";
   // owners can never be warned, paused, kicked or banned; notices are owner-only
   if(file === "moderation" && (p.prot || T.isProtected(p.h))){ T.toast("Owner accounts can't be warned or banned"); return Promise.resolve(); }
-  if(file === "notices" && T.state.realRole !== "owner"){ T.toast("Only an owner can do that"); return Promise.resolve(); }
+  if(file === "notices" && T.effectiveRole() !== "owner"){ T.toast("Only an owner can do that"); return Promise.resolve(); }
   var by = me(), msg = by + " " + what + " " + p.name;
   return T.save(file, function(doc){
     if(file === "moderation"){
@@ -362,7 +403,7 @@ function commit(p, what, change, file){
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 function warn(p, reason){
   if(!reason){ T.toast("Add a reason first"); return; }
-  var S = T.state, owner = S.role === "owner";
+  var S = T.state, owner = T.effectiveRole() === "owner";
   var willBan = p.warns.length + 1 >= 3 && !p.R, bans = p.mod.bans || 0;
   var box = $("pnWarnDur");
   if(willBan && bans >= 1 && owner && !box.getAttribute("data-ready")){

@@ -9,7 +9,8 @@ function stat(R){
   return '<section class="ac-card pf-status" id="status">' + T.blockHtml() + '</section>';
 }
 function warnCard(S){
-  if(S.prot) return '<section class="ac-card" id="warnings"><h2 class="ac-h2">Warnings</h2><p class="pf-empty">Owner account: it can\'t be warned, paused or banned.</p></section>';
+  // owner protection is always on (it comes from the account); in Dev mode the card just reads like a dev's
+  if(S.prot && T.effectiveRole() === "owner") return '<section class="ac-card" id="warnings"><h2 class="ac-h2">Warnings</h2><p class="pf-empty">Owner account: it can\'t be warned, paused or banned.</p></section>';
   var ws = S.warnings;
   return '<section class="ac-card" id="warnings"><h2 class="ac-h2">Warnings <span class="acct-small">(' + ws.length + ' of 3)</span></h2>' +
     (ws.length ? '<ul class="acct-wlist">' + ws.map(T.warnItem).join("") + '</ul><p class="pf-note">Tap a warning to see why you got it. 3 warnings means a ban.</p>' : '<p class="pf-empty">No warnings. Keep it up.</p>') + '</section>';
@@ -35,7 +36,7 @@ function render(S, files){
   }
   var p = T.profileOf(h, profs), role = T.roleOf(h, roles);
   // your own profile: Google name + photo by default, your custom ones only if you set them
-  if(own){ var mm = T.me(); role = S.role; p.name = mm.name; p.picture = mm.picture; }
+  if(own){ var mm = T.me(); role = T.effectiveRole(); p.name = mm.name; p.picture = mm.picture; }
   var known = own || p.name || (mod.people[h] && mod.people[h].name) || (act.people[h] && act.people[h].name);
   if(!known){
     $("pfName").textContent = "Profile not found"; $("pfMeta").textContent = ""; $("pfBio").textContent = "This person hasn't shared a profile on the site yet."; acts.innerHTML = '<a class="acct-btn ghost" href="../">Back to the site</a>'; return;
@@ -50,7 +51,7 @@ function render(S, files){
   if(p.link) $("pfBio").insertAdjacentHTML("beforeend", (p.bio ? "\n" : "") + '<a href="' + esc(p.link) + '" target="_blank" rel="noopener" style="color:#ff6b5e">' + esc(p.link.replace(/^https?:\/\//, "")) + '</a>');
   var a = "";
   if(own) a += '<button type="button" class="acct-btn" id="pfEditBtn">Customize</button>' + (T.allowed("staff") ? '<a class="acct-btn ghost" href="../devhub/">Dev</a>' : '');
-  if(!own && T.allowed("staff") && T.RANK[S.role] >= 3) a += '<a class="acct-btn gold" href="../devhub/panel.html?u=' + encodeURIComponent(h) + '">Open in ' + (S.role === "owner" ? "owner" : "moderator") + ' panel</a>';
+  if(!own && T.allowed("staff") && T.RANK[T.effectiveRole()] >= 3) a += '<a class="acct-btn gold" href="../devhub/panel.html?u=' + encodeURIComponent(h) + '">Open in ' + (T.effectiveRole() === "owner" ? "owner" : "moderator") + ' panel</a>';
   if(!own) a += '<a class="acct-btn ghost" href="../profile/">My profile</a>';
   acts.innerHTML = a;
   var m = "", prot = T.isProtected(h, roles);
@@ -60,9 +61,9 @@ function render(S, files){
     m += '<section class="ac-card" id="edit" hidden>' + form(p, name) + '</section>';
     m += '<div class="pf-grid">' + warnCard(S) +
       '<section class="ac-card"><h2 class="ac-h2">Account</h2><ul class="pf-list">' +
-      '<li>Role <span>' + T.ROLE_NAME[S.role] + (S.realRole === "owner" ? " (" + S.mode + " mode)" : "") + '</span></li>' +
+      '<li>Role <span>' + T.ROLE_NAME[T.effectiveRole()] + '</span></li>' +
       '<li>Google account <span>' + esc(S.session.hint || T.maskEmail(S.session.email)) + '</span></li>' +
-      '<li>Status <span style="color:#5fd47a">' + (prot ? "Protected owner account" : "Good standing") + '</span></li></ul>' +
+      '<li>Status <span style="color:#5fd47a">' + (prot && T.effectiveRole() === "owner" ? "Protected owner account" : "Good standing") + '</span></li></ul>' +
       '<p style="margin-top:12px"><button type="button" class="acct-btn ghost sm" id="pfOut">' + "Sign out" + '</button></p></section></div>';
   }
   more.innerHTML = m;

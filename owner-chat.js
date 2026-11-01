@@ -945,7 +945,16 @@ function voiceStart(){
 // ---------- owner only ----------
 // The real lock is the GitHub key: the chats live in the PRIVATE repo, so nothing loads without
 // Amos's own key (checked against GitHub before anything is shown). The page isn't linked for guests.
-function isOwner(){ return true; }
+// Dev mode (the owner viewing the site as a dev, switched in the account menu): the chats are locked exactly like
+// they are for any dev. Switching back to Owner mode opens them again (this page reloads when the mode changes).
+function devView(){
+  try {
+    var sess = JSON.parse(localStorage.getItem("ttvm_session") || "null"), mode = JSON.parse(localStorage.getItem("ttvm_mode") || "null");
+    return !!(sess && sess.cred && mode === "dev");
+  } catch(e){ return false; }
+}
+function isOwner(){ return !devView(); }
+window.addEventListener("storage", function(e){ if(e.key === "ttvm_mode" || e.key === "ttvm_session") location.reload(); });
 
 // ---------- login ----------
 function showLogin(msg){

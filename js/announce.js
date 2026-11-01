@@ -1,7 +1,9 @@
-/* TTVM Studios update banner: the scrolling "new update" strip across the very top of every page.
- * The text lives in data/announce.json  {"id":"...","text":"...","active":true}  so one commit changes it
- * (owners, moderators and devs can also set it from the Dev hub). Closing it (x) hides that update id on this
- * device; a new update (new id) shows again. Reduced-motion users get a still strip. */
+/* TTVM Studios update banner: the scrolling news strip across the very top of every page.
+ * It lives in data/announce.json so one commit changes it (owners, moderators and devs can also edit it from the Dev hub):
+ *   {"active":true, "items":[{"tag":"BIG UPDATE","text":"..."}, {"tag":"NEW GAME","text":"Blockworld \u2014 Alpha, in progress"},
+ *                            {"tag":"IN PROGRESS","text":"Skibidi Strike \u2014 Beta"}]}
+ * Each item has its own tag and they scroll one after another. The old single {"text":"..."} shape still works.
+ * Closing it (x) hides the current set on this device until any item changes. Reduced-motion users get a still strip. */
 (function(w, d){
 "use strict";
 if(w.TTVM_TICKER) return;
@@ -28,13 +30,20 @@ var CSS = [
 ".ttk:hover .ttk-track,.ttk:focus-within .ttk-track{animation-play-state:paused}",
 ".ttk-item{flex:none;display:inline-flex;align-items:center;padding:0 0 0 22px}",
 ".ttk-sep{display:inline-block;margin-left:22px;color:#ff3324;letter-spacing:-.05em;font-style:normal;opacity:.9}",
+".ttk-it{flex:none;display:inline-block;margin-right:9px;padding:4px 7px 3px;border-radius:2px;font-style:normal;font-weight:700;font-size:.86em;letter-spacing:.14em;line-height:1;background:#ff3324;color:#fff;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}",
+".ttk-it.t-upd{background:transparent;color:#ff6b5e;box-shadow:inset 0 0 0 1px rgba(255,90,74,.75)}",
+".ttk-it.t-new{background:#ffd933;color:#111}",
+".ttk-it.t-wip{background:#3d8bff;color:#fff}",
+".ttk-it.t-soon{background:#8a5cff;color:#fff}",
+".ttk-it.t-ev{background:#2fbf71;color:#08130c}",
 ".ttk-x{flex:none;display:grid;place-items:center;width:40px;min-height:100%;padding:0;margin:0;border:0;border-left:1px solid rgba(255,255,255,.08);background:transparent;color:#bdb6ae;font:400 20px/1 Arial,sans-serif;cursor:pointer}",
 ".ttk-x:hover{color:#fff;background:rgba(255,51,36,.18)}",
 ".ttk-x:focus-visible{outline:2px solid #ffd933;outline-offset:-3px}",
 ".ttk.is-static{height:auto}",
 ".ttk.is-static .ttk-run{-webkit-mask-image:none;mask-image:none;padding:7px 0}",
 ".ttk.is-static .ttk-track{animation:none;white-space:normal;flex:1 1 auto;min-width:0}",
-".ttk.is-static .ttk-item{flex:1 1 auto;min-width:0;white-space:normal;line-height:1.35;padding:0 12px}",
+".ttk.is-static .ttk-track{display:flex;flex-wrap:wrap;gap:6px 0}",
+".ttk.is-static .ttk-item{flex:1 1 100%;min-width:0;white-space:normal;line-height:1.35;padding:0 12px}",
 ".ttk.is-static .ttk-sep{display:none}",
 "html.has-ticker .oc-app{top:var(--ttk-offset,0px)}",
 "@keyframes ttkScroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}",
@@ -78,14 +87,36 @@ function layout(){
     if(!app){ d.body.style.paddingTop = (base + h) + "px"; padAdd = h; }
   }
 }
-function fill(text){
+var TAGCLS = {"BIG UPDATE":"t-big", "UPDATE":"t-upd", "NEW UPDATE":"t-big", "NEW GAME":"t-new", "NEW":"t-new", "IN PROGRESS":"t-wip", "COMING SOON":"t-soon", "EVENT":"t-ev"};
+// the items to show: the "items" list, or the old single "text" (a leading "TAG:" becomes the tag)
+function itemsOf(doc){
+  if(!doc) return [];
+  var list = Array.isArray(doc.items) && doc.items.length ? doc.items : (doc.text ? [{text:doc.text}] : []);
+  return list.filter(function(x){ return x && x.active !== false && String(x.text || "").trim(); }).map(function(x){
+    var tag = String(x.tag || "").trim().toUpperCase(), text = String(x.text).trim();
+    if(!tag){ var m = /^([A-Z][A-Z0-9 ]{1,22}):\s*(.+)$/.exec(text); if(m){ tag = m[1].trim(); text = m[2]; } else tag = "UPDATE"; }
+    return {tag:tag.slice(0, 24), text:text.slice(0, 200)};
+  }).slice(0, 8);
+}
+// the set's fingerprint: closing hides exactly this set; any change to any item shows it again
+function sigOf(items){
+  var s = items.map(function(x){ return x.tag + "|" + x.text; }).join("\n"), h = 5381;
+  for(var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return "s" + h.toString(36) + "." + s.length;
+}
+function itemHtml(x, sep){
+  return '<span class="ttk-item"><b class="ttk-it ' + (TAGCLS[x.tag] || "t-big") + '">' + esc(x.tag) + '</b><span class="ttk-txt">' + esc(x.text) + '</span>' +
+    (sep ? '<i class="ttk-sep" aria-hidden="true">///</i>' : "") + '</span>';
+}
+function fill(items){
   var run = el.querySelector(".ttk-run"), track = el.querySelector(".ttk-track");
-  var item = '<span class="ttk-item">' + esc(text) + '<i class="ttk-sep" aria-hidden="true">///</i></span>';
-  if(reduce.matches){ el.classList.add("is-static"); track.innerHTML = '<span class="ttk-item">' + esc(text) + '</span>'; return; }
+  el.setAttribute("aria-label", "Site updates: " + items.map(function(x){ return x.tag + ": " + x.text; }).join(". "));
+  if(reduce.matches){ el.classList.add("is-static"); track.innerHTML = items.map(function(x){ return itemHtml(x, false); }).join(""); return; }
   el.classList.remove("is-static");
-  track.innerHTML = item;
+  var set = items.map(function(x){ return itemHtml(x, true); }).join("");
+  track.innerHTML = '<span class="ttk-half" style="display:flex">' + set + '</span>';
   var one = track.firstChild.getBoundingClientRect().width || 300, need = Math.max(1, Math.ceil((run.clientWidth || w.innerWidth) / one));
-  var copy = ""; for(var i = 0; i < need; i++) copy += item;
+  var copy = ""; for(var i = 0; i < need; i++) copy += set;
   // two identical halves, the track slides by exactly one half, so the loop is seamless
   track.innerHTML = '<span class="ttk-half" style="display:flex">' + copy + '</span><span class="ttk-half" style="display:flex" aria-hidden="true">' + copy + '</span>';
   track.style.setProperty("--ttk-dur", Math.max(12, (one * need) / SPEED).toFixed(1) + "s");
@@ -93,24 +124,24 @@ function fill(text){
 function remove(){ if(ro){ ro.disconnect(); ro = null; } unshift(); if(el){ el.remove(); el = null; } d.documentElement.style.removeProperty("--ttk-offset"); d.documentElement.classList.remove("has-ticker"); }
 function show(doc, force){
   if(!d.body){ d.addEventListener("DOMContentLoaded", function(){ show(doc, force); }); return; }
-  var text = doc && String(doc.text || "").trim(), id = doc && String(doc.id || text);
-  if(!doc || !doc.active || !text || (!force && closed().indexOf(id) >= 0)){ remove(); return; }
+  var items = itemsOf(doc), id = sigOf(items);
+  if(!doc || !doc.active || !items.length || (!force && closed().indexOf(id) >= 0)){ remove(); return; }
   css();
-  cur = {id:id, text:text};
+  cur = {id:id, items:items};
   if(!el){
     el = d.createElement("div");
     el.className = "ttk"; el.id = "ttvmTicker";
     el.setAttribute("role", "region"); el.setAttribute("aria-label", "Site update");
-    el.innerHTML = '<span class="ttk-tag"><i class="ttk-dot" aria-hidden="true"></i>NEW</span><div class="ttk-run"><div class="ttk-track"></div></div><button type="button" class="ttk-x" aria-label="Close this update">&times;</button>';
+    el.innerHTML = '<span class="ttk-tag"><i class="ttk-dot" aria-hidden="true"></i>NEWS</span><div class="ttk-run"><div class="ttk-track"></div></div><button type="button" class="ttk-x" aria-label="Close these updates">&times;</button>';
     d.body.insertBefore(el, d.body.firstChild);
     el.querySelector(".ttk-x").onclick = function(){ if(cur) close(cur.id); remove(); };
     d.documentElement.classList.add("has-ticker");
     var t = null;
-    w.addEventListener("resize", function(){ clearTimeout(t); t = setTimeout(function(){ if(el && cur){ fill(cur.text); layout(); } }, 150); });
-    if(reduce.addEventListener) reduce.addEventListener("change", function(){ if(el && cur){ fill(cur.text); layout(); } });
+    w.addEventListener("resize", function(){ clearTimeout(t); t = setTimeout(function(){ if(el && cur){ fill(cur.items); layout(); } }, 150); });
+    if(reduce.addEventListener) reduce.addEventListener("change", function(){ if(el && cur){ fill(cur.items); layout(); } });
     if(w.ResizeObserver){ ro = new ResizeObserver(function(){ layout(); }); ro.observe(el); }
   }
-  fill(text);
+  fill(items);
   layout();
 }
 function load(){
@@ -119,6 +150,6 @@ function load(){
     .then(function(doc){ show(doc, false); return doc; })
     .catch(function(){ return null; });
 }
-w.TTVM_TICKER = {show:show, hide:remove, refresh:load};
+w.TTVM_TICKER = {show:show, hide:remove, refresh:load, items:itemsOf};
 if(d.readyState === "loading") d.addEventListener("DOMContentLoaded", load); else load();
 })(window, document);

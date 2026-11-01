@@ -217,7 +217,7 @@ function modeCard(){
     '<p class="dv-desc">' + (owner ? 'You\'re in <b>Owner mode</b>: every tool, plus the chats and owner tools.' : 'You\'re in <b>Dev mode</b>: you can customize the whole site. Chats and owner tools are owner-only.') + ' Changes show on this device right away.</p>' +
     '<div class="dv-modes"><div class="dv-mode' + (!owner ? ' on' : '') + '"><b>DEV</b><span>Customize the site</span></div><div class="dv-mode' + (owner ? ' on' : '') + '"><b>OWNER</b><span>Everything + chats</span></div></div>' +
     (owner ? '<div class="dv-row"><button type="button" class="dv-ghost" id="toDev">Switch to Dev mode</button></div>'
-           : (window.TTVM && TTVM.state.realRole === "owner" ? '<div class="dv-row"><button type="button" class="dv-btn" id="toOwner">Switch to Owner mode</button></div>' : '')) +
+           : '') +   /* Dev mode looks exactly like a dev's page; the owner switches back from the account menu */
     '<div class="dv-row"><a class="dv-ghost" href="index.html">View site</a><button type="button" class="dv-ghost" id="signOut">Sign out</button></div>' +
     '</div>';
 }
@@ -383,8 +383,7 @@ function start(){
       ["ss_site", "ss_roadmap", "ss_progress", "ss_next", "ss_credits"].forEach(function(k){ LS.removeItem(k); });
       render(); refreshPreview(); toast("All changes undone"); return;
     }
-    if(id === "toDev"){ TTVM.setMode("dev"); toast("Dev mode on"); window.scrollTo(0, 0); return; }
-    if(id === "toOwner"){ TTVM.setMode("owner"); toast("Owner mode on"); window.scrollTo(0, 0); return; }
+    if(id === "toDev"){ TTVM.setMode("dev"); window.scrollTo(0, 0); return; }     // setMode shows the "Dev mode on" toast
     if(id === "signOut"){ TTVM.signOut(); window.location.href = "index.html"; return; }
   });
 
