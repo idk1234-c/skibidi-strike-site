@@ -307,7 +307,10 @@ html:not(.acct-staff) a[href*="devhub/experiments"],
 html:not(.acct-staff) a[href*="dev.html"],
 html:not(.acct-staff) #ssBadge,
 html:not(.acct-staff) #xpBar,
-html:not(.acct-owner) a[href*="owner-chat.html"]{display:none!important}
+html:not(.acct-owner) a[href*="owner-chat.html"],
+html:not(.acct-mod) .acct-modonly,
+html:not(.acct-mod) a[href*="devhub/roadmap"],
+html:not(.acct-mod) a[href="roadmap.html"]{display:none!important}
 /* locked pages stay blank until the sign-in check is done, then show only the lock card */
 body[data-acct-lock]:not(.acct-decided) main,
 body[data-acct-lock]:not(.acct-decided) [data-acct-lockarea],

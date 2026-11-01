@@ -160,7 +160,7 @@ var subs = [];
 function emit(){ staffFlags(); applyLock(); subs.forEach(function(f){ try { f(S); } catch(e){ console.error(e); } }); render(); }
 
 // ---------- who may open the studio tools ----------
-// "staff" = owner, moderator or dev; "owner" = owner. Always needs a verified Google sign-in that is in data/roles.json.
+// "staff" = owner, moderator or dev; "mod" = owner or moderator; "owner" = owner. Always needs a verified Google sign-in that is in data/roles.json.
 // ---------- the ONE role check: the effective (view) role ----------
 // realRole = what the verified Google sign-in + data/roles.json say. It never changes here.
 // The owner can switch the view to Dev mode: then the whole site treats them EXACTLY like a dev
@@ -176,15 +176,16 @@ function canSwitchMode(){ return !!S.session && S.realRole === "owner" && !S.res
 function allowed(level){
   if(!S.loaded || !S.session || S.restricted) return false;
   var r = effectiveRole();
-  return level === "owner" ? r === "owner" : RANK[r] >= 2;
+  return level === "owner" ? r === "owner" : level === "mod" ? RANK[r] >= 3 : RANK[r] >= 2;
 }
 function staffFlags(){
   var de = d.documentElement; if(!de || !de.classList) return;
   de.classList.toggle("acct-staff", allowed("staff"));
   de.classList.toggle("acct-owner", allowed("owner"));
+  de.classList.toggle("acct-mod", allowed("mod"));
 }
 function lockHtml(level){
-  var who = level === "owner" ? "Owner only" : "Owner/Dev only";
+  var who = level === "owner" ? "Owner only" : level === "mod" ? "Owner/Moderator only" : "Owner/Dev only";
   return '<div class="ac-card acct-locked" data-acct-locked><div class="acct-lockico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></div>' +
     '<h1 class="ac-h1">' + who + '</h1><p class="ac-lead">' + who + ' \u2014 sign in with an approved Google account.</p>' +
     (READY ? '<p><a class="acct-btn" href="' + link("signin/?next=" + encodeURIComponent(location.pathname)) + '">Sign in with Google</a></p>' : '<p class="acct-small">Google sign-in isn\'t switched on yet, so the studio tools are locked for everyone.</p>') +
