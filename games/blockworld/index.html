@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blockworld - TTVM Studios</title>
+<meta name="description" content="Blockworld: Ttvm Studios' own block-building world game. Infinite terrain, caves, building, and online co-op multiplayer on the way. In development.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="../../acct.css?v=8">
+<style>
+:root{--grass:#5aa843;--grass2:#6fc255;--dirt:#7a5230;--stone:#3b3f46;--bg:#0c0d10;--panel:#14161b;--panel2:#181a20;--line:#262a33;--txt:#e8e9ee;--dim:#9ba1ac;--ui:'Oswald','Arial Narrow',Impact,sans-serif;--pix:'Press Start 2P',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--ui);line-height:1.5}
+a{color:var(--grass2)}
+header.bar{display:flex;align-items:center;gap:18px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.mark .av{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:linear-gradient(180deg,var(--grass2),var(--grass));color:#123008;font-size:.8rem;font-weight:700}
+nav.quick{display:flex;gap:18px;margin-left:auto}
+nav.quick a{color:var(--dim);text-decoration:none;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase}
+nav.quick a:hover{color:#fff}
+main{max-width:980px;margin:0 auto;padding:0 20px 40px}
+.hero{padding:46px 0 8px;text-align:center}
+.status{display:inline-block;font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--grass);color:var(--grass2);background:rgba(90,168,67,.08);margin-bottom:18px}
+.hero h1{font-family:var(--pix);font-size:clamp(1.4rem,4.5vw,2.6rem);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.5)}
+.hero h1 em{font-style:normal;color:var(--grass2)}
+.hero p{color:var(--dim);max-width:620px;margin:14px auto 0}
+.art{height:190px;border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative;margin:26px 0 8px;background:linear-gradient(180deg,#6db3e8 0%,#a9d3f2 55%,#d3ecff 100%)}
+.art .bw-ground{position:absolute;left:0;right:0;bottom:0;height:86px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),linear-gradient(180deg,var(--grass) 0 26px,var(--dirt) 26px 54px,#68452a 54px 100%)}
+.art .bw-ground::before{content:"";position:absolute;left:0;right:0;top:-12px;height:12px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 1px,transparent 1px 26px),linear-gradient(180deg,#6fc255,#5aa843)}
+.art i{position:absolute;width:30px;height:30px;border-radius:5px;background:linear-gradient(180deg,#79c464 0 30%,#8a5c33 30%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 7px 0 rgba(0,0,0,.15)}
+.art i:nth-of-type(1){left:62%;top:26%}
+.art i:nth-of-type(2){left:78%;top:42%;width:22px;height:22px}
+.art i:nth-of-type(3){left:48%;top:46%;width:18px;height:18px}
+section.page{margin-top:38px}
+h2.sec{font-size:1.5rem;letter-spacing:.08em;text-transform:uppercase;color:#fff;margin-bottom:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.tile h4{font-size:1.02rem;color:#fff;margin-bottom:6px}
+.tile p{color:var(--dim);font-size:.92rem}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chips a,.chips span{display:inline-block;padding:8px 14px;border:1px solid var(--line);border-radius:999px;color:var(--txt);text-decoration:none;font-size:.85rem;background:var(--panel2)}
+.chips a:hover{border-color:var(--grass)}
+.note{margin-top:14px;padding:16px 18px;border:1px dashed var(--line);border-radius:12px;color:var(--dim);font-size:.92rem}
+.speclist{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 22px;margin-top:12px}
+.speclist div{padding:10px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.speclist b{color:#fff;font-weight:600}
+.speclist span{color:var(--dim)}
+footer{border-top:1px solid var(--line);padding:26px 20px 34px;text-align:center;color:#7d838e;font-size:.85rem}
+footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
+@media(max-width:560px){.hero{padding-top:30px}.art{height:150px}}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="acct" data-acct><a class="acct-chip is-guest" href="../../profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
+  <a class="mark" href="../../"><span class="av" aria-hidden="true">BW</span>TTVM Studios</a>
+  <nav class="quick" aria-label="Site">
+    <a href="../">All games</a>
+    <a href="../../">Skibidi Strike</a>
+    <a href="../../devhub/" class="acct-staffonly">Dev</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <span class="status">In development &middot; not playable yet</span>
+    <h1>BLOCK<em>WORLD</em></h1>
+    <p>Ttvm Studios' own block-building world game. Fresh code, fresh original art, and one rule above all: it has to run smooth on modest PCs first.</p>
+  </section>
+
+  <div class="art" aria-hidden="true">
+    <span class="bw-ground"></span><i></i><i></i><i></i>
+  </div>
+
+  <section class="page">
+    <h2 class="sec">What it is</h2>
+    <p class="note">A block-building world game in the spirit of the classics: dig, build, craft and explore, with an original engine and 100% original art. It is not a mod of anyone else's game and uses no assets from other games.</p>
+  </section>
+
+  <section class="page">
+    <h2 class="sec">In the game now</h2>
+    <div class="tiles">
+      <div class="tile"><h4>Infinite terrain</h4><p>Chunked world with caves, trees and hills, streamed around you.</p></div>
+      <div class="tile"><h4>Build and dig</h4><p>Break and place blocks with a hotbar, day and night cycle.</p></div>
+      <div class="tile"><h4>Monsters and beds</h4><p>Three difficulty levels, beds to survive the night.</p></div>
+      <div class="tile"><h4>Skins</h4><p>A dressing room is coming, and player skins are in.</p></div>
+      <div class="tile"><h4>XP and enchanting</h4><p>Earn experience and enchant your gear.</p></div>
+      <div class="tile"><h4>Sound and music</h4><p>Ambient audio with a music toggle in the settings.</p></div>
+    </div>
+  </section>
+
+  <section class="page">
+    <h2 class="sec">Coming next</h2>
+    <div class="chips">
+      <span>Inventory + crafting</span><span>Fishing + name tags</span><span>Villages</span><span>Online co-op</span><span>Weather</span><span>Oceans, rivers + waterfalls</span><span>Temperature system</span><span>Power + machines</span><span>Recipe viewer</span><span>Skibidi flavor (later)</span>
+    </div>
+    <p class="note">Order of work: the base game comes first and stays pure, then the extras. Nothing lands half-built.</p>
+  </section>
+
+  <section class="page">
+    <h2 class="sec">Play together</h2>
+    <div class="tiles">
+      <div class="tile"><h4>Host and join</h4><p>One player hosts a world, everyone else joins it. Works PC to PC: a friend, a brother, a wife or the kids can all play in the same world.</p></div>
+      <div class="tile"><h4>Same Wi-Fi</h4><p>On one network, joining is the easy path: host, see the world, join.</p></div>
+      <div class="tile"><h4>Over the internet</h4><p>Yes, someone in Canada can play with someone in Texas. One side opens a port on their router, and an auto-setup helper plus a test screen are planned to make that painless.</p></div>
+    </div>
+    <p class="note">One honest note: Blockworld is its own game with its own netcode, so players of the real Minecraft can't join. Friends just install Blockworld and play together here.</p>
+  </section>
+
+  <section class="page">
+    <h2 class="sec">Phones and tablets</h2>
+    <p class="note">Planned, like Skibidi Strike: a browser build with touch controls so nobody needs a computer to play. It comes after the PC version is solid; the world is heavy to render, so older phones may need reduced settings.</p>
+  </section>
+
+  <section class="page">
+    <h2 class="sec">Runs on</h2>
+    <p class="note">Targets, not final numbers: they land with the first test build. The game is designed for low-end machines first.</p>
+    <div class="speclist">
+      <div><b>Windows 10</b> <span>64-bit</span></div>
+      <div><b>CPU</b> <span>any dual-core from the last ~8 years</span></div>
+      <div><b>RAM</b> <span>4 GB</span></div>
+      <div><b>Graphics</b> <span>integrated is fine, no graphics card needed</span></div>
+      <div><b>Storage</b> <span>about 1 GB</span></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>TTVM Studios &middot; fan-made and original games</p>
+  <p class="fine">Blockworld is an original game by Ttvm Studios. It is not affiliated with Mojang or Microsoft.</p>
+</footer>
+
+<script src="../../js/auth-config.js?v=2"></script>
+<script src="../../js/acct.js?v=9"></script>
+<script src="../../js/announce.js?v=3" defer></script>
+</body>
+</html>

@@ -5,6 +5,17 @@
    art: "ss" is the drawn preview below; leave it out and the card gets a plain one. */
 var GAMES = [
   {
+    name: "Blockworld",
+    slug: "blockworld",
+    url: "blockworld/",
+    tags: ["NEW"],
+    blurb: "Ttvm Studios' own block-building world game: infinite terrain, caves, building, and online co-op multiplayer on the way. In development.",
+    added: "2026-11-01",
+    updated: "2026-11-01",
+    art: "bw",
+    cta: "Peek"
+  },
+  {
     name: "Skibidi Strike",
     slug: "skibidi-strike",
     url: "../",
@@ -32,6 +43,7 @@ var GAMES = [
     return MONTHS[+p[1] - 1] + " " + (+p[2]) + ", " + p[0];
   }
   function art(g){
+    if(g.art === "bw") return '<div class="art art-bw" aria-hidden="true"><span class="bw-ground"></span><span class="bw-cubes"><i></i><i></i><i></i></span><b class="bw-logo">BLOCK<em>WORLD</em></b></div>';
     if(g.art === "ss") return '<div class="art art-ss" aria-hidden="true"><span class="ss-glow"></span><span class="ss-city"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="ss-smoke"></span><b class="ss-logo">SKIBIDI <em>STRIKE</em></b></div>';
     var ini = String(g.name || "?").split(/\s+/).map(function(w){ return w.charAt(0); }).join("").slice(0, 2).toUpperCase();
     return '<div class="art art-plain" aria-hidden="true"><b>' + esc(ini) + '</b></div>';
