@@ -542,7 +542,7 @@ var FEAT = {
   "far-lod":{on:function(){
     var host = d.getElementById("progress"); if(!host || !d.body.hasAttribute("data-game-title")) return null;
     var sec = d.createElement("section"); sec.className = "panel xp-lod"; sec.id = "xpLod";
-    sec.innerHTML = '<h2>Far terrain (LOD) <span class="xp-pill">EXPERIMENTAL</span></h2><p>Like the Distant Horizons mod: chunks near you are full detail, far ones are drawn as cheap low-detail blocks, so you see way further for almost no FPS. Drag the sliders.</p>' +
+    sec.innerHTML = '<span class="xp-pill">EXPERIMENTAL</span><h2>Far terrain</h2><p>Like the Distant Horizons mod: chunks near you are full detail, far ones are drawn as cheap low-detail blocks, so you see way further for almost no FPS. Drag the sliders.</p>' +
       '<div class="xp-lodrow"><canvas width="320" height="320" aria-label="Top-down view of loaded chunks"></canvas><div class="xp-lodctl">' +
       '<label>Full-detail distance <b data-o="a">8</b> chunks<input type="range" min="2" max="32" value="8" data-i="a"></label>' +
       '<label>Far LOD distance <b data-o="b">48</b> chunks<input type="range" min="0" max="128" value="48" data-i="b"></label>' +

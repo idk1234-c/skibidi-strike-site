@@ -7,7 +7,7 @@
       "game": "skibidi",
       "status": "testing",
       "where": "play/",
-      "description": "An on-screen move stick plus JUMP, RELOAD and FIRE buttons on the Play page, for phones and tablets. The buttons send the same keys as a keyboard; the game itself still has to listen for them."
+      "description": "Big on-screen controls on the Play page: a move stick plus JUMP, RELOAD and FIRE. This is the website preview; the game's own touch controls come with the next Web build."
     },
     {
       "id": "music-tab",
