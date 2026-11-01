@@ -2,12 +2,14 @@
    ADD A GAME: add one entry to GAMES below. The page sorts them newest first by "added",
    so a new game shows up on top on its own.
    Tags you can use (each has its own colour): "NEW", "ALPHA / BETA TEST", "FULLY PUBLISHED", "RECENTLY UPDATED".
-   art: "ss" is the drawn preview below; leave it out and the card gets a plain one. */
+   art: "ss" is the drawn preview below; leave it out and the card gets a plain one.
+   version: the game's own version (Skibidi Strike is pre-release, 0.5.x); shown before the dates. */
 var GAMES = [
   {
     name: "Skibidi Strike",
     slug: "skibidi-strike",
     url: "../",
+    version: "0.5.0",
     tags: ["ALPHA / BETA TEST", "RECENTLY UPDATED"],
     blurb: "90 waves of skibidis in a destroyed city, with the Astro UFO every fifth wave. Play free in your browser.",
     added: "2026-10-25",
@@ -40,7 +42,7 @@ var GAMES = [
     var tags = (g.tags || []).map(function(t){
       return '<span class="tag ' + (TAGS[t] || "t-other") + '">' + esc(t) + '</span>';
     }).join("");
-    var meta = "Added " + day(g.added);
+    var meta = (g.version ? "v" + esc(g.version) + " &middot; " : "") + "Added " + day(g.added);
     if(g.updated && g.updated !== g.added) meta += " &middot; Updated " + day(g.updated);
     return '<li><a class="game" href="' + esc(g.url) + '" id="g-' + esc(g.slug) + '">' + art(g) +
       '<div class="gb"><div class="tags">' + tags + '</div>' +

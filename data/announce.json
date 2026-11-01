@@ -1,16 +1,16 @@
 {
   "_about": "The scrolling news strip across the top of every page. Add one entry to items per line: tag is BIG UPDATE, UPDATE, NEW GAME, IN PROGRESS, COMING SOON or EVENT. They scroll one after another. Set active to false to hide the whole strip (or \"active\": false on one item to hide just that one). When any item changes it shows again for people who closed it. Owners, moderators and devs can also edit it from the Dev hub. \"text\" is the same lines in one string for older pages.",
-  "id": "2026-11-01-site",
+  "id": "2026-11-01-v1.7",
   "active": true,
   "items": [
     {
       "tag": "BIG UPDATE",
-      "text": "Google sign-in is live · Profiles use your Google name + photo · Site locked down for guests"
+      "text": "Site v1.7 · Google sign-in is live · Profiles use your Google name + photo · Site locked down for guests"
     },
     {
       "tag": "IN PROGRESS",
-      "text": "Skibidi Strike — Beta"
+      "text": "Skibidi Strike v0.5 — Alpha / Beta"
     }
   ],
-  "text": "BIG UPDATE: Google sign-in is live · Profiles use your Google name + photo · Site locked down for guests  ·  IN PROGRESS: Skibidi Strike — Beta"
+  "text": "BIG UPDATE: Site v1.7 · Google sign-in is live · Profiles use your Google name + photo · Site locked down for guests  ·  IN PROGRESS: Skibidi Strike v0.5 — Alpha / Beta"
 }

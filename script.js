@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function(){
   renderGroup("nextList", getNext());
   if(window.SS) SS.applySite();
   var bl = document.getElementById("buildLine");
-  if(bl) bl.textContent = "BUILD " + SS_BUILD;
+  if(bl) bl.textContent = "SITE " + SS_BUILD + " \u00b7 SKIBIDI STRIKE v" + SS_GAME_VERSION;
   var links = document.querySelectorAll("nav .links a");
   for(var i=0;i<links.length;i++){
     links[i].addEventListener("click", function(ev){
@@ -275,7 +275,9 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.18 \u00b7 OCT 31 2026";
+// The website is v1.7 (the fully released thing). The game is pre-release: Skibidi Strike 0.5.x.
+var SS_BUILD = "v1.7 \u00b7 NOV 1 2026";
+var SS_GAME_VERSION = "0.5.0";
 
 // ---- page-view navigation ----
 function showPage(id){
