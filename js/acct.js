@@ -374,7 +374,10 @@ function menuHtml(){
   h += '<a role="menuitem" href="' + link("games/") + '">TTVM Studios Games</a>';
   h += '<a role="menuitem" href="' + link("devhub/") + '">Dev <small>chats \u00b7 community \u00b7 credits</small></a>';
   if(RANK[r] >= 2 && !R) h += '<a role="menuitem" href="' + link("devhub/panel.html") + '">' + (r === "owner" ? "Owner panel" : r === "mod" ? "Moderator panel" : "Dev panel") + '</a>';
-  if(RANK[rr] >= 2 && !R) h += '<a role="menuitem" href="' + link("devhub/experiments.html") + '">Experiments</a>';
+  if(RANK[rr] >= 2 && !R){
+    var xs = expState().on;
+    h += '<div class="acct-mode acct-xp"><span>Test mode</span><button type="button" data-xp class="' + (xs ? "on" : "") + '" aria-pressed="' + (!!xs) + '">' + (xs ? "On" : "Off") + '</button><a href="' + link("devhub/experiments.html") + '">Experiments</a></div>';
+  }
   if(rr === "owner" && !R){
     h += '<div class="acct-mode" role="group" aria-label="Mode"><span>Mode</span><button type="button" data-mode="owner" class="' + (S.mode === "owner" ? "on" : "") + '">Owner</button><button type="button" data-mode="dev" class="' + (S.mode === "dev" ? "on" : "") + '">Dev</button></div>';
   }
@@ -396,12 +399,14 @@ function render(){
     });
     mm.addEventListener("click", function(ev){ ev.stopPropagation(); });
     Array.prototype.forEach.call(mm.querySelectorAll("[data-mode]"), function(x){ x.addEventListener("click", function(){ setMode(x.getAttribute("data-mode")); toast(x.getAttribute("data-mode") === "dev" ? "Dev mode on" : "Owner mode on"); }); });
+    var xb = mm.querySelector("[data-xp]"); if(xb) xb.addEventListener("click", function(){ var v = !expState().on; expSet({on:v}); toast(v ? "Experimental mode on" : "Experimental mode off"); });
     var so = mm.querySelector("[data-signout]"); if(so) so.addEventListener("click", signOut);
   });
   d.documentElement.classList.toggle("ttvm-restricted", !!S.restricted);
   d.documentElement.setAttribute("data-ttvm-role", S.restricted ? "restricted" : S.role);
   notice();
   previewPill();
+  applyExperiments();
 }
 d.addEventListener("click", closeMenus);
 d.addEventListener("keydown", function(e){ if(e.key === "Escape") closeMenus(); });
@@ -485,6 +490,105 @@ function toast(msg, href){
   t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove("on"); setTimeout(function(){ t.remove(); }, 400); }, 4200);
 }
 
+
+// ---------- Test / Experimental mode (owner, moderators and devs) ----------
+var EXPK = "ttvm_exp", expApplied = {}, expList = null;
+function expState(){ var s = get(EXPK) || {}; s.off = s.off || {}; return s; }
+function expAllowed(){ return S.loaded && RANK[S.realRole] >= 2 && !S.restricted; }
+function expOn(id){ var s = expState(); return expAllowed() && !!s.on && !s.off[id]; }
+function expSet(patch){ var s = expState(); if("on" in patch) s.on = !!patch.on; if(patch.id) { if(patch.value) delete s.off[patch.id]; else s.off[patch.id] = 1; } put(EXPK, s); emit(); }
+function experiments(){
+  if(!expList) expList = fetch(ROOT + "data/experiments.json?t=" + now(), {cache:"no-store"}).then(function(r){ return r.ok ? r.json() : {experiments:[]}; }).catch(function(){ return {experiments:[]}; })
+    .then(function(o){ return (o && o.experiments) || []; });
+  return expList;
+}
+var FEAT = {
+  "touch-controls":{on:function(){
+    var cv = d.getElementById("unity-canvas"); if(!cv) return null;
+    var box = d.createElement("div"); box.className = "xp-touch";
+    box.innerHTML = '<div class="xp-stick" aria-label="Move"><i></i></div><div class="xp-btns"><button type="button" data-k="Space" data-key=" ">JUMP</button><button type="button" data-k="KeyR" data-key="r">RELOAD</button><button type="button" data-shoot class="xp-fire">FIRE</button></div><span class="xp-tag">Experimental controls</span>';
+    cv.parentNode.appendChild(box);
+    function key(type, code, k){ var e = new KeyboardEvent(type, {code:code, key:k, bubbles:true}); cv.dispatchEvent(e); d.dispatchEvent(e); }
+    Array.prototype.forEach.call(box.querySelectorAll("[data-k]"), function(b){
+      b.addEventListener("pointerdown", function(e){ e.preventDefault(); key("keydown", b.getAttribute("data-k"), b.getAttribute("data-key")); });
+      b.addEventListener("pointerup", function(){ key("keyup", b.getAttribute("data-k"), b.getAttribute("data-key")); });
+    });
+    var fire = box.querySelector("[data-shoot]");
+    fire.addEventListener("pointerdown", function(e){ e.preventDefault(); cv.dispatchEvent(new MouseEvent("mousedown", {bubbles:true, button:0})); });
+    fire.addEventListener("pointerup", function(){ cv.dispatchEvent(new MouseEvent("mouseup", {bubbles:true, button:0})); });
+    var st = box.querySelector(".xp-stick"), knob = st.firstChild, held = {};
+    function setDir(dx, dy){
+      var want = {KeyW:dy < -0.35, KeyS:dy > 0.35, KeyA:dx < -0.35, KeyD:dx > 0.35}, keys = {KeyW:"w", KeyS:"s", KeyA:"a", KeyD:"d"};
+      Object.keys(want).forEach(function(c){ if(want[c] && !held[c]){ held[c] = 1; key("keydown", c, keys[c]); } else if(!want[c] && held[c]){ delete held[c]; key("keyup", c, keys[c]); } });
+      knob.style.transform = "translate(" + (dx * 28) + "px," + (dy * 28) + "px)";
+    }
+    st.addEventListener("pointerdown", function(e){ st.setPointerCapture(e.pointerId); move(e); });
+    st.addEventListener("pointermove", function(e){ if(e.buttons || e.pointerType === "touch") move(e); });
+    st.addEventListener("pointerup", function(){ setDir(0, 0); });
+    function move(e){ var r = st.getBoundingClientRect(), x = (e.clientX - r.left - r.width / 2) / (r.width / 2), y = (e.clientY - r.top - r.height / 2) / (r.height / 2), m = Math.max(1, Math.hypot(x, y)); setDir(x / m, y / m); }
+    return box;
+  }},
+  "music-tab":{on:function(){
+    var b = d.createElement("div"); b.className = "xp-music";
+    b.innerHTML = '<button type="button" class="xp-mbtn" aria-expanded="false">&#9835; Music</button><div class="xp-mpanel" hidden><b>Soundtrack</b><ol></ol><p class="acct-small">Preview of the Music tab. Tracks open on their creator\'s page.</p></div>';
+    d.body.appendChild(b);
+    var btn = b.querySelector("button"), pn = b.querySelector(".xp-mpanel");
+    btn.onclick = function(){ pn.hidden = !pn.hidden; btn.setAttribute("aria-expanded", String(!pn.hidden)); };
+    fetch(ROOT + "data/music.json").then(function(r){ return r.json(); }).then(function(m){
+      b.querySelector("ol").innerHTML = (m.tracks || []).map(function(t){ return '<li><a href="' + esc(t.url) + '" target="_blank" rel="noopener">' + esc(t.name) + '</a><span>' + esc(t.by) + ' \u00b7 ' + esc(t.game) + '</span></li>'; }).join("");
+    }).catch(function(){});
+    return b;
+  }},
+  "far-lod":{on:function(){
+    var host = d.getElementById("progress"); if(!host || !d.body.hasAttribute("data-game-title")) return null;
+    var sec = d.createElement("section"); sec.className = "panel xp-lod"; sec.id = "xpLod";
+    sec.innerHTML = '<h2>Far terrain (LOD) <span class="xp-pill">EXPERIMENTAL</span></h2><p>Like the Distant Horizons mod: chunks near you are full detail, far ones are drawn as cheap low-detail blocks, so you see way further for almost no FPS. Drag the sliders.</p>' +
+      '<div class="xp-lodrow"><canvas width="320" height="320" aria-label="Top-down view of loaded chunks"></canvas><div class="xp-lodctl">' +
+      '<label>Full-detail distance <b data-o="a">8</b> chunks<input type="range" min="2" max="32" value="8" data-i="a"></label>' +
+      '<label>Far LOD distance <b data-o="b">48</b> chunks<input type="range" min="0" max="128" value="48" data-i="b"></label>' +
+      '<ul><li>Full-detail chunks: <b data-o="fa"></b></li><li>LOD chunks: <b data-o="fb"></b></li><li>Drawing cost vs. all full detail: <b data-o="fc"></b></li></ul></div></div>';
+    host.parentNode.insertBefore(sec, host.nextSibling);
+    var cv = sec.querySelector("canvas"), g = cv.getContext("2d");
+    function q(s){ return sec.querySelector(s); }
+    function draw(){
+      var a = +q('[data-i=a]').value, bb = Math.max(a, +q('[data-i=b]').value), R = bb + 1, cell = cv.width / (2 * R + 1);
+      q('[data-o=a]').textContent = a; q('[data-o=b]').textContent = bb;
+      g.fillStyle = "#121212"; g.fillRect(0, 0, cv.width, cv.height);
+      var full = 0, lod = 0;
+      for(var x = -R; x <= R; x++) for(var z = -R; z <= R; z++){
+        var dd = Math.hypot(x, z), c = null;
+        if(dd <= a){ c = "#6aa83e"; full++; } else if(dd <= bb){ c = (dd <= (a + bb) / 2) ? "#3f6b27" : "#2c4a1c"; lod++; }
+        if(c){ g.fillStyle = c; g.fillRect((x + R) * cell, (z + R) * cell, Math.max(1, cell - (cell > 4 ? 1 : 0)), Math.max(1, cell - (cell > 4 ? 1 : 0))); }
+      }
+      g.fillStyle = "#ffd84a"; g.fillRect(R * cell, R * cell, Math.max(2, cell), Math.max(2, cell));
+      var allFull = full + lod, cost = full + lod * 0.06;
+      q('[data-o=fa]').textContent = full.toLocaleString(); q('[data-o=fb]').textContent = lod.toLocaleString();
+      q('[data-o=fc]').textContent = allFull ? Math.max(1, Math.round(cost / allFull * 100)) + "%" : "100%";
+    }
+    Array.prototype.forEach.call(sec.querySelectorAll("input"), function(i){ i.oninput = draw; });
+    draw();
+    return sec;
+  }},
+  "bw-daynight":{on:function(){
+    if(!d.body.hasAttribute("data-game-title")) return null;
+    d.body.classList.add("xp-daynight");
+    return {remove:function(){ d.body.classList.remove("xp-daynight"); }};
+  }}
+};
+function applyExperiments(){
+  var on = expAllowed() && expState().on;
+  d.documentElement.classList.toggle("ttvm-exp", !!on);
+  var bar = d.getElementById("xpBar");
+  if(on && !bar){ bar = d.createElement("a"); bar.id = "xpBar"; bar.className = "xp-bar"; bar.href = link("devhub/experiments.html"); bar.innerHTML = "EXPERIMENTAL <span>mode on</span>"; d.body.appendChild(bar); }
+  if(!on && bar) bar.remove();
+  Object.keys(FEAT).forEach(function(id){
+    var want = expOn(id);
+    if(want && !expApplied[id]){ try { expApplied[id] = FEAT[id].on() || null; } catch(e){ console.error(e); } if(!expApplied[id]) expApplied[id] = false; }
+    else if(!want && expApplied[id]){ try { expApplied[id].remove(); } catch(e){} delete expApplied[id]; }
+    else if(!want && expApplied[id] === false) delete expApplied[id];
+  });
+}
+
 // ---------- start ----------
 w.TTVM = {
   ROOT:ROOT, READY:READY, RANK:RANK, ROLE_NAME:ROLE_NAME, BANNERS:BANNERS, state:S,
@@ -495,7 +599,8 @@ w.TTVM = {
   profileOf:profileOf, localProfile:localProfile, saveLocalProfile:function(p){ if(S.h){ put(K.local + S.h, p); emit(); } },
   me:me, avatar:avatar, bannerStyle:bannerStyle, subline:subline, roleTag:roleTag, esc:esc, when:when, until:until, ms:ms, iso:iso, hue:hue,
   blockHtml:blockHtml, warnItem:warnItem, toast:toast, modal:modal, gate:gateFn, link:link,
-  localSeen:function(){ return get(K.seen) || {}; }
+  localSeen:function(){ return get(K.seen) || {}; },
+  exp:{state:expState, set:expSet, on:expOn, allowed:expAllowed, list:experiments}
 };
 function boot(){ render(); interceptPlay(); refresh(); }
 if(d.readyState === "loading") d.addEventListener("DOMContentLoaded", boot); else boot();

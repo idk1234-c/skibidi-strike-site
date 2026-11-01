@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Experiments — TTVM Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../acct.css?v=2">
+<meta name="robots" content="noindex,nofollow">
+</head>
+<body class="ac-page" data-page="experiments">
+<header class="ac-bar">
+  <div class="acct" data-acct><a class="acct-chip is-guest" href="../profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
+  <a class="ac-logo" href="../">SKIBIDI <span>STRIKE</span></a>
+  <nav class="ac-links" aria-label="Main"><a href="../games/">Games</a><a href="../devhub/" aria-current="page">Dev</a><a href="../">Site</a></nav>
+</header>
+<main class="ac-main">
+  <p><a class="acct-small" href="./" style="color:#9a9ba8">&larr; Dev</a></p>
+  <h1 class="ac-h1">Experi<span>ments</span></h1>
+  <p class="ac-lead">Try features before they launch. Turn on Test mode, then switch each feature on or off. Only you see them, on this device.</p>
+  <div id="xpRoot"><p class="pf-empty">Loading...</p></div>
+</main>
+<footer class="ac-foot">TTVM Studios &middot; <a href="../games/">Games</a> &middot; <a href="../devhub/">Dev</a> &middot; <a href="../">Skibidi Strike</a></footer>
+<script src="../js/auth-config.js?v=1"></script>
+<script src="../js/acct.js?v=2"></script>
+<script>
+(function(){
+  var T = TTVM, esc = T.esc, root = document.getElementById("xpRoot");
+  var GAMES = {site:"The site", skibidi:"Skibidi Strike", blockworld:"Blockworld"};
+  var ST = {idea:"Idea", building:"Being built", testing:"Testing"};
+  function preview(x){
+    if(x.id === "touch-controls") return '<div class="xp-prev xp-prev-touch"><i class="s"></i><i class="b b1"></i><i class="b b2"></i><i class="b b3"></i></div>';
+    if(x.id === "music-tab") return '<div class="xp-prev xp-prev-music"><span>&#9835; Music</span><i></i><i></i><i></i></div>';
+    if(x.id === "far-lod") return '<div class="xp-prev xp-prev-lod"><i class="r3"></i><i class="r2"></i><i class="r1"></i><i class="me"></i></div>';
+    if(x.id === "bw-daynight") return '<div class="xp-prev xp-prev-sky"><i></i></div>';
+    return '<div class="xp-prev"></div>';
+  }
+  function draw(list){
+    var S = T.state;
+    if(S.restricted){ root.innerHTML = '<div class="ac-card">' + T.blockHtml("try experiments") + '</div>'; return; }
+    if(!T.exp.allowed()){
+      root.innerHTML = '<div class="ac-card"><h2 class="ac-h2">For the studio team</h2><p>Experiments are for the owner, moderators and devs.' + (T.READY ? '' : ' Google sign-in is coming soon; until then you can <a href="?demo=dev" style="color:#ff6b5e">preview this page as a dev</a>.') + '</p></div>' + listHtml(list, false);
+      return;
+    }
+    var st = T.exp.state();
+    root.innerHTML = '<div class="ac-card xp-master"><div><h2 class="ac-h2" style="margin:0">Test / Experimental mode</h2><p class="acct-small">' + (st.on ? 'On. An EXPERIMENTAL tag shows at the bottom of every page.' : 'Off. Everything looks normal.') + '</p></div>' +
+      '<button type="button" class="xp-sw' + (st.on ? ' on' : '') + '" id="xpMaster" role="switch" aria-checked="' + !!st.on + '" aria-label="Test mode"><i></i></button></div>' + listHtml(list, true);
+    document.getElementById("xpMaster").onclick = function(){ T.exp.set({on:!T.exp.state().on}); };
+    Array.prototype.forEach.call(root.querySelectorAll("[data-x]"), function(b){ b.onclick = function(){ var id = b.getAttribute("data-x"); T.exp.set({id:id, value:!!T.exp.state().off[id]}); }; });
+  }
+  function listHtml(list, live){
+    var st = T.exp.state();
+    return ["site", "skibidi", "blockworld"].map(function(g){
+      var xs = list.filter(function(x){ return x.game === g; }); if(!xs.length) return "";
+      return '<h2 class="ac-h2 xp-gh xp-g-' + g + '">' + GAMES[g] + '</h2><div class="xp-grid">' + xs.map(function(x){
+        var on = live && st.on && !st.off[x.id], enabled = live && !st.off[x.id];
+        return '<article class="ac-card xp-card' + (on ? ' is-on' : '') + '">' + preview(x) + '<div class="xp-ct"><div class="ac-row" style="justify-content:space-between;flex-wrap:nowrap"><h3>' + esc(x.name) + '</h3>' +
+          (live ? '<button type="button" class="xp-sw sm' + (enabled ? ' on' : '') + '" data-x="' + esc(x.id) + '" role="switch" aria-checked="' + enabled + '" aria-label="' + esc(x.name) + '"' + (st.on ? '' : ' disabled') + '><i></i></button>' : '') + '</div>' +
+          '<span class="xp-st xp-st-' + esc(x.status) + '">' + esc(ST[x.status] || x.status) + '</span><p>' + esc(x.description) + '</p>' +
+          (on && x.where !== undefined ? '<a class="acct-btn ghost sm" href="../' + esc(x.where) + '">Try it &rarr;</a>' : '') + '</div></article>';
+      }).join("") + '</div>';
+    }).join("");
+  }
+  var list = null;
+  T.exp.list().then(function(l){ list = l; draw(l); });
+  T.on(function(){ if(list) draw(list); });
+})();
+</script>
+</body>
+</html>
