@@ -7,11 +7,13 @@
 <title>Dev mode — Skibidi Strike</title>
 <link rel="stylesheet" href="style.css?v=18">
 <link rel="stylesheet" href="dev.css?v=2">
+<link rel="stylesheet" href="acct.css?v=1">
 </head>
 <body class="dv-body">
 
 <header class="dv-top">
   <a class="dv-back" href="index.html" aria-label="Back to the site">&larr; <span>Site</span></a>
+  <div class="acct" data-acct><a class="acct-chip is-guest" href="profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
   <div class="logo">SKIBIDI <span>STRIKE</span></div>
   <span class="dv-badge" id="dvBadge" hidden></span>
 </header>
@@ -47,6 +49,8 @@
 <div class="dv-toast" id="dvToast" role="status" aria-live="polite"></div>
 
 <script src="ss-core.js?v=4"></script>
+<script src="js/auth-config.js?v=1"></script>
+<script src="js/acct.js?v=1"></script>
 <script src="voice-clean.js?v=1"></script>
 <script src="script.js?v=19"></script>
 <script src="dev.js?v=3"></script>
