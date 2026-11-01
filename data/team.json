@@ -1,0 +1,26 @@
+{
+  "_about": "The studio team shown in the Team section of the site. This list is for display; site permissions come only from data/roles.json.",
+  "team": [
+    {
+      "name": "Amos",
+      "role": "owner",
+      "label": "Owner",
+      "studio": "TTVM Studios",
+      "initials": "A"
+    },
+    {
+      "name": "Titan TV Man",
+      "role": "mod",
+      "label": "Moderator",
+      "studio": "Game code",
+      "initials": "TV"
+    },
+    {
+      "name": "UTCM Studios",
+      "role": "mod",
+      "label": "Moderator",
+      "studio": "Website + code",
+      "initials": "UT"
+    }
+  ]
+}

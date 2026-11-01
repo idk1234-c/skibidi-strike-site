@@ -23,6 +23,20 @@ var K = {session:"ttvm_session", mode:"ttvm_mode", seen:"ttvm_seen", warnSeen:"t
 
 var RANK = {guest:0, user:1, dev:2, mod:3, owner:4};
 var ROLE_NAME = {guest:"Guest", user:"Member", dev:"Dev", mod:"Moderator", owner:"Owner"};
+// The owner's own two Google accounts (email fingerprints, the same ones as in data/roles.json).
+// These are ALWAYS owner and can never be warned, paused, kicked, restricted or banned, whatever
+// data/roles.json or data/moderation.json say, even if someone edits those files by hand.
+// The one owner-only extra is a "Copyright notice" (data/notices.json): a warning card, never a restriction.
+var OWNER_LOCK = ["84b8ba22b22d0eb7c6c62beabf9088f975efc8543a2a4c171f274afc3a478d11", "ed5ea1fa489217fd448743f8187fc26dbe53dd1717f3550a99dcbea26b3f5da7"];
+var lastRoles = null;
+function isLockedOwner(h){ return !!h && OWNER_LOCK.indexOf(h) >= 0; }
+// any owner (locked or in data/roles.json) is protected from moderation
+function isProtected(h, roles){
+  if(!h) return false;
+  if(isLockedOwner(h)) return true;
+  roles = roles || lastRoles;
+  return !!(roles && Array.isArray(roles.owners) && roles.owners.some(function(x){ return x && x.h === h; }));
+}
 var BANNERS = ["#000000","#1b1b22","#3a0d0b","#ff3324","#ffd933","#0f2a44","#123d1c","#2c1440","#4d596b"];
 
 // ---------- small helpers ----------
@@ -67,12 +81,16 @@ var cache = {};
 function blank(name){
   if(name === "roles") return {owners:[], mods:[], devs:[]};
   if(name === "community") return {posts:[]};
+  if(name === "announce") return {id:"", text:"", active:false};
+  if(name === "team") return {team:[]};
   return {people:{}};
 }
 function norm(name, o){
   o = (o && typeof o === "object") ? o : blank(name);
   if(name === "roles"){ ["owners","mods","devs"].forEach(function(k){ if(!Array.isArray(o[k])) o[k] = []; }); }
   else if(name === "community"){ if(!Array.isArray(o.posts)) o.posts = []; }
+  else if(name === "announce"){ o.id = String(o.id || ""); o.text = String(o.text || ""); o.active = o.active === true; }
+  else if(name === "team"){ if(!Array.isArray(o.team)) o.team = []; }
   else if(!o.people || typeof o.people !== "object") o.people = {};
   return o;
 }
@@ -81,7 +99,7 @@ function data(name, fresh){
   var p = fetch(ROOT + "data/" + name + ".json?t=" + now(), {cache:"no-store"})
     .then(function(r){ return r.ok ? r.json() : blank(name); })
     .catch(function(){ return blank(name); })
-    .then(function(o){ return norm(name, o); });
+    .then(function(o){ o = norm(name, o); if(name === "roles") lastRoles = o; return o; });
   cache[name] = p;
   return p;
 }
@@ -213,15 +231,17 @@ function loadSession(){
 }
 function roleOf(h, roles){
   if(!h) return "guest";
+  if(isLockedOwner(h)) return "owner";
   function has(list){ return list.some(function(x){ return x && x.h === h; }); }
   if(has(roles.owners)) return "owner";
   if(has(roles.mods)) return "mod";
   if(has(roles.devs)) return "dev";
   return "user";
 }
-function activeWarnings(p){ return ((p && p.warnings) || []).filter(function(x){ return !x.cleared; }); }
-function restriction(p){
-  if(!p) return null;
+// pass h whenever you have it: owners never have warnings or restrictions, whatever the file says
+function activeWarnings(p, h){ if(h && isProtected(h)) return []; return ((p && p.warnings) || []).filter(function(x){ return !x.cleared; }); }
+function restriction(p, h){
+  if(!p || (h && isProtected(h))) return null;
   var t = now(), b = p.ban, pa = p.paused;
   if(b && (b.type === "perm" || b.type === "warnban" || (b.type === "temp" && ms(b.until) > t)))
     return {kind:b.type === "perm" ? "cut" : "ban", until:b.type === "temp" ? b.until : null, reason:b.reason || "", by:b.by || "", date:b.date, pendingOwner:!!b.pendingOwner};
@@ -236,7 +256,10 @@ function refresh(){
     var need = sess ? Promise.all([data("roles"), data("moderation")]) : Promise.resolve([blank("roles"), blank("moderation")]);
     return need.then(function(r){
       var roles = r[0], mod = r[1];
-      S.person = S.h ? (mod.people[S.h] || null) : null;
+      lastRoles = roles;
+      // owners are never moderated: their moderation entry (if anyone wrote one) is ignored completely
+      S.prot = isProtected(S.h, roles);
+      S.person = (S.h && !S.prot) ? (mod.people[S.h] || null) : null;
       // a kick signs the person out once
       if(sess && S.person && S.person.kickAt && ms(S.person.kickAt) > (sess.at || 0)){
         put(K.session, null); S.session = null; S.h = null; S.person = null;
@@ -245,9 +268,9 @@ function refresh(){
       S.realRole = roleOf(S.h, roles);
       S.mode = (get(K.mode) === "dev") ? "dev" : "owner";
       S.role = (S.realRole === "owner" && S.mode === "dev") ? "dev" : S.realRole;
-      S.restricted = S.h ? restriction(S.person) : null;
+      S.restricted = (S.h && !S.prot) ? restriction(S.person, S.h) : null;
       if(S.restricted) put(K.restrict, {h:S.h, kind:S.restricted.kind, until:S.restricted.until, reason:S.restricted.reason}); else if(S.h) put(K.restrict, null);
-      S.warnings = activeWarnings(S.person);
+      S.warnings = S.prot ? [] : activeWarnings(S.person, S.h);
       S.loaded = true;
       seen();
       emit();
@@ -594,6 +617,44 @@ function applyExperiments(){
   });
 }
 
+
+// ---------- the studio team (data/team.json, display only: no sign-in, no permissions) ----------
+var TM_ICON = {
+  owner:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18l-1.6-9.5-4.6 3.6L12 5l-2.8 7.1-4.6-3.6z"/></svg>',
+  mod:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l8 3v6.2c0 4.7-3.3 8.4-8 9.8-4.7-1.4-8-5.1-8-9.8V5.5z"/><path d="M8.6 12.2l2.4 2.4 4.6-4.8" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+function teamHtml(list){
+  list = (list || []).filter(function(m){ return m && m.name; });
+  if(!list.length) return "";
+  return '<ul class="tm-list">' + list.map(function(m){
+    var r = m.role === "owner" ? "owner" : "mod", label = m.label || (r === "owner" ? "Owner" : "Moderator");
+    return '<li class="tm-card r-' + r + '"><span class="tm-av" style="--h:' + hue(m.name) + '" aria-hidden="true">' + esc(m.initials || initials(m.name)) + '<i class="tm-ico">' + TM_ICON[r] + '</i></span>' +
+      '<span class="tm-txt"><b class="tm-name">' + esc(m.name) + '</b><span class="tm-row"><i class="tm-badge r-' + r + '">' + esc(label) + '</i>' +
+      (m.studio ? '<span class="tm-sub">' + esc(m.studio) + '</span>' : "") + '</span></span></li>';
+  }).join("") + '</ul>';
+}
+function fillTeam(){
+  var els = d.querySelectorAll("[data-ttvm-team]");
+  if(!els.length) return;
+  data("team").then(function(doc){
+    var html = teamHtml(doc.team) || '<p class="pf-empty">Team list coming soon.</p>';
+    Array.prototype.forEach.call(els, function(el){ el.innerHTML = html; });
+  });
+}
+
+// ---------- copyright notices (data/notices.json): owner-only, a warning card, never a restriction ----------
+function activeNotices(doc, h){
+  var p = doc && doc.people && h ? doc.people[h] : null;
+  return ((p && p.notices) || []).filter(function(n){ return n && !n.cleared && n.type === "copyright"; });
+}
+function copyrightHtml(n){
+  return '<section class="cr-card" role="alert" aria-label="Copyright notice"><div class="cr-tape" aria-hidden="true"></div>' +
+    '<div class="cr-body"><span class="cr-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.8L22.5 21H1.5z"/><path d="M12 9v5.2M12 17.2v.1" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"/></svg></span>' +
+    '<div class="cr-txt"><h2 class="cr-h">Copyright notice: ' + esc(n.title || "Untitled") + '</h2>' +
+    (n.details ? '<p class="cr-d">' + esc(n.details) + '</p>' : "") +
+    '<p class="cr-meta">Posted ' + esc(when(n.date)) + ' \u00b7 A notice only. It doesn\'t restrict this account.</p></div></div></section>';
+}
+
 // ---------- start ----------
 w.TTVM = {
   ROOT:ROOT, READY:READY, RANK:RANK, ROLE_NAME:ROLE_NAME, BANNERS:BANNERS, state:S,
@@ -606,8 +667,10 @@ w.TTVM = {
   allowed:allowed, locked:function(){ return lockState !== "open"; }, lockHtml:lockHtml,
   blockHtml:blockHtml, warnItem:warnItem, toast:toast, modal:modal, gate:gateFn, link:link,
   localSeen:function(){ return get(K.seen) || {}; },
-  exp:{state:expState, set:expSet, on:expOn, allowed:expAllowed, list:experiments}
+  exp:{state:expState, set:expSet, on:expOn, allowed:expAllowed, list:experiments},
+  isProtected:isProtected, isLockedOwner:isLockedOwner, teamHtml:teamHtml, fillTeam:fillTeam,
+  activeNotices:activeNotices, copyrightHtml:copyrightHtml, initials:initials
 };
-function boot(){ render(); interceptPlay(); refresh(); }
+function boot(){ render(); interceptPlay(); refresh(); fillTeam(); }
 if(d.readyState === "loading") d.addEventListener("DOMContentLoaded", boot); else boot();
 })(window, document);

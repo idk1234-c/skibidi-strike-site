@@ -27,6 +27,37 @@ function hub(S){
     r === "mod" ? "Warn, pause, kick and ban members and devs." : r === "dev" ? "Help and the tools devs can use." : "For the studio team: owner, moderators and devs.";
   $("dhMode").innerHTML = S.realRole === "owner" && !R ? 'You\'re in <b>' + (S.mode === "dev" ? "Dev" : "Owner") + ' mode</b>. <button type="button" class="acct-btn ghost sm" id="dhSwap">Switch to ' + (S.mode === "dev" ? "Owner" : "Dev") + ' mode</button>' : "";
   var sw = $("dhSwap"); if(sw) sw.onclick = function(){ T.setMode(S.mode === "dev" ? "owner" : "dev"); };
+  announceEditor(S);
+}
+// ---------- update banner (data/announce.json): owners, moderators and devs can set it here ----------
+function announceEditor(S){
+  var box = $("dhAnnounce");
+  if(!box || !T.allowed("staff") || box.getAttribute("data-on")) return;
+  box.setAttribute("data-on", "1");
+  T.data("announce", true).then(function(doc){
+    box.hidden = false;
+    box.innerHTML = '<h2 class="ac-h2">Update banner</h2><p class="acct-small" style="margin-bottom:10px">The scrolling strip across the top of every page. Use it for big updates. People can close it; a new update shows again for everyone.</p>' +
+      '<form id="anForm"><textarea class="ac-in" id="anText" maxlength="240" rows="2" placeholder="BIG UPDATE: ...">' + esc(doc.text) + '</textarea>' +
+      '<label class="acct-small" style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" id="anOn"' + (doc.active ? " checked" : "") + '> Show the banner</label>' +
+      '<div class="ac-row" style="margin-top:10px"><button class="acct-btn" type="submit">Save banner</button><button class="acct-btn ghost sm" type="button" id="anPrev">Preview here</button><span class="acct-small" id="anMsg" role="status"></span></div></form>';
+    $("anPrev").onclick = function(){
+      if(window.TTVM_TICKER) window.TTVM_TICKER.show({id:"preview", text:$("anText").value.trim() || doc.text, active:true}, true);
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+    $("anForm").onsubmit = function(e){
+      e.preventDefault();
+      var text = $("anText").value.trim().slice(0, 240), on = $("anOn").checked;
+      if(on && !text){ $("anMsg").textContent = "Add the update text first"; return; }
+      T.save("announce", function(d2){
+        if(text !== d2.text || (on && !d2.active)) d2.id = "u" + Date.now().toString(36);   // a new update shows again for people who closed the old one
+        d2.text = text; d2.active = on;
+      }, "Update banner: " + (on ? text.slice(0, 60) : "off")).then(function(res){
+        savedMsg(res, on ? "Banner saved" : "Banner turned off");
+        $("anMsg").textContent = res.saved === "live" ? "Saved. Live for everyone in about a minute." : res.saved === "studio" ? "Saved to the studio copy." : "Not saved yet (needs your GitHub key on this device).";
+        if(window.TTVM_TICKER) window.TTVM_TICKER.show(res.doc, true);
+      }, function(err){ $("anMsg").textContent = err.message; });
+    };
+  });
 }
 
 // =============================== community ===============================
@@ -73,7 +104,8 @@ function community(S){
 
 // =============================== panels ===============================
 var P = {files:null, tab:"all", extra:{}, open:null};
-function loadFiles(fresh){ return Promise.all(["roles", "moderation", "profiles", "activity"].map(function(n){ return T.data(n, fresh); })).then(function(f){ P.files = f; return f; }); }
+var FILES = ["roles", "moderation", "profiles", "activity", "notices", "team"];
+function loadFiles(fresh){ return Promise.all(FILES.map(function(n){ return T.data(n, fresh); })).then(function(f){ P.files = f; return f; }); }
 function people(){
   var roles = P.files[0], mod = P.files[1], profs = P.files[2], act = P.files[3], seen = T.localSeen(), map = {};
   function add(h, name, hint){ if(!h) return null; var p = map[h] || (map[h] = {h:h}); if(name && !p.name) p.name = name; if(hint && !p.hint) p.hint = hint; return p; }
@@ -87,12 +119,16 @@ function people(){
     var p = map[h], m = mod.people[h] || {}, a = act.people[h] || (seen[h] ? seen[h] : {}) || {};
     p.role = T.roleOf(h, roles); p.mod = m; p.act = a; p.prof = profs.people[h] || {};
     p.name = (p.prof.name || p.name || "Unknown");
-    p.R = T.restriction(m); p.warns = T.activeWarnings(m);
+    // owners are protected: nothing in data/moderation.json ever applies to them
+    p.prot = T.isProtected(h, roles);
+    p.R = p.prot ? null : T.restriction(m, h); p.warns = p.prot ? [] : T.activeWarnings(m, h);
+    p.notices = p.prot ? T.activeNotices(P.files[4], h) : [];
     p.last = a.last || null;
     return p;
   }).sort(function(a, b){ return (T.RANK[b.role] - T.RANK[a.role]) || (T.ms(b.last) - T.ms(a.last)); });
 }
 function statusOf(p){
+  if(p.prot) return p.notices && p.notices.length ? ["warn", "Copyright notice"] : ["ok", "Protected owner"];
   if(p.R) return p.R.kind === "cut" ? ["bad", "Cut off"] : p.R.kind === "pause" ? ["pause", "Paused"] : ["bad", p.R.until ? "Banned" : "Banned"];
   if(p.warns.length) return ["warn", p.warns.length + "/3 warnings"];
   return ["ok", "Good"];
@@ -104,7 +140,7 @@ function spark(days){
   vals.forEach(function(v){ out += '<i class="' + (v ? "" : "z") + '" style="height:' + Math.max(2, Math.round(v / max * 22)) + 'px"></i>'; });
   return '<span class="pn-spark" title="Activity, last 7 days">' + out + '</span>';
 }
-function canAct(actor, p){ return T.RANK[actor] >= 3 && p.role !== "owner" && T.RANK[actor] > T.RANK[p.role] && p.h !== T.state.h; }
+function canAct(actor, p){ return T.RANK[actor] >= 3 && p.role !== "owner" && !p.prot && !T.isProtected(p.h) && T.RANK[actor] > T.RANK[p.role] && p.h !== T.state.h; }
 
 function panel(S){
   // Only a signed-in owner / moderator / dev (data/roles.json) gets past here. Everyone else only ever
@@ -146,6 +182,10 @@ function draw(S){
     var shown = list.filter(function(p){
       return P.tab === "all" || (P.tab === "staff" && T.RANK[p.role] >= 3) || (P.tab === "devs" && p.role === "dev") || (P.tab === "warned" && p.warns.length) || (P.tab === "restricted" && p.R);
     });
+    if(P.tab === "all" || P.tab === "staff"){
+      var tm = T.teamHtml((P.files[5] || {}).team);
+      if(tm) h += '<div class="ac-card pn-team"><h2 class="ac-h2">Studio team</h2>' + tm + '<p class="pf-note">Shown in the Team section on the site. These are display entries: they don\'t sign in here and don\'t change anyone\'s permissions.</p></div>';
+    }
     h += '<ul class="pn-list">' + (shown.length ? shown.map(function(p){
       var st = statusOf(p);
       return '<li><button type="button" class="pn-row" data-h="' + esc(p.h) + '">' + T.avatar({h:p.h, name:p.name, picture:p.prof.picture || (p.h === T.state.h ? T.me().picture : "")}) +
@@ -194,22 +234,27 @@ function openDrawer(h){
     '<div class="ac-row" style="margin-top:12px"><span class="pn-st ' + st[0] + '">' + esc(st[1]) + '</span>' + spark(p.act.days) + '<span class="acct-small">last 7 days</span></div>';
   if(p.R) x += '<div class="pn-confirm" style="border-color:rgba(255,90,74,.5);background:rgba(255,51,36,.06)"><b>' + (p.R.kind === "cut" ? "Cut off from the site" : p.R.kind === "pause" ? "Paused " + esc(T.until(p.R.until)) : "Banned " + esc(T.until(p.R.until))) + '</b>' +
     (p.R.reason ? '<div class="acct-small">Reason: ' + esc(p.R.reason) + ' \u00b7 by ' + esc(p.R.by || "?") + '</div>' : "") + (p.R.pendingOwner ? '<div class="acct-small" style="color:#ffd933">Waiting for the owner to pick how long.</div>' : "") + '</div>';
+  if(p.prot){
+    x += '<div class="pn-sec pn-prot"><h4>Protected owner account</h4><p>Owner accounts can\'t be warned, paused, kicked, restricted or banned. Nothing in the moderation file ever applies to them.</p></div>';
+    x += copySec(p, owner && S.realRole === "owner");
+  } else {
   // warnings
   x += '<div class="pn-sec"><h4>Warnings (' + p.warns.length + ' of 3)</h4>' + (p.warns.length ? '<ul class="acct-wlist">' + p.warns.map(T.warnItem).join("") + '</ul>' : '<p class="pf-empty">None.</p>');
-  if(act) x += '<form id="pnWarn" style="margin-top:10px"><input class="ac-in" id="pnWarnWhy" maxlength="200" placeholder="Reason (they will see this)" required><div class="ac-row" style="margin-top:8px"><button class="acct-btn" type="submit">Give warning</button>' + (owner && p.warns.length ? '<button class="acct-btn ghost sm" type="button" id="pnClearW">Clear warnings</button>' : "") + '</div><div id="pnWarnDur"></div></form>';
-  x += '</div>';
+  }
+  if(act && !p.prot) x += '<form id="pnWarn" style="margin-top:10px"><input class="ac-in" id="pnWarnWhy" maxlength="200" placeholder="Reason (they will see this)" required><div class="ac-row" style="margin-top:8px"><button class="acct-btn" type="submit">Give warning</button>' + (owner && p.warns.length ? '<button class="acct-btn ghost sm" type="button" id="pnClearW">Clear warnings</button>' : "") + '</div><div id="pnWarnDur"></div></form>';
+  if(!p.prot) x += '</div>';
   if(act){
     x += '<div class="pn-sec"><h4>Moderation</h4><input class="ac-in" id="pnWhy" maxlength="200" placeholder="Reason (shown to them)"><div class="acct-small" style="margin:10px 0 2px">How long</div>' + durPicker("pnDur") +
       '<div class="pn-acts" style="margin-top:10px"><button type="button" class="acct-btn ghost sm" data-act="kick">Kick (sign out)</button><button type="button" class="acct-btn ghost sm" data-act="pause">Pause activity</button>' +
       '<button type="button" class="acct-btn sm" data-act="temp">Temp ban</button><button type="button" class="acct-btn sm" data-act="perm" style="background:#5a0f0a">Cut off for good</button>' +
       (p.R && (owner || p.R.kind !== "cut") ? '<button type="button" class="acct-btn gold sm" data-act="lift">Lift ' + (p.R.kind === "pause" ? "pause" : "ban") + '</button>' : "") + '</div>' +
       '<p class="pf-note">Pause = can look around but can\'t play, chat, post or edit. Kick = signs them out once.</p></div>';
-  } else if(p.role === "owner"){
-    x += '<div class="pn-sec"><p class="pf-empty">Owners can\'t be moderated here.</p></div>';
+  } else if(p.role === "owner" || p.prot){
+    // (the protected-owner note above already says it)
   } else if(!owner){
     x += '<div class="pn-sec"><p class="pf-empty">Moderators can act on members and devs only.</p></div>';
   }
-  if(owner && p.h !== S.h){
+  if(owner && p.h !== S.h && !T.isLockedOwner(p.h)){
     x += '<div class="pn-sec"><h4>Role</h4><div class="pn-acts">' +
       (p.role !== "user" ? '<button type="button" class="acct-btn ghost sm" data-role="user">Make member</button>' : "") +
       (p.role !== "dev" ? '<button type="button" class="acct-btn ghost sm" data-role="dev">' + (p.role === "mod" ? "Demote to dev" : "Make dev") + '</button>' : "") +
@@ -226,6 +271,53 @@ function openDrawer(h){
   var cw = $("pnClearW"); if(cw) cw.onclick = function(){ commit(p, "cleared warnings for", function(m){ (m.warnings || []).forEach(function(w){ w.cleared = true; }); }); };
   Array.prototype.forEach.call(dr.querySelectorAll("[data-act]"), function(b){ b.onclick = function(){ modAct(p, b.getAttribute("data-act")); }; });
   Array.prototype.forEach.call(dr.querySelectorAll("[data-role]"), function(b){ b.onclick = function(){ roleAct(p, b.getAttribute("data-role")); }; });
+  wireCopy(p);
+}
+// ---------- copyright notices: owner-only, on owner accounts, a warning card (never a ban) ----------
+function copySec(p, canEdit){
+  var ns = p.notices || [];
+  var x = '<div class="pn-sec"><h4>Copyright notices (' + ns.length + ')</h4>';
+  x += ns.length ? '<ul class="pn-cr">' + ns.map(function(n){
+    return '<li><b>' + esc(n.title || "Untitled") + '</b><span class="acct-small">' + esc(n.details || "") + '</span><span class="acct-small">Posted ' + esc(T.when(n.date)) + ' by ' + esc(n.by || "the owner") + '</span>' +
+      (canEdit ? '<button type="button" class="acct-btn ghost sm" data-crclear="' + esc(n.id) + '">Clear notice</button>' : "") + '</li>';
+  }).join("") + '</ul>' : '<p class="pf-empty">None.</p>';
+  if(canEdit){
+    x += '<form id="pnCr" class="pn-crform"><p class="acct-small">Only for a real copyright claim with proof that could cost money. It shows a big warning card on this profile. It never bans or restricts the account.</p>' +
+      '<input class="ac-in" id="pnCrTitle" maxlength="80" placeholder="Title (e.g. the video or song it\'s about)" required>' +
+      '<textarea class="ac-in" id="pnCrDetails" maxlength="400" rows="3" placeholder="Details: who claimed it, what it\'s about, what happens next" style="margin-top:8px"></textarea>' +
+      '<label class="acct-small" style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" id="pnCrProof"> There is a real claim with proof</label>' +
+      '<div class="ac-row" style="margin-top:8px"><button class="acct-btn gold sm" type="submit" id="pnCrGo" disabled>Add copyright notice</button></div></form>';
+  } else {
+    x += '<p class="pf-note">Only an owner can add or clear these.</p>';
+  }
+  return x + '</div>';
+}
+function wireCopy(p){
+  var S = T.state, f = $("pnCr");
+  function ok(){ return S.realRole === "owner" && S.role === "owner" && p.prot; }
+  if(f){
+    $("pnCrProof").onchange = function(){ $("pnCrGo").disabled = !this.checked; };
+    f.onsubmit = function(e){
+      e.preventDefault();
+      var title = $("pnCrTitle").value.trim(), details = $("pnCrDetails").value.trim();
+      if(!ok() || !title || !$("pnCrProof").checked) return;
+      commit(p, "added a copyright notice for", function(doc){
+        var e2 = doc.people[p.h] || (doc.people[p.h] = {name:p.name, notices:[]});
+        e2.notices = e2.notices || [];
+        e2.notices.push({id:"c" + Date.now().toString(36), type:"copyright", title:title.slice(0, 80), details:details.slice(0, 400), by:me(), date:T.iso()});
+      }, "notices");
+    };
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-crclear]"), function(b){
+    b.onclick = function(){
+      if(!ok() || !confirm("Clear this copyright notice?")) return;
+      var id = b.getAttribute("data-crclear");
+      commit(p, "cleared a copyright notice for", function(doc){
+        var e2 = doc.people[p.h]; if(!e2) return;
+        (e2.notices || []).forEach(function(n){ if(n.id === id){ n.cleared = true; n.clearedBy = me(); n.clearedAt = T.iso(); } });
+      }, "notices");
+    };
+  });
 }
 function closeDrawer(){ var dr = $("pnDrawer"); dr.hidden = true; dr.innerHTML = ""; document.body.style.overflow = ""; P.open = null; }
 function durPicker(id){
@@ -249,6 +341,9 @@ function durText(ms){ var d = ms / DAY; return d >= 1 ? (Math.round(d * 10) / 10
 function me(){ return T.me().name; }
 function commit(p, what, change, file){
   file = file || "moderation";
+  // owners can never be warned, paused, kicked or banned; notices are owner-only
+  if(file === "moderation" && (p.prot || T.isProtected(p.h))){ T.toast("Owner accounts can't be warned or banned"); return Promise.resolve(); }
+  if(file === "notices" && T.state.realRole !== "owner"){ T.toast("Only an owner can do that"); return Promise.resolve(); }
   var by = me(), msg = by + " " + what + " " + p.name;
   return T.save(file, function(doc){
     if(file === "moderation"){
@@ -260,7 +355,7 @@ function commit(p, what, change, file){
     } else change(doc);
   }, msg).then(function(res){
     savedMsg(res, cap(what) + " " + p.name);
-    if(res.saved !== "none"){ var idx = ["roles", "moderation", "profiles", "activity"].indexOf(file); if(idx >= 0) P.files[idx] = res.doc; }
+    if(res.saved !== "none"){ var idx = FILES.indexOf(file); if(idx >= 0) P.files[idx] = res.doc; }
     var h = p.h; draw(T.state); openDrawer(h);
   });
 }
@@ -316,6 +411,7 @@ function roleAct(p, role){
   setRole(p, role);
 }
 function setRole(p, role){
+  if(T.isLockedOwner(p.h) && role !== "owner"){ T.toast("This owner account always stays owner"); return; }
   var label = {user:"made a member", dev:p.role === "mod" ? "demoted to dev" : "made a dev", mod:"promoted to moderator", owner:"promoted to owner"}[role];
   commit(p, label + ":", function(doc){
     ["owners", "mods", "devs"].forEach(function(k){ doc[k] = doc[k].filter(function(x){ return x.h !== p.h; }); });

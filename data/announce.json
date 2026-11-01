@@ -1,0 +1,6 @@
+{
+  "_about": "The scrolling update banner across the top of every page. Change the text (and give it a new id) for each big update; set active to false to hide it. Owners, moderators and devs can also set it from the Dev hub.",
+  "id": "2026-11-01-signin",
+  "text": "BIG UPDATE: Google sign-in is live · Profiles use your Google name + photo · Site locked down for guests",
+  "active": true
+}

@@ -9,15 +9,16 @@ function stat(R){
   return '<section class="ac-card pf-status" id="status">' + T.blockHtml() + '</section>';
 }
 function warnCard(S){
+  if(S.prot) return '<section class="ac-card" id="warnings"><h2 class="ac-h2">Warnings</h2><p class="pf-empty">Owner account: it can\'t be warned, paused or banned.</p></section>';
   var ws = S.warnings;
   return '<section class="ac-card" id="warnings"><h2 class="ac-h2">Warnings <span class="acct-small">(' + ws.length + ' of 3)</span></h2>' +
     (ws.length ? '<ul class="acct-wlist">' + ws.map(T.warnItem).join("") + '</ul><p class="pf-note">Tap a warning to see why you got it. 3 warnings means a ban.</p>' : '<p class="pf-empty">No warnings. Keep it up.</p>') + '</section>';
 }
 function render(S, files){
-  var roles = files[0], mod = files[1], profs = files[2], act = files[3];
+  var roles = files[0], mod = files[1], profs = files[2], act = files[3], notes = files[4] || {people:{}};
   var own = !target || target === S.h || !S.session;   // guests only ever get their own Guest card
   var h = own ? S.h : target;
-  var R = own ? S.restricted : T.restriction(mod.people[h]);
+  var R = own ? S.restricted : T.restriction(mod.people[h], h);   // owners: always null
   var guest = own && (!S.session || !!R);
   var more = $("pfMore"), acts = $("pfActions");
   document.body.classList.toggle("is-own", own);
@@ -52,14 +53,16 @@ function render(S, files){
   if(!own && T.allowed("staff") && T.RANK[S.role] >= 3) a += '<a class="acct-btn gold" href="../devhub/panel.html?u=' + encodeURIComponent(h) + '">Open in ' + (S.role === "owner" ? "owner" : "moderator") + ' panel</a>';
   if(!own) a += '<a class="acct-btn ghost" href="../profile/">My profile</a>';
   acts.innerHTML = a;
-  var m = "";
+  var m = "", prot = T.isProtected(h, roles);
+  // owner accounts: a copyright notice (owner-only, never a ban) shows as a big warning card
+  if(prot) m += T.activeNotices(notes, h).map(T.copyrightHtml).join("");
   if(own){
     m += '<section class="ac-card" id="edit" hidden>' + form(p, name) + '</section>';
     m += '<div class="pf-grid">' + warnCard(S) +
       '<section class="ac-card"><h2 class="ac-h2">Account</h2><ul class="pf-list">' +
       '<li>Role <span>' + T.ROLE_NAME[S.role] + (S.realRole === "owner" ? " (" + S.mode + " mode)" : "") + '</span></li>' +
       '<li>Google account <span>' + esc(S.session.hint || T.maskEmail(S.session.email)) + '</span></li>' +
-      '<li>Status <span style="color:#5fd47a">Good standing</span></li></ul>' +
+      '<li>Status <span style="color:#5fd47a">' + (prot ? "Protected owner account" : "Good standing") + '</span></li></ul>' +
       '<p style="margin-top:12px"><button type="button" class="acct-btn ghost sm" id="pfOut">' + "Sign out" + '</button></p></section></div>';
   }
   more.innerHTML = m;
@@ -150,11 +153,11 @@ function wire(p, name){
   };
 }
 var files = null;
-var BLANK = [{owners:[], mods:[], devs:[]}, {people:{}}, {people:{}}, {people:{}}];
+var BLANK = [{owners:[], mods:[], devs:[]}, {people:{}}, {people:{}}, {people:{}}, {people:{}}];
 T.on(function(S){
   // guests: just the basic Guest card, no people / moderation / activity files are fetched
   if(!S.session){ render(S, BLANK); return; }
   if(files){ render(S, files); return; }
-  Promise.all([T.data("roles"), T.data("moderation"), T.data("profiles"), T.data("activity")]).then(function(f){ files = f; render(T.state, f); });
+  Promise.all([T.data("roles"), T.data("moderation"), T.data("profiles"), T.data("activity"), T.data("notices")]).then(function(f){ files = f; render(T.state, f); });
 });
 })();
