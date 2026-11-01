@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Play Blockworld — Ttvm Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../style.css?v=4">
+<link rel="stylesheet" href="../../acct.css?v=2">
+<style>
+.pl-wrap{min-height:100vh;display:flex;flex-direction:column}
+.pl-box{max-width:620px;margin:0 auto;text-align:center}
+.pl-box h1{font-family:var(--pix);font-weight:400;font-size:clamp(1.2rem,5vw,2rem);line-height:1.4;color:#fff;text-shadow:4px 4px 0 #3a3a3a;margin:10px 0 18px}
+.pl-load{margin:22px auto 10px;max-width:420px;height:26px;border:4px solid #0d0d0d;background:#1a1a1a;position:relative;overflow:hidden}
+.pl-load i{position:absolute;inset:0;width:40%;background:repeating-linear-gradient(90deg,#5a8f35 0 18px,#679f3e 18px 36px);animation:pl 2.4s steps(12) infinite}
+@keyframes pl{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+@media(prefers-reduced-motion:reduce){.pl-load i{animation:none}}
+</style>
+<script src="../../js/auth-config.js?v=1"></script>
+<script src="../../js/acct.js?v=2"></script>
+</head>
+<body data-game-title>
+<div class="pl-wrap">
+<header class="sky" style="min-height:auto;padding-bottom:30px">
+  <nav class="top">
+    <div class="acct" data-acct><a class="acct-chip is-guest" href="../../profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
+    <a class="back" href="../">&lt; Blockworld</a>
+    <a class="studio" href="../../games/">All games &gt;</a>
+  </nav>
+  <div class="pl-box" style="padding:20px 18px 0">
+    <p class="tagline">Play in your browser</p>
+    <h1><span data-game-name>Blockworld</span><br>Web build coming soon</h1>
+    <p class="status" role="note" style="display:inline-flex"><span class="sb"><span class="dot"></span>Alpha / Beta test</span><span class="sr">&mdash; not a full release yet</span></p>
+  </div>
+</header>
+<main class="underground" style="flex:1">
+  <section class="panel pl-box">
+    <h2>Not playable here yet</h2>
+    <p>Blockworld is being tested in Unity right now. When the Web build is ready, you'll play it right on this page, no download.</p>
+    <div class="pl-load" aria-hidden="true"><i></i></div>
+    <div class="cta"><a class="pbtn" href="../#updates">See the updates</a><a class="pbtn alt" href="../#progress">Roadmap</a></div>
+  </section>
+</main>
+</div>
+<script src="../game.js?v=1"></script>
+<script>if(window.TTVM) TTVM.gate();</script>
+</body>
+</html>

@@ -8,15 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="style.css?v=3">
-<link rel="stylesheet" href="../acct.css?v=1">
+<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="../acct.css?v=2">
 </head>
 <body data-game-title>
 
 <header class="sky">
   <nav class="top">
     <div class="acct" data-acct><a class="acct-chip is-guest" href="../profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
-    <a class="back" href="../games/">&lt; TTVM Studios Games</a>
+    <a class="back" href="../games/">&lt; Games</a>
     <a class="studio" href="../">Skibidi Strike &gt;</a>
   </nav>
   <div class="cloud c1" aria-hidden="true"></div>
@@ -27,8 +27,9 @@
     <h1 data-game-name>Blockworld</h1>
     <p class="status" role="note"><span class="sb"><span class="dot"></span>Alpha / Beta test</span><span class="sr">&mdash; not a full release yet</span></p>
     <div class="cta">
-      <a class="pbtn" href="#progress">Roadmap</a>
-      <a class="pbtn alt" href="#about">What is it?</a>
+      <a class="pbtn" href="play/" data-play>Play</a>
+      <a class="pbtn alt" href="#updates">Updates</a>
+      <a class="pbtn alt" href="#progress">Roadmap</a>
     </div>
   </div>
   <div class="hills" aria-hidden="true">
@@ -38,6 +39,19 @@
   <div class="ground-top" aria-hidden="true"></div>
 </header>
 
+<nav class="bw-tabs" aria-label="Blockworld">
+  <div class="bw-tabs-in">
+    <a href="#updates">Updates</a>
+    <a href="#progress">Roadmap</a>
+    <a href="#blocks">Blocks &amp; items</a>
+    <a href="#screens">Screenshots</a>
+    <a href="#music">Music</a>
+    <a href="#credits">Credits</a>
+    <a href="#community">Community</a>
+  </div>
+  <a class="pbtn bw-play" href="play/" data-play>Play</a>
+</nav>
+
 <main class="underground">
 
   <section id="about" class="panel">
@@ -46,15 +60,30 @@
     <p>It's being made to run fast, so even low-end PCs get high FPS. Right now it's in Alpha / Beta testing, not a full release yet. This page gets updated as stuff gets added.</p>
   </section>
 
+  <section id="updates" class="panel">
+    <h2>Updates</h2>
+    <ol class="bw-log">
+      <li><time>Nov 1, 2026</time><b>Blockworld gets its own section on the site</b><span>Updates, roadmap, blocks &amp; items, music and credits all live here now. The Play button shows when a Web build is ready.</span></li>
+      <li><time>Oct 31, 2026</time><b>First playable test build</b><span>Title screen, singleplayer world, the player and hotbar, creative inventory, swords, armor and a shield, day and night, clouds and a full Options menu. Testing in Unity first.</span></li>
+      <li><time>Oct 31, 2026</time><b>The world engine</b><span>Mountains, caves, trees and water. Chunks are built in the background and drawn in one go each, so it stays smooth on low-end PCs.</span></li>
+      <li><time>Oct 31, 2026</time><b>Music, sounds and textures picked</b><span>26 calm tracks, 630+ sound effects and 16&times;16 block textures. All free to use, every creator credited below.</span></li>
+      <li><time>Oct 31, 2026</time><b>Blockworld announced</b><span>Alpha / Beta test, not a full release yet.</span></li>
+    </ol>
+  </section>
+
   <section id="progress" class="panel">
     <h2>Roadmap</h2>
+    <h3 class="rm-h">In the first test build</h3>
+    <ul class="checklist">
+      <li class="done"><span class="ico"></span><span class="what">3D world with mountains &amp; caves</span><span class="tag">Done</span></li>
+      <li class="done"><span class="ico"></span><span class="what">Basic swords (wood &rarr; diamond)</span><span class="tag">Done</span></li>
+      <li class="done"><span class="ico"></span><span class="what">Basic armor &amp; shield</span><span class="tag">Done</span></li>
+    </ul>
     <h3 class="rm-h">In progress</h3>
     <ul class="checklist">
-      <li><span class="ico"></span><span class="what">3D world with mountains &amp; caves</span><span class="tag">In progress</span></li>
       <li><span class="ico"></span><span class="what">Optimized for low-end PCs (high FPS)</span><span class="tag">In progress</span></li>
-      <li><span class="ico"></span><span class="what">Basic swords (wood &rarr; diamond)</span><span class="tag">In progress</span></li>
-      <li><span class="ico"></span><span class="what">Basic armor &amp; shield</span><span class="tag">In progress</span></li>
       <li><span class="ico"></span><span class="what">Building blocks: glass, concrete, concrete powder, wool in all colours</span><span class="tag">In progress</span></li>
+      <li><span class="ico"></span><span class="what">Saving worlds, sounds and music in the game</span><span class="tag">In progress</span></li>
     </ul>
     <h3 class="rm-h">Next, in this order</h3>
     <ol class="checklist next">
@@ -63,6 +92,17 @@
       <li><span class="num">3</span><span class="what">Mobs</span><span class="tag">Next</span></li>
       <li><span class="num">4</span><span class="what">Multiplayer</span><span class="tag">Next</span></li>
     </ol>
+    <p class="bw-later">Later: far terrain (low-detail far chunks) and ideas inspired by the Create mod.</p>
+  </section>
+
+  <section id="blocks" class="panel">
+    <h2>Blocks &amp; items</h2>
+    <div class="bw-items">
+      <div class="bw-item"><h3>Swords</h3><ul class="bw-swords"><li><span class="sw" style="--c:#a0743e"></span>Wood</li><li><span class="sw" style="--c:#8a8a8a"></span>Stone</li><li><span class="sw" style="--c:#d8d8d8"></span>Iron</li><li><span class="sw" style="--c:#f2c94c"></span>Gold</li><li><span class="sw" style="--c:#4fe3e0"></span>Diamond</li></ul></div>
+      <div class="bw-item"><h3>Armor &amp; shield</h3><div class="bw-armor"><i class="helm"></i><i class="chest"></i><i class="legs"></i><i class="boots"></i><i class="shield"></i></div><p>Leather to diamond, 4 slots, and a shield you hold up to block.</p></div>
+      <div class="bw-item"><h3>Wool &amp; concrete</h3><div class="bw-wool"><i style="--c:#e9ecec" title="White"></i><i style="--c:#9d9d97" title="Light gray"></i><i style="--c:#474f52" title="Gray"></i><i style="--c:#1d1c21" title="Black"></i><i style="--c:#835432" title="Brown"></i><i style="--c:#b02e26" title="Red"></i><i style="--c:#f9801d" title="Orange"></i><i style="--c:#fed83d" title="Yellow"></i><i style="--c:#80c71f" title="Lime"></i><i style="--c:#5e7c16" title="Green"></i><i style="--c:#169c9c" title="Cyan"></i><i style="--c:#3ab3da" title="Light blue"></i><i style="--c:#3c44aa" title="Blue"></i><i style="--c:#8932b8" title="Purple"></i><i style="--c:#c74ebd" title="Magenta"></i><i style="--c:#f38baa" title="Pink"></i></div><p>All 16 colours. Concrete powder falls like sand.</p></div>
+      <div class="bw-item"><h3>Nature blocks</h3><div class="bw-nat"><i class="g"></i><i class="d"></i><i class="s"></i><i class="l"></i><i class="v"></i><i class="a"></i><i class="gl"></i></div><p>Grass, dirt, stone, logs, leaves, sand and glass.</p></div>
+    </div>
   </section>
 
   <section id="screens" class="panel">
@@ -74,8 +114,34 @@
     </div>
   </section>
 
+  <section id="music" class="panel">
+    <h2>Music</h2>
+    <p>Calm piano, ambient and soft guitar, picked for exploring and building. Every track is free to use and credited to whoever made it.</p>
+    <ol class="bw-tracks" id="bwTracks"></ol>
+  </section>
+
+  <section id="credits" class="panel">
+    <h2>Credits</h2>
+    <dl class="bw-team">
+      <div><dt>Game by</dt><dd>Ttvm Studios official</dd></div>
+      <div><dt>Code</dt><dd>Titan TV Man</dd></div>
+      <div><dt>Team</dt><dd>UTC Studios</dd></div>
+    </dl>
+    <p>Music, sounds, textures and models from these creators. Lines marked CC BY need the credit; CC0 ones are a thank-you.</p>
+    <div id="bwCredits"></div>
+  </section>
+
+  <section id="community" class="panel">
+    <h2>Community</h2>
+    <p>Ideas for Blockworld, bugs from the test build, builds you're proud of: post them on the community board.</p>
+    <div class="cta" style="justify-content:flex-start;margin-top:18px">
+      <a class="pbtn" href="../devhub/community.html">Community board</a>
+      <a class="pbtn alt" href="../#community">Suggest an idea</a>
+    </div>
+  </section>
+
   <div class="bottom-link">
-    <a class="pbtn" href="../games/">&lt; All TTVM Studios games</a>
+    <a class="pbtn alt" href="../games/">&lt; All TTVM Studios games</a>
   </div>
 
   <footer>
@@ -85,7 +151,9 @@
 </main>
 
 <script src="game.js?v=1"></script>
+<script src="credits.js?v=1"></script>
+<script src="blockworld.js?v=1"></script>
 <script src="../js/auth-config.js?v=1"></script>
-<script src="../js/acct.js?v=1"></script>
+<script src="../js/acct.js?v=2"></script>
 </body>
 </html>
