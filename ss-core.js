@@ -178,6 +178,8 @@ function applySite(doc){
   var order = o.order.length ? o.order.slice() : SECTIONS.map(function(s){ return s.id; });
   SECTIONS.forEach(function(s){ if(order.indexOf(s.id) < 0) order.push(s.id); });
   function rank(el){
+    // links marked data-pin (Games -> the TTVM Studios games page) always stay at the top
+    if(el.hasAttribute && el.hasAttribute("data-pin")) return -1;
     var h = (el.getAttribute && (el.getAttribute("href") || "")) || "", id = el.id || h.slice(1);
     var i = order.indexOf(id); return i < 0 ? 999 : i;
   }

@@ -1,0 +1,125 @@
+/* TTVM Studios games page — neutral studio look that sits between both games */
+:root{--bg:#0c0d10;--panel:#14161b;--panel2:#181a20;--line:#262a33;--rim:#3a3f4b;--txt:#e8e9ee;--dim:#9ba1ac;--ui:'Oswald','Arial Narrow',Impact,sans-serif;--pix:'Press Start 2P',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:#fff}
+a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+ul{list-style:none}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;padding:12px 24px;background:rgba(12,13,16,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.mark{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--ui);font-weight:600;font-size:1.05rem;letter-spacing:.16em;text-transform:uppercase}
+.quick{margin-left:auto;display:flex;gap:20px}
+.quick a{color:var(--dim);text-decoration:none;font-family:var(--ui);font-weight:500;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase}
+.quick a:hover{color:#fff}
+.av{display:inline-grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;font-family:var(--ui);font-weight:700;font-size:.8rem;letter-spacing:.04em;color:#fff;background:radial-gradient(circle at 30% 25%,#3d4350,#16181d 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+.av.big{width:96px;height:96px;font-size:2.1rem;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 0 0 5px var(--bg),0 10px 30px rgba(0,0,0,.5)}
+
+main{max-width:1000px;margin:0 auto;padding:0 20px 40px}
+
+/* profile header */
+.profile{margin-top:20px}
+.banner{height:150px;border:1px solid var(--line);border-radius:14px;background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 24px),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 24px),
+  linear-gradient(115deg,#3a1114 0%,#1a1417 34%,#14161b 52%,#122231 74%,#1d3a1c 100%)}
+.pro-row{display:flex;align-items:flex-end;gap:20px;padding:0 24px;margin-top:-48px}
+.pro-txt{padding-bottom:4px;min-width:0}
+.handle{color:var(--dim);font-size:.85rem;letter-spacing:.04em}
+.profile h1{font-family:var(--ui);font-weight:700;font-size:clamp(1.8rem,5.4vw,2.8rem);line-height:1.05;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.profile h1 span{color:var(--dim)}
+.sub{color:var(--dim);font-size:.92rem;margin-top:6px}
+.sub a{color:var(--txt);text-decoration:underline;text-decoration-color:var(--rim);text-underline-offset:3px}
+.sub a:hover{text-decoration-color:#fff}
+
+/* game cards */
+.games{display:grid;gap:18px;margin-top:34px}
+.game{display:grid;grid-template-columns:400px 1fr;text-decoration:none;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:border-color .15s,transform .15s,box-shadow .15s}
+.game:hover{border-color:#4a505d;transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.45)}
+.game:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.gb{padding:22px 24px;display:flex;flex-direction:column;min-width:0}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.tag{display:inline-block;font-family:var(--ui);font-weight:600;font-size:.74rem;letter-spacing:.12em;line-height:1;padding:6px 9px 5px;border-radius:5px;border:1px solid}
+.t-new{color:#062612;background:#3ddc84;border-color:#3ddc84}
+.t-beta{color:#ffc04d;background:rgba(255,176,32,.12);border-color:rgba(255,176,32,.6)}
+.t-upd{color:#d7a6ff;background:rgba(178,108,255,.12);border-color:rgba(178,108,255,.55)}
+.t-pub{color:#0a1a2e;background:#5aaeff;border-color:#5aaeff}
+.t-other{color:var(--dim);border-color:var(--rim)}
+.gb h2{font-family:var(--ui);font-weight:700;font-size:1.7rem;letter-spacing:.06em;text-transform:uppercase;line-height:1.1;color:#fff}
+.blurb{color:var(--dim);margin-top:8px;max-width:46ch}
+.gfoot{margin-top:auto;padding-top:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
+.meta{color:#7d838e;font-size:.82rem}
+.go{font-family:var(--ui);font-weight:600;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;color:#fff;padding:9px 14px;border:1px solid var(--rim);border-radius:8px;background:var(--panel2);transition:background .15s,border-color .15s}
+.game:hover .go{background:#fff;color:#0c0d10;border-color:#fff}
+
+/* previews */
+.art{position:relative;min-height:230px;overflow:hidden;border-right:1px solid var(--line)}
+.art b{position:absolute;z-index:3}
+/* Blockworld: built from the 16x16 textures on the Blockworld page */
+.art-bw{background:linear-gradient(180deg,#4f97e8 0%,#7db8f3 55%,#b8dcfb 100%);image-rendering:pixelated}
+.art-bw span{position:absolute;image-rendering:pixelated}
+.bw-sun{top:24px;right:34px;width:30px;height:30px;background:#fff6c4;box-shadow:0 0 0 6px rgba(255,246,196,.3)}
+.bw-cloud{top:70px;left:46%;width:96px;height:16px;background:#fff;opacity:.92}
+.bw-cloud::before{content:"";position:absolute;left:24px;top:-16px;width:40px;height:16px;background:#fff}
+.bw-ground{left:0;right:0;bottom:0;height:72px;background:url(../blockworld/img/grass_side.png) repeat-x 0 0/24px 24px,url(../blockworld/img/dirt.png) repeat-x 0 24px/24px 24px,url(../blockworld/img/stone.png) repeat 0 0/24px 24px}
+.bw-hill{left:24px;bottom:72px;width:96px;height:48px;background:url(../blockworld/img/grass_side.png) repeat-x 0 0/24px 24px,url(../blockworld/img/dirt.png) repeat 0 0/24px 24px}
+.bw-hill::before{content:"";position:absolute;left:24px;top:-24px;width:48px;height:24px;background:url(../blockworld/img/grass_side.png) repeat-x 0 0/24px 24px}
+.bw-tree{right:64px;bottom:72px;width:24px;height:72px;background:url(../blockworld/img/log.png) repeat-y 0 0/24px 24px}
+.bw-tree i{position:absolute;left:-36px;top:-48px;width:96px;height:72px;background:url(../blockworld/img/leaves.png) repeat 0 0/24px 24px;clip-path:polygon(25% 0,75% 0,75% 33.3%,100% 33.3%,100% 100%,0 100%,0 33.3%,25% 33.3%)}
+.bw-logo{left:22px;top:24px;font-family:var(--pix);font-weight:400;font-size:1.05rem;color:#fff;text-transform:uppercase;text-shadow:3px 3px 0 #2d4a20,5px 5px 0 rgba(0,0,0,.2)}
+/* Skibidi Strike: the burning city */
+.art-ss{background:radial-gradient(ellipse at 50% 115%,rgba(255,51,36,.42),transparent 62%),linear-gradient(180deg,#0a0c12 0%,#121722 60%,#1a1012 100%)}
+.ss-glow{position:absolute;left:0;right:0;bottom:0;height:60%;background:radial-gradient(ellipse at 30% 100%,rgba(255,140,40,.25),transparent 60%)}
+.ss-city{position:absolute;left:0;right:0;bottom:0;height:150px;display:flex;align-items:flex-end;gap:6px;padding:0 10px}
+.ss-city i{flex:1;background:repeating-linear-gradient(0deg,transparent 0 9px,rgba(255,217,51,.0) 9px 10px),#07080b;position:relative;box-shadow:inset 0 1px 0 rgba(255,80,60,.35)}
+.ss-city i::before{content:"";position:absolute;inset:12px 7px 0;background:repeating-linear-gradient(0deg,transparent 0 8px,#07080b 8px 16px),repeating-linear-gradient(90deg,rgba(255,200,80,.55) 0 4px,transparent 4px 10px);opacity:.55}
+.ss-city i:nth-child(1){height:58%;clip-path:polygon(0 8%,40% 0,100% 14%,100% 100%,0 100%)}
+.ss-city i:nth-child(2){height:88%}
+.ss-city i:nth-child(3){height:46%;clip-path:polygon(0 0,60% 20%,100% 6%,100% 100%,0 100%)}
+.ss-city i:nth-child(4){height:72%;flex:1.3;clip-path:polygon(0 0,70% 0,100% 30%,100% 100%,0 100%)}
+.ss-city i:nth-child(5){height:38%}
+.ss-city i:nth-child(6){height:96%;clip-path:polygon(0 12%,30% 0,55% 9%,100% 2%,100% 100%,0 100%)}
+.ss-city i:nth-child(7){height:52%}
+.ss-city i:nth-child(odd)::before{opacity:.3}
+.ss-smoke{position:absolute;left:52%;bottom:96px;width:110px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(110,110,120,.35),transparent 65%);filter:blur(4px)}
+.ss-logo{left:22px;top:20px;font-family:var(--ui);font-weight:700;font-size:1.7rem;letter-spacing:.12em;color:#fff;line-height:1}
+.ss-logo em{font-style:normal;color:#ff3324;text-shadow:0 0 14px rgba(255,51,36,.6)}
+.art-plain{display:grid;place-items:center;background:linear-gradient(135deg,#1b1e25,#101216)}
+.art-plain b{position:static;font-family:var(--ui);font-size:3rem;color:#3a3f4b}
+
+/* tag key */
+.key{margin-top:34px;padding:18px 20px;border:1px dashed var(--line);border-radius:12px}
+.key h3{font-family:var(--ui);font-weight:600;font-size:.9rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.key ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px}
+.key li{color:var(--dim);font-size:.88rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+footer{border-top:1px solid var(--line);padding:26px 20px 34px;text-align:center;color:#7d838e;font-size:.85rem}
+footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
+
+@media(max-width:820px){
+  .game{grid-template-columns:1fr}
+  .art{min-height:190px;border-right:none;border-bottom:1px solid var(--line)}
+}
+@media(max-width:560px){
+  .bar{padding:10px 14px;gap:10px}
+  .mark{font-size:.92rem;letter-spacing:.12em}
+  .quick{gap:12px}
+  .quick a{font-size:.72rem;letter-spacing:.08em}
+  main{padding:0 14px 30px}
+  .profile{margin-top:14px}
+  .banner{height:104px;border-radius:12px}
+  .pro-row{flex-direction:column;align-items:flex-start;gap:10px;padding:0 6px;margin-top:-40px}
+  .av.big{width:78px;height:78px;font-size:1.7rem}
+  .gb{padding:18px 16px}
+  .gb h2{font-size:1.45rem}
+  .key ul{grid-template-columns:1fr}
+  .ss-logo{font-size:1.45rem}
+  .bw-logo{font-size:.9rem}
+  .art-bw{min-height:210px}
+  .bw-ground{height:48px}
+  .bw-hill,.bw-tree{bottom:48px}
+  .bw-cloud{top:64px;left:30%}
+}
+@media(max-width:400px){.quick{display:none}}
+@media(prefers-reduced-motion:reduce){.game,.go{transition:none}.game:hover{transform:none}}

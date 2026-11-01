@@ -339,3 +339,17 @@ a.gcard:hover .gmore{color:#fff}
 .relbadge.sm{margin:0 0 12px;font-size:.7rem;letter-spacing:.12em;justify-content:flex-start;box-shadow:none}
 .relbadge.sm b,.relbadge.sm span{padding:4px 9px}
 @media(max-width:420px){.relbadge{font-size:.72rem;letter-spacing:.1em}.relbadge.sm{font-size:.62rem;letter-spacing:.06em}.relbadge b,.relbadge span{padding:6px 9px}}
+
+/* TTVM Studios profile chip (top bar) + Games link -> games/ */
+.studio-chip{display:inline-flex;align-items:center;gap:9px;flex:none;color:#d6d7de;font-family:var(--font-ui);font-weight:500;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;padding:4px 12px 4px 4px;border:1px solid var(--rim);border-radius:999px;background:rgba(16,16,20,.85);transition:border-color .15s,color .15s,box-shadow .15s}
+.studio-chip:hover{color:#fff;border-color:var(--accent);box-shadow:0 0 12px color-mix(in srgb,var(--accent) 35%,transparent)}
+.studio-chip:focus-visible{outline:2px solid var(--accent2);outline-offset:3px}
+.av{display:inline-grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;font-family:var(--font-ui);font-weight:700;font-size:.72rem;letter-spacing:.04em;color:#fff;background:radial-gradient(circle at 30% 25%,#3a3f4b,#16181d 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 0 0 2px #0b0b0e}
+nav .studio-chip + .logo{margin-left:-10px}
+.sidemenu .sm-studio{display:flex;align-items:center;gap:10px;color:#fff;font-size:.95rem;letter-spacing:.1em}
+.sidemenu .sm-studio .av{width:30px;height:30px}
+.sidemenu .sm-studio:hover{padding-left:0}
+.games-all{display:inline-block;margin-top:6px;white-space:nowrap;font-family:var(--font-ui);font-weight:500;letter-spacing:.1em;text-transform:uppercase;font-size:.88rem}
+.gsoon .gmore{color:var(--accent)}
+@media(max-width:1100px){nav .studio-chip .sc-name{display:none}nav .studio-chip{padding:3px}nav .studio-chip + .logo{margin-left:-14px}}
+@media(max-width:720px){nav .studio-chip .av{width:30px;height:30px}nav .studio-chip + .logo{margin-left:-2px}}

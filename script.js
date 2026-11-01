@@ -208,7 +208,9 @@ document.addEventListener("DOMContentLoaded", function(){
   var links = document.querySelectorAll("nav .links a");
   for(var i=0;i<links.length;i++){
     links[i].addEventListener("click", function(ev){
-      var id = (this.getAttribute("href") || "").slice(1);
+      var href = this.getAttribute("href") || "";
+      if(href.charAt(0) !== "#") return; // real page (like games/): just go there
+      var id = href.slice(1);
       if(id && document.getElementById(id)){ ev.preventDefault(); showPage(id); }
     });
   }
@@ -276,8 +278,10 @@ document.addEventListener("DOMContentLoaded", function(){
   if(bk) bk.addEventListener("click", sideClose);
   if(sm) sm.querySelectorAll("a").forEach(function(a){
     a.addEventListener("click", function(ev){
+      var href = a.getAttribute("href") || "";
+      if(href.charAt(0) !== "#" && !a.classList.contains("sm-play")){ sideClose(); return; } // real page: let it open
       ev.preventDefault(); sideClose();
-      var id = (a.getAttribute("href") || "").slice(1);
+      var id = href.slice(1);
       if(a.classList.contains("sm-play")){ playNote(); return; }
       if(id === "play") showPage(null); else showPage(id);
     });
