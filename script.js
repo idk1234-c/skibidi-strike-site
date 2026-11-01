@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function(){
   for(var i=0;i<links.length;i++){
     links[i].addEventListener("click", function(ev){
       var id = (this.getAttribute("href") || "").slice(1);
-      if(id && document.getElementById(id) && document.getElementById(id).classList.contains("page")){ ev.preventDefault(); showPage(id); }
+      if(id && document.getElementById(id)){ ev.preventDefault(); showPage(id); }
     });
   }
   var logo = document.querySelector("nav .logo");
@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.17 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.18 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
@@ -317,9 +317,14 @@ function showPage(id){
   var nav = document.querySelectorAll("nav .links a");
   for(var k=0;k<nav.length;k++){
     var href = nav[k].getAttribute("href") || "";
-    nav[k].classList.toggle("on", !!id && href === "#" + id);
+    nav[k].classList.toggle("on", found && href === "#" + id);
   }
   if(found) window.scrollTo(0,0);
+  else if(id){
+    // home-page sections (like Games in progress): go home, then scroll to it
+    var tgt = document.getElementById(id);
+    if(tgt) setTimeout(function(){ tgt.scrollIntoView({behavior:"smooth", block:"start"}); }, 40);
+  }
 }
 
 // ---- suggestion form ----

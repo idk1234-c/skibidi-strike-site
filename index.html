@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Skibidi Strike — Official Site</title>
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=19">
 </head>
 <body class="home">
 <nav>
   <div class="logo">SKIBIDI <span>STRIKE</span></div>
   <div class="links">
+    <a href="#games">Games</a>
     <a href="#roadmap">Roadmap</a>
     <a href="#characters">Characters</a>
     <a href="#videos">Videos</a>
@@ -21,6 +22,7 @@
   <button class="burger" id="burger" aria-label="Menu">&#9776;</button>
 </nav>
 <aside class="sidemenu" id="sideMenu">
+  <a href="#games">Games</a>
   <a href="#roadmap">Roadmap</a>
   <a href="#characters">Characters</a>
   <a href="#videos">Videos</a>
@@ -50,6 +52,33 @@
     <p class="hero-credits">Game by Ttvm Studios official &middot; Inspired by DaFuq!?Boom!'s Skibidi Toilet series &middot; #BringBoomBack</p>
   </div>
 </header>
+
+<section id="games" class="games">
+  <h2>Games in progress</h2>
+  <p class="games-lead">Skibidi Strike is the main game. Here's what else Ttvm Studios is building.</p>
+  <div class="games-grid">
+    <a class="gcard" href="blockworld/">
+      <div class="gprev" aria-hidden="true">
+        <span class="gp-sun"></span>
+        <span class="gp-tree"><i></i></span>
+        <span class="gp-ground"></span>
+      </div>
+      <div class="gbody">
+        <span class="who">In development</span>
+        <h4 data-game-name>Blockworld</h4>
+        <p>A block survival and building game. Dig, build, survive the night.</p>
+        <span class="gmore">See the progress &rarr;</span>
+      </div>
+    </a>
+    <div class="gcard gsoon">
+      <div class="gbody">
+        <span class="who dim">Later</span>
+        <h4>More soon</h4>
+        <p>Got an idea for the next one? <a href="#community" class="goSug">Suggest it</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="roadmap" class="page">
   <h2>Roadmap</h2>
@@ -168,6 +197,7 @@
 </div>
 
 <script src="ss-core.js?v=3"></script>
-<script src="script.js?v=17"></script>
+<script src="script.js?v=18"></script>
+<script src="blockworld/game.js?v=1"></script>
 </body>
 </html>
