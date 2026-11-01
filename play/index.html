@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#09090b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Skibidi Strike">
+<link rel="manifest" href="manifest.webmanifest?v=1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1">
 <title>Play Skibidi Strike</title>
 <meta name="description" content="Play Skibidi Strike free in your browser. 90 waves of skibidis in a destroyed city.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,6 +106,33 @@ a{color:inherit;text-decoration:none}
 .relnote{display:inline-block;margin:14px 0 2px;padding:5px 10px;border:1px solid #ffd933;color:#ffd933;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;background:rgba(0,0,0,.35)}
 @media (max-width:900px){.relb i{display:none}}
 @media (max-width:560px){.relb{margin-left:8px;font-size:.56rem;letter-spacing:.1em;padding:2px 5px}.relnote{font-size:.64rem;letter-spacing:.1em}}
+
+/* ---- phones (Nov 1): the game gets the whole screen, nothing from the site sits on top of it ---- */
+/* keep the game inside the notch / home-bar safe area */
+.stage{padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+/* the game has its own touch controls now: the old Experiments touch overlay never shows here */
+.xp-touch{display:none!important}
+/* Experiments "Music" button + EXPERIMENTAL tag live in the top bar here, never over the game's FIRE button */
+.topbar .xp-music{position:relative;right:auto;bottom:auto;z-index:7;flex:none;gap:0}
+.topbar .xp-mbtn{padding:5px 10px;font-size:.68rem;box-shadow:none}
+.topbar .xp-mpanel{position:absolute;top:calc(100% + 8px);right:0;max-height:60vh;z-index:8}
+.topbar .xp-bar{position:static;flex:none;padding:3px 7px;font-size:.56rem;letter-spacing:.12em;box-shadow:none}
+.topbar .xp-bar span{display:none}
+/* landscape phones: no news strip on the play page (more room for the game) */
+@media (max-height:500px) and (orientation:landscape){
+  #ttvmTicker{display:none!important}
+  body{padding-top:0!important}
+  .acct-txt{display:none}
+}
+/* opened from the Home Screen like an app: no site bar at all in landscape, the game is everything */
+@media (max-height:500px) and (orientation:landscape){ html.app-mode .topbar{display:none} }
+html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
+@media (orientation:landscape){ html.app-mode body{padding-top:0} }
+/* one-time "Add to Home Screen" hint (iPhone / iPad) */
+.homehint{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:10px;max-width:min(92%,520px);padding:8px 8px 8px 14px;background:rgba(16,16,20,.96);border:1px solid var(--line);border-left:3px solid var(--gold);color:var(--txt);font:500 .82rem/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.homehint b{color:#fff}
+.homehint button{flex:none;width:32px;height:32px;border:0;background:transparent;color:var(--dim);font:400 22px/1 system-ui,sans-serif;cursor:pointer}
+.homehint[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -112,6 +146,7 @@ a{color:inherit;text-decoration:none}
 <main class="stage" id="stage">
   <canvas id="unity-canvas" tabindex="-1"></canvas>
   <div class="toast" id="toast" aria-live="polite"></div>
+  <div class="homehint" id="homeHint" hidden><span id="homeHintTxt"></span><button type="button" id="homeHintX" aria-label="Close">&times;</button></div>
   <div class="rotate" id="rotate">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>
     <h2>TURN YOUR PHONE</h2>
@@ -178,14 +213,52 @@ a{color:inherit;text-decoration:none}
     return;
   }
 
-  // fullscreen (hidden where the browser doesn't allow it, e.g. iPhone Safari)
+  // fullscreen. iPhone browsers (Safari AND Chrome, both run on Apple's WebKit) don't allow it for games,
+  // so there the button explains Add to Home Screen instead: opened from the Home Screen it runs with no browser bars.
+  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  var isChromeIOS = /CriOS/i.test(navigator.userAgent);
+  var standalone = (window.matchMedia && (matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches)) || navigator.standalone === true;
+  if(standalone) document.documentElement.classList.add("app-mode");
   var fsOk = document.fullscreenEnabled || document.webkitFullscreenEnabled;
-  if(!fsOk) fsBtn.hidden = true;
+  var homeMsg = isChromeIOS
+    ? "<b>Play fullscreen like an app:</b> tap the Share button in Chrome's address bar, then <b>Add to Home Screen</b>."
+    : "<b>Play fullscreen like an app:</b> tap <b>Share</b>, then <b>Add to Home Screen</b>.";
+  function showHomeHint(force){
+    if(!isIOS || standalone) return;
+    try { if(!force && localStorage.getItem("ttvm_homehint") === "1") return; } catch(e){}
+    var hh = document.getElementById("homeHint");
+    document.getElementById("homeHintTxt").innerHTML = homeMsg;
+    hh.hidden = false;
+    clearTimeout(showHomeHint.t);
+    showHomeHint.t = setTimeout(function(){ hh.hidden = true; }, 12000);
+  }
+  document.getElementById("homeHintX").addEventListener("click", function(){
+    document.getElementById("homeHint").hidden = true;
+    try { localStorage.setItem("ttvm_homehint", "1"); } catch(e){}
+  });
+  if(standalone) fsBtn.hidden = true;
+  else if(!fsOk && !isIOS) fsBtn.hidden = true;
   fsBtn.addEventListener("click", function(){
+    if(!fsOk){ showHomeHint(true); return; }
     if(game){ game.SetFullscreen(1); return; }
     var el = document.getElementById("stage");
     (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
   });
+  showHomeHint(false);
+
+  // the site's Experiments "Music" button + EXPERIMENTAL tag: put them in the top bar, never over the game
+  (function(){
+    var bar = document.querySelector(".topbar");
+    function tidy(){
+      ["xp-music", "xp-bar"].forEach(function(c){
+        var el = document.querySelector("body > ." + c);
+        if(el && bar) bar.insertBefore(el, fsBtn);
+      });
+      var t = document.querySelector(".xp-touch"); if(t) t.remove();   // old HTML touch overlay: the game has real controls now
+    }
+    tidy();
+    if(window.MutationObserver) new MutationObserver(tidy).observe(document.body, {childList:true, subtree:true});
+  })();
 
   // keep keyboard focus on the game
   canvas.addEventListener("pointerdown", function(){ canvas.focus(); });
