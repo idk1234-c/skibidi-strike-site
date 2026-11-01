@@ -23,8 +23,8 @@
       <div class="si-g" id="siG"></div>
       <p class="acct-small" id="siNote">We only get your name, email and Google picture. Your email is never shown on the site.</p>
       <ul class="si-perks">
-        <li>Your Google picture and name in the top-left on every page</li>
-        <li>Your own profile: banner colour or picture, display name and bio</li>
+        <li>Your Google name and picture show up automatically, on your profile and in the top-left of every page</li>
+        <li>Optional extras: banner colour or picture, bio, link, or a different name/photo</li>
         <li>Post on the community board</li>
       </ul>
     </div>
@@ -33,7 +33,7 @@
 </main>
 <footer class="ac-foot">TTVM Studios &middot; <a href="../games/">Games</a> <span class="acct-staffonly">&middot; <a href="../devhub/">Dev</a> </span>&middot; <a href="../">Skibidi Strike</a></footer>
 <script src="../js/auth-config.js?v=2"></script>
-<script src="../js/acct.js?v=4"></script>
+<script src="../js/acct.js?v=5"></script>
 <script>
 (function(){
   var g = document.getElementById("siG");
@@ -42,7 +42,7 @@
     document.getElementById("siLead").textContent = "Google sign-in is coming soon. Once it's switched on, this is where you sign in to customize your profile.";
   }
   TTVM.on(function(S){
-    if(S.session && !S.restricted){ document.getElementById("siLead").textContent = "You're signed in as " + S.session.name + "."; g.innerHTML = '<a class="acct-btn" href="../profile/#edit">Customize your profile</a>'; }
+    if(S.session && !S.restricted){ document.getElementById("siLead").textContent = "You're signed in as " + S.session.name + "."; g.innerHTML = '<a class="acct-btn" href="../profile/">View my profile</a> <a class="acct-btn ghost" href="../profile/#edit">Customize (optional)</a>'; }
   });
 })();
 </script>

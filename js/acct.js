@@ -300,7 +300,7 @@ function onCredential(resp){
     return refresh().then(function(){
       if(!S.session){ toast("Sign-in didn't work. Try again."); return; }
       toast("Signed in as " + S.session.name);
-      if(d.body.hasAttribute("data-acct-signin")){ var back = /[?&]next=([^&]+)/.exec(location.search); var to = back ? decodeURIComponent(back[1]) : ""; if(!/^\/[^\/]/.test(to)) to = link("profile/#edit"); setTimeout(function(){ location.href = to; }, 600); }
+      if(d.body.hasAttribute("data-acct-signin")){ var back = /[?&]next=([^&]+)/.exec(location.search); var to = back ? decodeURIComponent(back[1]) : ""; if(!/^\/[^\/]/.test(to)) to = link("profile/"); setTimeout(function(){ location.href = to; }, 600); }
     });
   });
 }
@@ -329,14 +329,24 @@ function profileOf(h, shared){
 function me(){
   if(!S.session) return {h:null, name:"Guest", picture:"", banner:"#000000", role:"guest"};
   var lp = localProfile(S.h);
-  return {h:S.h, name:lp.name || S.session.name, picture:S.session.picture || "", banner:lp.banner || "#000000", role:S.role};
+  // name + photo come from the Google account automatically (like YouTube / TikTok);
+  // a custom name or photo saved on the profile page only overrides them when one is set.
+  return {h:S.h, name:lp.name || S.session.name, picture:lp.avatar || S.session.picture || "", banner:lp.banner || "#000000", role:S.role,
+    googleName:S.session.name, googlePicture:S.session.picture || "", customName:!!lp.name, customPicture:!!lp.avatar};
 }
 function avatar(p, cls){
   cls = "acct-av" + (cls ? " " + cls : "");
   if(!p || !p.h) return '<span class="' + cls + ' is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span>';
-  if(p.picture) return '<span class="' + cls + '"><img src="' + esc(p.picture) + '" alt="" referrerpolicy="no-referrer" loading="lazy"></span>';
+  // if the photo can't load, the span falls back to the initials (see imgFallback below)
+  if(p.picture) return '<span class="' + cls + '" style="--h:' + hue(p.h) + '" data-ini="' + esc(initials(p.name)) + '"><img src="' + esc(p.picture) + '" alt="" referrerpolicy="no-referrer" loading="lazy"></span>';
   return '<span class="' + cls + '" style="--h:' + hue(p.h) + '" aria-hidden="true">' + esc(initials(p.name)) + '</span>';
 }
+// a Google photo that fails to load (offline, blocked, expired link) shows the initials instead of a broken image
+d.addEventListener("error", function(e){
+  var t = e.target; if(!t || t.tagName !== "IMG") return;
+  var s = t.parentNode; if(!s || !s.classList || !s.classList.contains("acct-av") || !s.hasAttribute("data-ini")) return;
+  s.textContent = s.getAttribute("data-ini"); s.setAttribute("aria-hidden", "true");
+}, true);
 
 // ---------- the chip (top-left on every page) ----------
 function link(path){ return ROOT + path; }

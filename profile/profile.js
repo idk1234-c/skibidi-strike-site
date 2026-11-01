@@ -33,7 +33,8 @@ function render(S, files){
     return;
   }
   var p = T.profileOf(h, profs), role = T.roleOf(h, roles);
-  if(own){ role = S.role; p.name = p.name || S.session.name; p.picture = S.session.picture; }
+  // your own profile: Google name + photo by default, your custom ones only if you set them
+  if(own){ var mm = T.me(); role = S.role; p.name = mm.name; p.picture = mm.picture; }
   var known = own || p.name || (mod.people[h] && mod.people[h].name) || (act.people[h] && act.people[h].name);
   if(!known){
     $("pfName").textContent = "Profile not found"; $("pfMeta").textContent = ""; $("pfBio").textContent = "This person hasn't shared a profile on the site yet."; acts.innerHTML = '<a class="acct-btn ghost" href="../">Back to the site</a>'; return;
@@ -43,7 +44,7 @@ function render(S, files){
   $("pfAv").innerHTML = T.avatar({h:h, name:name, picture:p.picture || ""}, "xl");
   $("pfName").innerHTML = esc(name) + " " + (role !== "user" ? T.roleTag(role) : "");
   var last = (act.people[h] || {}).last || (own ? new Date().toISOString() : null);
-  $("pfMeta").textContent = own ? (T.ROLE_NAME[role] + " \u00b7 signed in with Google") : (T.ROLE_NAME[role] + (last ? " \u00b7 last seen " + T.when(last) : ""));
+  $("pfMeta").textContent = own ? (T.ROLE_NAME[role] + " \u00b7 signed in with Google" + (T.me().customName || T.me().customPicture ? "" : " \u00b7 name + photo from Google")) : (T.ROLE_NAME[role] + (last ? " \u00b7 last seen " + T.when(last) : ""));
   $("pfBio").textContent = p.bio || (own ? "No bio yet. Tap Customize to add one." : "");
   if(p.link) $("pfBio").insertAdjacentHTML("beforeend", (p.bio ? "\n" : "") + '<a href="' + esc(p.link) + '" target="_blank" rel="noopener" style="color:#ff6b5e">' + esc(p.link.replace(/^https?:\/\//, "")) + '</a>');
   var a = "";
@@ -73,17 +74,39 @@ function render(S, files){
 function form(p, name){
   var b = p.banner || "#000000";
   return '<h2 class="ac-h2">Customize your profile</h2><form class="pf-form" id="pfForm" autocomplete="off">' +
-    '<label for="fName">Display name</label><input type="text" id="fName" maxlength="32" value="' + esc(name) + '">' +
+    '<label>Profile photo</label><div class="pf-file" style="align-items:center"><span id="fAvPrev">' + T.avatar({h:T.state.h, name:name, picture:T.me().picture}, "lg") + '</span>' +
+    '<label class="acct-btn ghost sm" for="fAv" style="margin:0">Upload a photo</label><input type="file" id="fAv" accept="image/*">' +
+    '<span class="acct-small" id="fAvNote">' + (T.me().customPicture ? "Custom photo" : "From your Google account") + '</span></div>' +
+    '<label for="fName">Display name</label><input type="text" id="fName" maxlength="32" value="' + esc(name) + '" placeholder="' + esc(T.me().googleName) + '">' +
     '<label for="fBio">Bio</label><textarea id="fBio" maxlength="300" placeholder="Who you main, best wave, what you\'re building...">' + esc(p.bio || "") + '</textarea>' +
     '<label>Banner</label><div class="pf-sw" id="fSw">' + SW.map(function(c){ return '<button type="button" data-c="' + c + '" style="background:' + c + '" aria-label="Banner colour ' + c + '" aria-pressed="' + (!p.bannerImage && b.toLowerCase() === c ? "true" : "false") + '"></button>'; }).join("") +
     '<input type="color" id="fColor" value="' + esc(/^#[0-9a-f]{6}$/i.test(b) ? b : "#000000") + '" aria-label="Pick any colour"></div>' +
     '<div class="pf-file"><label class="acct-btn ghost sm" for="fImg" style="margin:0">Upload a picture</label><input type="file" id="fImg" accept="image/*"><button type="button" class="acct-btn ghost sm" id="fNoImg"' + (p.bannerImage ? "" : " hidden") + '>Remove picture</button><span class="acct-small" id="fImgNote"></span></div>' +
     '<label for="fLink">Link (YouTube, TikTok...)</label><input type="url" id="fLink" maxlength="200" placeholder="https://" value="' + esc(p.link || "") + '">' +
-    '<div class="pf-save"><button class="acct-btn" type="submit">Save</button><button class="acct-btn ghost" type="button" id="fReset">Use my Google name</button><span class="acct-small" id="fMsg" role="status"></span></div>' +
-    '<p class="pf-note">Your profile saves on this device. Your picture and name come from Google.</p></form>';
+    '<div class="pf-save"><button class="acct-btn" type="submit">Save</button><button class="acct-btn ghost" type="button" id="fReset">Use my Google name + photo</button><span class="acct-small" id="fMsg" role="status"></span></div>' +
+    '<p class="pf-note">Your name and photo come from your Google account automatically, so there\'s nothing you have to set up. Change them here only if you want something different. Saved on this device.</p></form>';
 }
 function wire(p, name){
-  var draft = {banner:p.banner || "#000000", bannerImage:p.bannerImage || ""};
+  var lp0 = T.localProfile(T.state.h);
+  var draft = {banner:p.banner || "#000000", bannerImage:p.bannerImage || "", avatar:lp0.avatar || ""};
+  function avPrev(){
+    var g = T.state.session;
+    $("fAvPrev").innerHTML = T.avatar({h:T.state.h, name:$("fName").value.trim() || g.name, picture:draft.avatar || g.picture || ""}, "lg");
+    $("fAvNote").textContent = draft.avatar ? "Custom photo (tap Save)" : "From your Google account";
+  }
+  $("fAv").onchange = function(){
+    var f = this.files && this.files[0]; if(!f) return;
+    $("fAvNote").textContent = "Loading...";
+    var img = new Image(), url = URL.createObjectURL(f);
+    img.onload = function(){
+      var S2 = 256, c = document.createElement("canvas"); c.width = S2; c.height = S2;
+      var s = Math.max(S2 / img.width, S2 / img.height), w = img.width * s, h = img.height * s;
+      c.getContext("2d").drawImage(img, (S2 - w) / 2, (S2 - h) / 2, w, h);
+      draft.avatar = c.toDataURL("image/jpeg", 0.85); URL.revokeObjectURL(url); avPrev();
+    };
+    img.onerror = function(){ $("fAvNote").textContent = "That file didn't open as a picture."; };
+    img.src = url;
+  };
   function preview(){ $("pfBanner").setAttribute("style", T.bannerStyle(draft)); }
   Array.prototype.forEach.call(document.querySelectorAll("#fSw button"), function(b){
     b.onclick = function(){ draft.banner = b.getAttribute("data-c"); draft.bannerImage = ""; $("fNoImg").hidden = true; mark(); preview(); };
@@ -105,12 +128,22 @@ function wire(p, name){
     img.onerror = function(){ $("fImgNote").textContent = "That file didn't open as a picture."; };
     img.src = url;
   };
-  $("fReset").onclick = function(){ $("fName").value = T.state.session.name; };
+  // back to the Google name + photo (saved straight away, keeps your bio / banner / link)
+  $("fReset").onclick = function(){
+    $("fName").value = T.state.session.name; draft.avatar = ""; avPrev();
+    var cur = T.localProfile(T.state.h), out = {};
+    for(var k in cur) if(k !== "name" && k !== "avatar") out[k] = cur[k];
+    try { T.saveLocalProfile(out); } catch(err){}
+    $("fMsg").textContent = "Using your Google name + photo \u2713";
+    T.toast("Back to your Google name + photo");
+  };
   $("pfForm").onsubmit = function(e){
     e.preventDefault();
     var link = $("fLink").value.trim();
     if(link && !/^https:\/\/[^\s]+$/i.test(link)){ $("fMsg").textContent = "Links need to start with https://"; return; }
-    var out = {name:$("fName").value.trim().slice(0, 32), bio:$("fBio").value.trim().slice(0, 300), banner:draft.banner, bannerImage:draft.bannerImage, link:link};
+    // a name equal to the Google one (or blank) isn't saved, so it keeps following your Google account
+    var nm = $("fName").value.trim().slice(0, 32); if(nm === T.state.session.name) nm = "";
+    var out = {name:nm, avatar:draft.avatar, bio:$("fBio").value.trim().slice(0, 300), banner:draft.banner, bannerImage:draft.bannerImage, link:link};
     try { T.saveLocalProfile(out); } catch(err){ $("fMsg").textContent = "Couldn't save. The picture may be too big."; return; }
     $("fMsg").textContent = "Saved \u2713";
     T.toast("Profile saved");

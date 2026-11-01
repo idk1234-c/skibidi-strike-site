@@ -148,7 +148,7 @@ function draw(S){
     });
     h += '<ul class="pn-list">' + (shown.length ? shown.map(function(p){
       var st = statusOf(p);
-      return '<li><button type="button" class="pn-row" data-h="' + esc(p.h) + '">' + T.avatar({h:p.h, name:p.name, picture:p.prof.picture || ""}) +
+      return '<li><button type="button" class="pn-row" data-h="' + esc(p.h) + '">' + T.avatar({h:p.h, name:p.name, picture:p.prof.picture || (p.h === T.state.h ? T.me().picture : "")}) +
         '<span class="pn-who"><b>' + esc(p.name) + ' ' + (p.role !== "user" ? T.roleTag(p.role, true) : "") + '</b><span>Last seen ' + esc(T.when(p.last)) + (p.hint ? " \u00b7 " + esc(p.hint) : "") + '</span></span>' +
         spark(p.act.days) + '<span class="pn-st ' + st[0] + '">' + esc(st[1]) + '</span></button></li>';
     }).join("") : '<li style="padding:16px" class="pf-empty">Nobody here.</li>') + '</ul>';
@@ -189,7 +189,7 @@ function openDrawer(h){
   var dr = $("pnDrawer"), act = canAct(S.role, p), owner = S.role === "owner";
   var st = statusOf(p);
   var x = '<div class="pn-sheet" role="dialog" aria-modal="true" aria-label="' + esc(p.name) + '"><div class="ac-row" style="justify-content:space-between"><a class="acct-btn ghost sm" href="../profile/?u=' + encodeURIComponent(h) + '">Open site profile</a><button type="button" class="acct-btn ghost sm" id="pnClose">Close</button></div>' +
-    '<div class="ac-row" style="margin-top:16px;flex-wrap:nowrap">' + T.avatar({h:h, name:p.name, picture:p.prof.picture || ""}, "lg") + '<div style="min-width:0"><b style="font:700 1.3rem var(--ac-ui);letter-spacing:.06em;text-transform:uppercase;color:#fff">' + esc(p.name) + '</b> ' + T.roleTag(p.role) +
+    '<div class="ac-row" style="margin-top:16px;flex-wrap:nowrap">' + T.avatar({h:h, name:p.name, picture:p.prof.picture || (h === T.state.h ? T.me().picture : "")}, "lg") + '<div style="min-width:0"><b style="font:700 1.3rem var(--ac-ui);letter-spacing:.06em;text-transform:uppercase;color:#fff">' + esc(p.name) + '</b> ' + T.roleTag(p.role) +
     '<div class="acct-small">' + esc(p.hint || "") + (p.hint ? " \u00b7 " : "") + 'last seen ' + esc(T.when(p.last)) + '</div></div></div>' +
     '<div class="ac-row" style="margin-top:12px"><span class="pn-st ' + st[0] + '">' + esc(st[1]) + '</span>' + spark(p.act.days) + '<span class="acct-small">last 7 days</span></div>';
   if(p.R) x += '<div class="pn-confirm" style="border-color:rgba(255,90,74,.5);background:rgba(255,51,36,.06)"><b>' + (p.R.kind === "cut" ? "Cut off from the site" : p.R.kind === "pause" ? "Paused " + esc(T.until(p.R.until)) : "Banned " + esc(T.until(p.R.until))) + '</b>' +
