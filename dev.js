@@ -113,7 +113,7 @@ function bannerBody(){
   var B = SS.banner();
   var styles = [["accent","Blue"],["gold","Gold"],["red","Red"],["green","Green"]];
   var h = toggle("bnOn", "Show the banner", B.on, "A strip across the top of the site") +
-    inputRow("bnText", "Banner text", B.text, {ph: "e.g. Skibidi Strike 0.5.1 drops Friday!", spell: true}) +
+    inputRow("bnText", "Banner text", B.text, {ph: "e.g. Update 1.2 drops Friday!", spell: true}) +
     '<div class="dv-field"><span>Color</span><div class="dv-chips" id="bnStyles">';
   styles.forEach(function(s){ h += '<button type="button" class="dv-chip bn-' + s[0] + (B.style === s[0] ? ' on' : '') + '" data-style="' + s[0] + '">' + s[1] + '</button>'; });
   return h + '</div></div>' + inputRow("bnLink", "Link when tapped (optional)", B.link, {type: "url", ph: "https://..."}) +
