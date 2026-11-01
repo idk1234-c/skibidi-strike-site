@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#09090b">
+<title>Play Skibidi Strike</title>
+<meta name="description" content="Play Skibidi Strike free in your browser. 90 waves of skibidis in a destroyed city.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap">
+<style>
+:root{--bg:#09090b;--bg2:#101014;--panel:#141419;--line:#2b2e37;--rim:#4d596b;--txt:#e3e3ea;--dim:#9a9ba8;--red:#ff3324;--gold:#ffd933;--font:'Oswald','Bebas Neue','Arial Narrow',Impact,sans-serif;--bar:48px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);display:flex;flex-direction:column;height:100vh;height:100dvh}
+a{color:inherit;text-decoration:none}
+
+.topbar{flex:0 0 var(--bar);height:var(--bar);display:flex;align-items:center;gap:12px;padding:0 14px;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));background:linear-gradient(180deg,#141419,#0c0c0f);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(255,51,36,.18);position:relative;z-index:5}
+.back{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;padding:8px 4px;transition:color .15s}
+.back:hover{color:#fff}
+.back svg{width:16px;height:16px}
+.logo{flex:1;text-align:center;font-weight:700;letter-spacing:.24em;font-size:1rem;color:#fff;white-space:nowrap}
+.logo span{color:var(--red);text-shadow:0 0 14px rgba(255,51,36,.55)}
+.fs{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--line);color:var(--txt);font:600 .78rem var(--font);letter-spacing:.14em;text-transform:uppercase;padding:7px 12px;border-radius:6px;cursor:pointer;transition:border-color .15s,color .15s}
+.fs:hover{border-color:var(--red);color:#fff}
+.fs svg{width:15px;height:15px}
+.fs[hidden]{display:none}
+
+.stage{position:relative;flex:1 1 auto;min-height:0;background:#000;overflow:hidden}
+#unity-canvas{display:block;width:100%;height:100%;background:#000;outline:none;touch-action:none}
+
+/* loading screen */
+.cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 50% 120%,rgba(255,51,36,.22),transparent 55%),linear-gradient(180deg,#07070a 0%,#121218 60%,#1a1414 100%);z-index:3;transition:opacity .45s ease}
+.cover.gone{opacity:0;pointer-events:none}
+.skyline{position:absolute;left:0;right:0;bottom:0;height:42%;display:flex;align-items:flex-end;gap:2%;padding:0 2%;opacity:.9;pointer-events:none}
+.skyline i{flex:1;background:linear-gradient(180deg,#1b1b21,#0b0b0e);border-top:1px solid #2a2a31}
+.skyline i:nth-child(1){height:46%;clip-path:polygon(0 8%,30% 0,48% 14%,70% 4%,100% 18%,100% 100%,0 100%)}
+.skyline i:nth-child(2){height:78%;clip-path:polygon(0 0,40% 0,55% 12%,62% 6%,100% 10%,100% 100%,0 100%)}
+.skyline i:nth-child(3){height:34%;clip-path:polygon(0 20%,50% 0,100% 30%,100% 100%,0 100%)}
+.skyline i:nth-child(4){height:92%;clip-path:polygon(0 4%,22% 0,36% 10%,58% 2%,100% 0,100% 100%,0 100%)}
+.skyline i:nth-child(5){height:58%;clip-path:polygon(0 0,70% 12%,100% 0,100% 100%,0 100%)}
+.skyline i:nth-child(6){height:70%;clip-path:polygon(0 14%,26% 0,60% 18%,100% 6%,100% 100%,0 100%)}
+.skyline i:nth-child(7){height:40%;clip-path:polygon(0 0,100% 22%,100% 100%,0 100%)}
+.skyline:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(255,51,36,.12),transparent 40%)}
+.box{position:relative;width:100%;max-width:440px;text-align:center;background:rgba(16,16,20,.88);border:1px solid var(--line);border-top:2px solid var(--red);padding:28px 26px 24px;box-shadow:0 18px 50px rgba(0,0,0,.6),0 0 40px rgba(255,51,36,.08)}
+.box h1{font-size:2.3rem;line-height:1;letter-spacing:.08em;color:#fff;font-weight:700}
+.box h1 span{display:block;color:var(--red);text-shadow:0 0 22px rgba(255,51,36,.5)}
+.status{margin-top:18px;font-size:.82rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);min-height:1.2em}
+.track{margin-top:10px;height:14px;background:#0a0a0d;border:1px solid var(--rim);border-radius:3px;overflow:hidden;position:relative}
+.fill{position:absolute;left:0;top:0;bottom:0;width:0;background:repeating-linear-gradient(-45deg,#ff3324 0 10px,#d92616 10px 20px);box-shadow:0 0 14px rgba(255,51,36,.6);transition:width .25s ease}
+.fill:after{content:"";position:absolute;right:0;top:0;bottom:0;width:3px;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.pct{margin-top:8px;display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim);letter-spacing:.1em}
+.pct b{color:#fff;font-weight:600}
+.hint{margin-top:16px;font-size:.8rem;color:var(--dim);letter-spacing:.04em;line-height:1.5;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+/* error */
+.cover.err .track,.cover.err .pct{display:none}
+.cover.err .status{color:var(--red)}
+.errmsg{display:none;margin-top:12px;font-size:.92rem;line-height:1.55;color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.cover.err .errmsg{display:block}
+.btns{display:none;margin-top:18px;gap:10px;justify-content:center;flex-wrap:wrap}
+.cover.err .btns{display:flex}
+.btn{display:inline-block;padding:10px 18px;border-radius:6px;font:600 .85rem var(--font);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--txt)}
+.btn.red{background:color-mix(in srgb,#ff3324 80%,#000);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(255,51,36,.35)}
+
+/* small notices from the game */
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);max-width:92%;z-index:4;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast div{background:rgba(16,16,20,.95);border:1px solid var(--line);border-left:3px solid var(--gold);color:var(--txt);padding:8px 14px;font-size:.85rem;letter-spacing:.04em;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.toast div.bad{border-left-color:var(--red)}
+
+/* phones held upright: the game is made for landscape */
+.rotate{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center;background:rgba(9,9,11,.94)}
+.rotate svg{width:64px;height:64px;color:var(--gold);animation:tilt 2.2s ease-in-out infinite}
+.rotate h2{font-size:1.4rem;letter-spacing:.14em;color:#fff;font-weight:700}
+.rotate p{color:var(--dim);font-size:.9rem;line-height:1.5;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;max-width:280px}
+@keyframes tilt{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+@media (orientation:portrait){ body.mobile:not(.rot-ok) .rotate{display:flex} }
+
+@media (max-width:560px){
+  :root{--bar:44px}
+  .logo{font-size:.85rem;letter-spacing:.18em}
+  .back .lbl,.fs .lbl{display:none}
+  .box{padding:22px 18px 20px}
+  .box h1{font-size:1.9rem}
+}
+@media (max-height:460px) and (orientation:landscape){
+  :root{--bar:38px}
+  .box{padding:16px 18px}
+  .box h1{font-size:1.5rem}
+  .hint{display:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="back" href="../" aria-label="Back to the Skibidi Strike site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span class="lbl">Site</span></a>
+  <div class="logo">SKIBIDI <span>STRIKE</span></div>
+  <button class="fs" id="fsBtn" type="button" aria-label="Fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="lbl">Fullscreen</span></button>
+</header>
+
+<main class="stage" id="stage">
+  <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <div class="toast" id="toast" aria-live="polite"></div>
+  <div class="rotate" id="rotate">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>
+    <h2>TURN YOUR PHONE</h2>
+    <p>Skibidi Strike plays sideways. The game keeps loading while you turn.</p>
+    <button class="btn" type="button" id="rotOk">Play upright anyway</button>
+  </div>
+  <div class="cover" id="cover">
+    <div class="skyline" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="box" role="status" aria-live="polite">
+      <h1>SKIBIDI <span>STRIKE</span></h1>
+      <div class="status" id="status">Loading the city</div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <div class="pct"><span id="phase">Downloading</span><b id="pct">0%</b></div>
+      <p class="errmsg" id="errmsg"></p>
+      <div class="btns"><button class="btn red" type="button" onclick="location.reload()">Try again</button><a class="btn" href="../">Back to the site</a></div>
+      <p class="hint" id="hint">First load is about 58 MB, so give it a moment. Best on a computer with keyboard and mouse.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  var canvas = document.getElementById("unity-canvas");
+  var cover = document.getElementById("cover");
+  var fill = document.getElementById("fill");
+  var pct = document.getElementById("pct");
+  var phase = document.getElementById("phase");
+  var status = document.getElementById("status");
+  var fsBtn = document.getElementById("fsBtn");
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  var game = null;
+  if(isMobile) document.body.classList.add("mobile");
+  document.getElementById("rotOk").addEventListener("click", function(){ document.body.classList.add("rot-ok"); });
+
+  function showError(title, msg){
+    cover.classList.remove("gone");
+    cover.classList.add("err");
+    status.textContent = title;
+    document.getElementById("errmsg").textContent = msg;
+    document.getElementById("hint").style.display = "none";
+  }
+
+  function toast(msg, type){
+    var host = document.getElementById("toast");
+    var d = document.createElement("div");
+    d.textContent = String(msg).replace(/<[^>]*>/g, "");
+    if(type === "error") d.className = "bad";
+    host.appendChild(d);
+    setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, type === "error" ? 9000 : 5000);
+  }
+
+  // check the browser can draw 3D before downloading anything
+  function hasWebGL(){
+    try {
+      var c = document.createElement("canvas");
+      return !!(window.WebGL2RenderingContext && c.getContext("webgl2"));
+    } catch(e){ return false; }
+  }
+  if(!hasWebGL()){
+    showError("Can't start the game here",
+      "This browser can't run 3D games right now. Try the latest Chrome, Edge, Firefox or Safari, and make sure hardware acceleration is turned on in your browser settings.");
+    fsBtn.hidden = true;
+    return;
+  }
+
+  // fullscreen (hidden where the browser doesn't allow it, e.g. iPhone Safari)
+  var fsOk = document.fullscreenEnabled || document.webkitFullscreenEnabled;
+  if(!fsOk) fsBtn.hidden = true;
+  fsBtn.addEventListener("click", function(){
+    if(game){ game.SetFullscreen(1); return; }
+    var el = document.getElementById("stage");
+    (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+  });
+
+  // keep keyboard focus on the game
+  canvas.addEventListener("pointerdown", function(){ canvas.focus(); });
+
+  var dpr = window.devicePixelRatio || 1;
+  var buildUrl = "Build";
+  var config = {
+    arguments: [],
+    dataUrl: buildUrl + "/WebBuild.data",
+    frameworkUrl: buildUrl + "/WebBuild.framework.js",
+    codeUrl: buildUrl + "/WebBuild.wasm",
+    streamingAssetsUrl: "StreamingAssets",
+    companyName: "Ttvm Studios",
+    productName: "Skibidi Strike",
+    productVersion: "0.1.0",
+    autoSyncPersistentDataPath: true,
+    fullscreenElementID: "stage",
+    devicePixelRatio: Math.min(dpr, isMobile ? 1.5 : 2),
+    showBanner: function(msg, type){ toast(msg, type); }
+  };
+
+  function progress(p){
+    var v = Math.max(0, Math.min(1, p || 0));
+    fill.style.width = Math.round(v * 100) + "%";
+    pct.textContent = Math.round(v * 100) + "%";
+    if(v >= 0.9){ phase.textContent = "Starting up"; status.textContent = "Almost there"; }
+    else phase.textContent = "Downloading";
+  }
+
+  // Big build files are stored in parts (see Build/parts.json) and joined here.
+  // If parts.json is missing, the plain files in Build/ are used instead.
+  var dl = {total: 0, got: 0, on: false};
+  function dlProgress(){
+    if(!dl.total) return;
+    var v = dl.got / dl.total;
+    fill.style.width = Math.round(v * 85) + "%";
+    pct.textContent = Math.round(v * 85) + "%";
+    phase.textContent = "Downloading " + (dl.got / 1048576).toFixed(0) + " / " + (dl.total / 1048576).toFixed(0) + " MB";
+  }
+  function getPart(url){
+    return fetch(url).then(function(r){
+      if(!r.ok) throw new Error("HTTP " + r.status + " for " + url);
+      if(!r.body || !r.body.getReader) return r.arrayBuffer().then(function(b){ dl.got += b.byteLength; dlProgress(); return b; });
+      var reader = r.body.getReader(), chunks = [];
+      function pump(){
+        return reader.read().then(function(x){
+          if(x.done) return new Blob(chunks);
+          chunks.push(x.value); dl.got += x.value.byteLength; dlProgress();
+          return pump();
+        });
+      }
+      return pump();
+    });
+  }
+  function joinFile(f, type){
+    var urls = f.parts.map(function(p){ return buildUrl + "/" + p + "?v=" + f.v; });
+    var out = new Array(urls.length), next = 0;
+    function worker(){
+      if(next >= urls.length) return Promise.resolve();
+      var i = next++;
+      return getPart(urls[i]).then(function(b){ out[i] = b; return worker(); });
+    }
+    var lanes = []; for(var k = 0; k < 4; k++) lanes.push(worker());
+    return Promise.all(lanes).then(function(){
+      var blob = new Blob(out, {type: type});
+      if(blob.size !== f.size) throw new Error("size mismatch for " + f.name);
+      return URL.createObjectURL(blob);
+    });
+  }
+  function prepare(){
+    return fetch(buildUrl + "/parts.json", {cache: "no-cache"}).then(function(r){
+      if(!r.ok) return null;
+      return r.json();
+    }).catch(function(){ return null; }).then(function(m){
+      if(!m || !m.files) return;
+      dl.on = true;
+      dl.total = (m.files.data ? m.files.data.size : 0) + (m.files.wasm ? m.files.wasm.size : 0);
+      var jobs = [];
+      if(m.files.data) jobs.push(joinFile(m.files.data, "application/octet-stream").then(function(u){ config.dataUrl = u; }));
+      if(m.files.wasm) jobs.push(joinFile(m.files.wasm, "application/wasm").then(function(u){ config.codeUrl = u; }));
+      config.cacheControl = function(){ return "no-store"; };
+      return Promise.all(jobs);
+    });
+  }
+
+  function start(){
+    var s = document.createElement("script");
+    s.src = buildUrl + "/WebBuild.loader.js";
+    s.onerror = function(){
+      showError("Couldn't load the game", "The game files didn't download. Check your connection and try again.");
+    };
+    s.onload = function(){
+      createUnityInstance(canvas, config, function(p){
+        if(dl.on){ var v = 0.85 + 0.15 * Math.max(0, Math.min(1, p || 0)); fill.style.width = Math.round(v * 100) + "%"; pct.textContent = Math.round(v * 100) + "%"; phase.textContent = "Starting up"; status.textContent = "Almost there"; }
+        else progress(p);
+      }).then(function(inst){
+        game = inst;
+        fill.style.width = "100%"; pct.textContent = "100%";
+        cover.classList.add("gone");
+        canvas.focus();
+      }).catch(function(err){
+        console.error(err);
+        showError("The game hit a problem", "Something went wrong while starting Skibidi Strike. Reload the page to try again. If it keeps happening, try another browser like Chrome or Edge.");
+      });
+    };
+    document.body.appendChild(s);
+  }
+  prepare().then(start).catch(function(err){
+    console.error(err);
+    showError("Couldn't load the game", "Part of the game didn't download. Check your connection and reload the page.");
+  });
+})();
+</script>
+</body>
+</html>

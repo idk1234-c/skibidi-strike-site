@@ -18,7 +18,7 @@ var GROUPS = [
   {g:"text",     title:"Page text",           desc:"Character cards, video cards, notes, footer and fine print."}
 ];
 var PRESETS = [
-  {n:"Default",   accent:"#00c8ff", accent2:"#ffd23f", bg:"#07090d"},
+  {n:"Default",   accent:"#ff3324", accent2:"#ffd933", bg:"#09090b"},
   {n:"Toilet gold", accent:"#ffb800", accent2:"#ffffff", bg:"#0b0904"},
   {n:"Red alert", accent:"#ff3b30", accent2:"#ffd23f", bg:"#0d0707"},
   {n:"Toxic",     accent:"#39ff7a", accent2:"#d4ff3f", bg:"#060d08"},
@@ -106,7 +106,7 @@ function playBody(){
     inputRow("plTitle", "Popup title", P.title, {ph: SS.PLAY_DEFAULTS.title}) +
     inputRow("plMsg", "Popup message", P.msg, {multi: true, rows: 3, ph: SS.PLAY_DEFAULTS.msg, spell: true}) +
     toggle("plTag", "Show a SOON tag on the PLAY buttons", P.tag) +
-    inputRow("plUrl", "Game link (used when \"not done yet\" is OFF)", P.url, {type: "url", ph: "https://... (leave empty for now)"}) +
+    inputRow("plUrl", "Game link (used when \"not done yet\" is OFF)", P.url, {type: "text", ph: "play/ (the game page) or https://..."}) +
     '<div class="dv-row"><button type="button" class="dv-btn" id="plTest">Try PLAY in the preview</button><button type="button" class="dv-ghost" data-reset="play">Reset</button></div>';
 }
 function bannerBody(){
@@ -193,7 +193,7 @@ function exportText(){
   if(o.order.length) lines.push("- Section order: " + sectionOrder().join(", "));
   if(o.hidden.length) lines.push("- Hidden sections: " + o.hidden.join(", "));
   if(Object.keys(o.theme).length) lines.push("- Colors: " + Object.keys(o.theme).map(function(k){ return k + " " + o.theme[k]; }).join(", "));
-  if(Object.keys(o.play).length){ var P = SS.play(); lines.push("- PLAY button: " + (P.soon ? "shows \"not done yet\" popup, title " + q(P.title) + ", message " + q(P.msg) : "goes to " + (P.url || "the roadmap")) + (P.tag ? ", SOON tag on" : "")); }
+  if(Object.keys(o.play).length){ var P = SS.play(); lines.push("- PLAY button: " + (P.soon ? "shows \"not done yet\" popup, title " + q(P.title) + ", message " + q(P.msg) : "goes to " + (P.url || "play/ (the game page)")) + (P.tag ? ", SOON tag on" : "")); }
   if(Object.keys(o.banner).length){ var B = SS.banner(); lines.push("- Banner: " + (B.on ? "ON, " + q(B.text) + " (" + B.style + (B.link ? ", links to " + B.link : "") + ")" : "off")); }
   if(Object.keys(o.links).length){ var L = SS.links(); lines.push("- Links: YouTube " + L.youtube + ", TikTok " + L.tiktok + (L.discord ? ", Discord " + L.discord : "")); }
   var rm = getJSON("ss_roadmap"), pg = getJSON("ss_progress"), nx = getJSON("ss_next"), cr = getJSON("ss_credits");

@@ -95,13 +95,13 @@ SECTIONS.forEach(function(s){
   FIELDS.push({g:"sections", k:"h_" + s.id, l:s.name + " · page heading", sel:"#" + s.id + " > h2", mode:"html2text"});
 });
 
-var THEME_DEFAULTS = {accent:"#00c8ff", accent2:"#ffd23f", bg:"#07090d"};
+var THEME_DEFAULTS = {accent:"#ff3324", accent2:"#ffd933", bg:"#09090b"};
 var PLAY_DEFAULTS = {
-  soon: true,
+  soon: false,
   title: "NOT DONE YET",
   msg: "Skibidi Strike is still being built. The playable build lands the day it's ready, so check the roadmap for the latest updates.",
   tag: false,
-  url: ""
+  url: "play/"
 };
 var BANNER_DEFAULTS = {on:false, text:"", style:"accent", link:""};
 var LINK_DEFAULTS = {

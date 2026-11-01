@@ -12,7 +12,8 @@ var DEFAULT_ROADMAP = [
   {d:"OCT 31", t:"The characters get real", b:"Cameraman, Alliance Titan and the Astro UFO rebuilt from code with genuinely swinging legs and arms."},
   {d:"OCT 31", t:"Main menu redesign", b:"Bigger rounded buttons, a new title-screen backdrop with the city and a skibidi watching over it, and a WEBSITE button linking the game to this site."},
   {d:"OCT 31", t:"The city falls", b:"A destroyed-city battle map: ruined buildings, fires, smoke and dusty haze."},
-  {d:"OCT 31", t:"Balance pass", b:"Wave 1 is exactly five skibidis, and every toilet now comes in its own size."}
+  {d:"OCT 31", t:"Balance pass", b:"Wave 1 is exactly five skibidis, and every toilet now comes in its own size."},
+  {d:"OCT 31", t:"Play it in your browser", b:"The first web build is live. Hit PLAY on this site and you're in the city, no download."}
 ];
 
 var IN_PROGRESS = [
@@ -99,9 +100,16 @@ function renderGroup(hostId, items){
   }
   host.innerHTML = html;
 }
+// the game lives at play/ (the Unity web build); a dev-page link can point somewhere else
+function playUrl(u){
+  u = String(u || "").trim();
+  if(/^https?:\/\//i.test(u)) return u;
+  if(u && !/^[a-z][a-z0-9+.-]*:/i.test(u) && !/^\/\//.test(u)) return u; // relative path like play/
+  return "play/";
+}
 function playNote(){
   var P = window.SS ? SS.play() : {soon:true, title:"NOT DONE YET", msg:""};
-  if(!P.soon && P.url && /^https?:\/\//i.test(P.url)){ window.location.href = P.url; return; }
+  if(!P.soon){ window.location.href = playUrl(P.url); return; }
   var box = document.getElementById("playSoon");
   if(P.soon && box){
     document.getElementById("psTitle").textContent = P.title || "NOT DONE YET";
@@ -270,6 +278,7 @@ document.addEventListener("DOMContentLoaded", function(){
     a.addEventListener("click", function(ev){
       ev.preventDefault(); sideClose();
       var id = (a.getAttribute("href") || "").slice(1);
+      if(a.classList.contains("sm-play")){ playNote(); return; }
       if(id === "play") showPage(null); else showPage(id);
     });
   });
@@ -292,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.16 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.17 \u00b7 OCT 31 2026";
 
 // ---- page-view navigation ----
 function showPage(id){

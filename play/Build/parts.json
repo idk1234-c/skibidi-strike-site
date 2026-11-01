@@ -1,0 +1,45 @@
+{
+ "note": "Large files are stored in parts (each under 2.5 MB) and joined in the browser by play/index.html.",
+ "files": {
+  "data": {
+   "name": "WebBuild.data",
+   "size": 36209651,
+   "sha1": "849fc8238be0c4fd7e7e2489aea01085b0fde922",
+   "v": "849fc8238b",
+   "parts": [
+    "WebBuild.data.part00",
+    "WebBuild.data.part01",
+    "WebBuild.data.part02",
+    "WebBuild.data.part03",
+    "WebBuild.data.part04",
+    "WebBuild.data.part05",
+    "WebBuild.data.part06",
+    "WebBuild.data.part07",
+    "WebBuild.data.part08",
+    "WebBuild.data.part09",
+    "WebBuild.data.part10",
+    "WebBuild.data.part11",
+    "WebBuild.data.part12",
+    "WebBuild.data.part13",
+    "WebBuild.data.part14"
+   ]
+  },
+  "wasm": {
+   "name": "WebBuild.wasm",
+   "size": 21998499,
+   "sha1": "2e0767707b7a19c345df18baff986bd191d295fb",
+   "v": "2e0767707b",
+   "parts": [
+    "WebBuild.wasm.part00",
+    "WebBuild.wasm.part01",
+    "WebBuild.wasm.part02",
+    "WebBuild.wasm.part03",
+    "WebBuild.wasm.part04",
+    "WebBuild.wasm.part05",
+    "WebBuild.wasm.part06",
+    "WebBuild.wasm.part07",
+    "WebBuild.wasm.part08"
+   ]
+  }
+ }
+}
