@@ -104,3 +104,15 @@ footer .fine{font-size:.82rem;color:#9a9a9a;margin-top:6px}
 @media(prefers-reduced-motion:reduce){
   .cloud,.status .dot,.checklist .ico::after{animation:none}
 }
+
+/* Alpha / Beta status badge + roadmap groups */
+.status{flex-wrap:wrap;justify-content:center;gap:0;padding:0;background:#1d1d1d;border-color:#6b5410;max-width:100%}
+.status .sb{display:inline-flex;align-items:center;gap:10px;background:#c0392b;color:#fff;padding:10px 12px;text-shadow:2px 2px 0 rgba(0,0,0,.35);box-shadow:inset -3px -3px 0 rgba(0,0,0,.25),inset 3px 3px 0 rgba(255,255,255,.25)}
+.status .sb .dot{background:#fff}
+.status .sr{display:inline-block;background:var(--gold);color:#1d1d1d;padding:10px 12px;box-shadow:inset -3px -3px 0 rgba(0,0,0,.18),inset 3px 3px 0 rgba(255,255,255,.4)}
+.rm-h{font-family:var(--pix);font-weight:400;font-size:.62rem;line-height:1.4;color:var(--gold);letter-spacing:.06em;margin:4px 0 12px;text-shadow:2px 2px 0 #000}
+.checklist+.rm-h{margin-top:26px}
+.checklist.next .num{flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-family:var(--pix);font-size:.55rem;color:#ddd;background:#2a2a2a;border:3px solid #555}
+.checklist.next .what{color:#d6d6d6}
+.checklist.next .tag{background:#8a8a8a;border-color:#3a3a3a;color:#111}
+@media(max-width:560px){.status .sb,.status .sr{width:100%;justify-content:center}.checklist li{gap:10px;padding:10px 11px}.checklist .what{font-size:1rem}.checklist .tag{display:none}}
