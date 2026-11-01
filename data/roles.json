@@ -1,0 +1,17 @@
+{
+  "_about": "Who is staff on the site. People are stored as a fingerprint of their Google email (h), never the email itself. Change roles from the Owner panel, not by hand.",
+  "owners": [
+    {
+      "h": "84b8ba22b22d0eb7c6c62beabf9088f975efc8543a2a4c171f274afc3a478d11",
+      "name": "Amos",
+      "hint": "am•••2@gmail.com"
+    },
+    {
+      "h": "ed5ea1fa489217fd448743f8187fc26dbe53dd1717f3550a99dcbea26b3f5da7",
+      "name": "Amos",
+      "hint": "am•••58@gmail.com"
+    }
+  ],
+  "mods": [],
+  "devs": []
+}

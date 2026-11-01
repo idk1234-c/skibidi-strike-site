@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sign in — TTVM Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../acct.css?v=1">
+</head>
+<body class="ac-page" data-acct-signin>
+<header class="ac-bar">
+  <div class="acct" data-acct><a class="acct-chip is-guest" href="../profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
+  <a class="ac-logo" href="../">SKIBIDI <span>STRIKE</span></a>
+  <nav class="ac-links" aria-label="Main"><a href="../games/">Games</a><a href="../devhub/">Dev</a><a href="../">Site</a></nav>
+</header>
+<main class="ac-main">
+  <div class="si-box">
+    <div class="ac-card">
+      <h1 class="ac-h1">Sign <span>in</span></h1>
+      <p class="ac-lead" id="siLead">Sign in to customize your profile.</p>
+      <div class="si-g" id="siG"></div>
+      <p class="acct-small" id="siNote">We only get your name, email and Google picture. Your email is never shown on the site.</p>
+      <ul class="si-perks">
+        <li>Your Google picture and name in the top-left on every page</li>
+        <li>Your own profile: banner colour or picture, display name and bio</li>
+        <li>Post on the community board</li>
+      </ul>
+    </div>
+    <p style="margin-top:16px"><a class="acct-btn ghost sm" href="../profile/">Back to the Guest profile</a></p>
+  </div>
+</main>
+<footer class="ac-foot">TTVM Studios &middot; <a href="../games/">Games</a> &middot; <a href="../devhub/">Dev</a> &middot; <a href="../">Skibidi Strike</a></footer>
+<script src="../js/auth-config.js?v=1"></script>
+<script src="../js/acct.js?v=1"></script>
+<script>
+(function(){
+  var g = document.getElementById("siG");
+  TTVM.renderGoogleButton(g, {width:260});
+  if(!TTVM.READY){
+    document.getElementById("siLead").textContent = "Google sign-in is coming soon. Once it's switched on, this is where you sign in to customize your profile.";
+  }
+  TTVM.on(function(S){
+    if(S.session && !S.restricted){ document.getElementById("siLead").textContent = "You're signed in as " + S.session.name + "."; g.innerHTML = '<a class="acct-btn" href="../profile/#edit">Customize your profile</a>'; }
+  });
+})();
+</script>
+</body>
+</html>
