@@ -1,11 +1,12 @@
 {
  "note": "Large files are stored in parts (each under 2.5 MB) and joined in the browser by play/index.html.",
+ "build": "web build mobile (skibidi-strike 4e58d76)",
  "files": {
   "data": {
    "name": "WebBuild.data",
-   "size": 36209651,
-   "sha1": "849fc8238be0c4fd7e7e2489aea01085b0fde922",
-   "v": "849fc8238b",
+   "size": 36798302,
+   "sha1": "172207bda96af980cb193dab23efa78a25fb052a",
+   "v": "172207bda9",
    "parts": [
     "WebBuild.data.part00",
     "WebBuild.data.part01",
@@ -26,9 +27,9 @@
   },
   "wasm": {
    "name": "WebBuild.wasm",
-   "size": 21998499,
-   "sha1": "2e0767707b7a19c345df18baff986bd191d295fb",
-   "v": "2e0767707b",
+   "size": 24967417,
+   "sha1": "df0723f63ab0bd1e9bbfeacdfc5c5c04d3731f48",
+   "v": "df0723f63a",
    "parts": [
     "WebBuild.wasm.part00",
     "WebBuild.wasm.part01",
@@ -38,7 +39,8 @@
     "WebBuild.wasm.part05",
     "WebBuild.wasm.part06",
     "WebBuild.wasm.part07",
-    "WebBuild.wasm.part08"
+    "WebBuild.wasm.part08",
+    "WebBuild.wasm.part09"
    ]
   }
  }
