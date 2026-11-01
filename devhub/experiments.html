@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="../acct.css?v=6">
+<link rel="stylesheet" href="../acct.css?v=7">
 <meta name="robots" content="noindex,nofollow">
 </head>
 <body class="ac-page" data-page="experiments" data-acct-lock="staff">
@@ -24,18 +24,16 @@
 </main>
 <footer class="ac-foot">TTVM Studios &middot; <a href="../games/">Games</a> <span class="acct-staffonly">&middot; <a href="../devhub/">Dev</a> </span>&middot; <a href="../">Skibidi Strike</a></footer>
 <script src="../js/auth-config.js?v=2"></script>
-<script src="../js/acct.js?v=7"></script>
-<script src="../js/announce.js?v=2" defer></script>
+<script src="../js/acct.js?v=8"></script>
+<script src="../js/announce.js?v=3" defer></script>
 <script>
 (function(){
   var T = TTVM, esc = T.esc, root = null;
-  var GAMES = {site:"The site", skibidi:"Skibidi Strike", blockworld:"Blockworld"};
+  var GAMES = {site:"The site", skibidi:"Skibidi Strike"};
   var ST = {idea:"Idea", building:"Being built", testing:"Testing"};
   function preview(x){
     if(x.id === "touch-controls") return '<div class="xp-prev xp-prev-touch"><i class="s"></i><i class="b b1"></i><i class="b b2"></i><i class="b b3"></i></div>';
     if(x.id === "music-tab") return '<div class="xp-prev xp-prev-music"><span>&#9835; Music</span><i></i><i></i><i></i></div>';
-    if(x.id === "far-lod") return '<div class="xp-prev xp-prev-lod"><i class="r3"></i><i class="r2"></i><i class="r1"></i><i class="me"></i></div>';
-    if(x.id === "bw-daynight") return '<div class="xp-prev xp-prev-sky"><i></i></div>';
     return '<div class="xp-prev"></div>';
   }
   function draw(list){
@@ -50,7 +48,7 @@
   }
   function listHtml(list, live){
     var st = T.exp.state();
-    return ["site", "skibidi", "blockworld"].map(function(g){
+    return ["site", "skibidi"].map(function(g){
       var xs = list.filter(function(x){ return x.game === g; }); if(!xs.length) return "";
       return '<h2 class="ac-h2 xp-gh xp-g-' + g + '">' + GAMES[g] + '</h2><div class="xp-grid">' + xs.map(function(x){
         var on = live && st.on && !st.off[x.id], enabled = live && !st.off[x.id];

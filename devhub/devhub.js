@@ -65,7 +65,7 @@ function announceEditor(S){
     function draw(){
       $("anList").innerHTML = items.map(function(x, i){
         return '<div class="an-row" data-i="' + i + '"><select class="ac-in an-tag" aria-label="Tag for line ' + (i + 1) + '">' + opts(x.tag) + '</select>' +
-          '<input class="ac-in an-txt" type="text" maxlength="160" value="' + esc(x.text) + '" placeholder="' + (i ? "Blockworld \u2014 Alpha, in progress" : "Google sign-in is live") + '" aria-label="Text for line ' + (i + 1) + '">' +
+          '<input class="ac-in an-txt" type="text" maxlength="160" value="' + esc(x.text) + '" placeholder="' + (i ? "Skibidi Strike \u2014 Beta" : "Google sign-in is live") + '" aria-label="Text for line ' + (i + 1) + '">' +
           '<span class="an-btns"><button type="button" class="acct-btn ghost sm" data-up="' + i + '" aria-label="Move line ' + (i + 1) + ' up"' + (i ? "" : " disabled") + '>&uarr;</button>' +
           '<button type="button" class="acct-btn ghost sm" data-del="' + i + '" aria-label="Remove line ' + (i + 1) + '">&times;</button></span></div>';
       }).join("") || '<p class="acct-small">No lines yet. Add one below.</p>';
@@ -255,7 +255,7 @@ function devPanel(S){
   return '<div class="ac-card"><h2 class="ac-h2">Dev help</h2><div class="pn-help">' +
     '<p><b>What devs can do.</b> Help build the games and the site, use the page editor and try experimental features. Moderating people is for moderators and the owner.</p>' +
     '<p><b>Page editor.</b> Change words, buttons, colours and the announcement bar on the home page. Edits show on your device; send them to Titan to make them live for everyone.</p>' +
-    '<p><b>Experiments.</b> Turn on preview features before they launch, for Skibidi Strike, Blockworld and the site.</p>' +
+    '<p><b>Experiments.</b> Turn on preview features before they launch, for Skibidi Strike and the site.</p>' +
     '<p><b>Need something bigger?</b> Ask the owner or a moderator. Roles and bans can only be changed by them.</p></div>' +
     '<div class="ac-row" style="margin-top:6px"><a class="acct-btn" href="../dev.html">Open the page editor</a><a class="acct-btn ghost" href="experiments.html">Experiments</a><a class="acct-btn ghost" href="community.html">Community board</a></div></div>';
 }

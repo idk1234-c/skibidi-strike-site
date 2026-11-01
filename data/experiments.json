@@ -1,5 +1,5 @@
 {
-  "_about": "Upcoming features you can try in Test / Experimental mode (owner, moderators, devs). game: site | skibidi | blockworld. status: idea | building | testing.",
+  "_about": "Upcoming features you can try in Test / Experimental mode (owner, moderators, devs). game: site | skibidi. status: idea | building | testing.",
   "experiments": [
     {
       "id": "touch-controls",
@@ -16,22 +16,6 @@
       "status": "building",
       "where": "",
       "description": "A Music button on every page that opens the soundtrack list, with every track credited to its creator."
-    },
-    {
-      "id": "far-lod",
-      "name": "Far terrain (LOD)",
-      "game": "blockworld",
-      "status": "idea",
-      "where": "blockworld/#xpLod",
-      "description": "Distant Horizons-style far chunks: full detail near you, cheap low-detail blocks far away, so the view distance can go way up without killing FPS. Try the sliders on the Blockworld page."
-    },
-    {
-      "id": "bw-daynight",
-      "name": "Day / night sky",
-      "game": "blockworld",
-      "status": "testing",
-      "where": "blockworld/",
-      "description": "The Blockworld page sky slowly cycles from day to sunset to night, like the game's day/night cycle."
     }
   ]
 }

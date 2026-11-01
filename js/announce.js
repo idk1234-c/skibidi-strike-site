@@ -1,6 +1,6 @@
 /* TTVM Studios update banner: the scrolling news strip across the very top of every page.
  * It lives in data/announce.json so one commit changes it (owners, moderators and devs can also edit it from the Dev hub):
- *   {"active":true, "items":[{"tag":"BIG UPDATE","text":"..."}, {"tag":"NEW GAME","text":"Blockworld \u2014 Alpha, in progress"},
+ *   {"active":true, "items":[{"tag":"BIG UPDATE","text":"..."}, {"tag":"UPDATE","text":"..."},
  *                            {"tag":"IN PROGRESS","text":"Skibidi Strike \u2014 Beta"}]}
  * Each item has its own tag and they scroll one after another. The old single {"text":"..."} shape still works.
  * Closing it (x) hides the current set on this device until any item changes. Reduced-motion users get a still strip. */

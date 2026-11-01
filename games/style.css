@@ -56,18 +56,6 @@ main{max-width:1000px;margin:0 auto;padding:0 20px 40px}
 /* previews */
 .art{position:relative;min-height:230px;overflow:hidden;border-right:1px solid var(--line)}
 .art b{position:absolute;z-index:3}
-/* Blockworld: built from the 16x16 textures on the Blockworld page */
-.art-bw{background:linear-gradient(180deg,#4f97e8 0%,#7db8f3 55%,#b8dcfb 100%);image-rendering:pixelated}
-.art-bw span{position:absolute;image-rendering:pixelated}
-.bw-sun{top:24px;right:34px;width:30px;height:30px;background:#fff6c4;box-shadow:0 0 0 6px rgba(255,246,196,.3)}
-.bw-cloud{top:70px;left:46%;width:96px;height:16px;background:#fff;opacity:.92}
-.bw-cloud::before{content:"";position:absolute;left:24px;top:-16px;width:40px;height:16px;background:#fff}
-.bw-ground{left:0;right:0;bottom:0;height:72px;background:url(../blockworld/img/grass_side.png) repeat-x 0 0/24px 24px,url(../blockworld/img/dirt.png) repeat-x 0 24px/24px 24px,url(../blockworld/img/stone.png) repeat 0 0/24px 24px}
-.bw-hill{left:24px;bottom:72px;width:96px;height:48px;background:url(../blockworld/img/grass_side.png) repeat-x 0 0/24px 24px,url(../blockworld/img/dirt.png) repeat 0 0/24px 24px}
-.bw-hill::before{content:"";position:absolute;left:24px;top:-24px;width:48px;height:24px;background:url(../blockworld/img/grass_side.png) repeat-x 0 0/24px 24px}
-.bw-tree{right:64px;bottom:72px;width:24px;height:72px;background:url(../blockworld/img/log.png) repeat-y 0 0/24px 24px}
-.bw-tree i{position:absolute;left:-36px;top:-48px;width:96px;height:72px;background:url(../blockworld/img/leaves.png) repeat 0 0/24px 24px;clip-path:polygon(25% 0,75% 0,75% 33.3%,100% 33.3%,100% 100%,0 100%,0 33.3%,25% 33.3%)}
-.bw-logo{left:22px;top:24px;font-family:var(--pix);font-weight:400;font-size:1.05rem;color:#fff;text-transform:uppercase;text-shadow:3px 3px 0 #2d4a20,5px 5px 0 rgba(0,0,0,.2)}
 /* Skibidi Strike: the burning city */
 .art-ss{background:radial-gradient(ellipse at 50% 115%,rgba(255,51,36,.42),transparent 62%),linear-gradient(180deg,#0a0c12 0%,#121722 60%,#1a1012 100%)}
 .ss-glow{position:absolute;left:0;right:0;bottom:0;height:60%;background:radial-gradient(ellipse at 30% 100%,rgba(255,140,40,.25),transparent 60%)}
@@ -115,11 +103,6 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
   .gb h2{font-size:1.45rem}
   .key ul{grid-template-columns:1fr}
   .ss-logo{font-size:1.45rem}
-  .bw-logo{font-size:.9rem}
-  .art-bw{min-height:210px}
-  .bw-ground{height:48px}
-  .bw-hill,.bw-tree{bottom:48px}
-  .bw-cloud{top:64px;left:30%}
 }
 @media(max-width:400px){.quick{display:none}}
 @media(prefers-reduced-motion:reduce){.game,.go{transition:none}.game:hover{transform:none}}

@@ -188,7 +188,7 @@ function lockHtml(level){
   return '<div class="ac-card acct-locked" data-acct-locked><div class="acct-lockico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></div>' +
     '<h1 class="ac-h1">' + who + '</h1><p class="ac-lead">' + who + ' \u2014 sign in with an approved Google account.</p>' +
     (READY ? '<p><a class="acct-btn" href="' + link("signin/?next=" + encodeURIComponent(location.pathname)) + '">Sign in with Google</a></p>' : '<p class="acct-small">Google sign-in isn\'t switched on yet, so the studio tools are locked for everyone.</p>') +
-    '<p class="ac-row" style="margin-top:16px"><a class="acct-btn ghost" href="' + link("") + '">Home</a><a class="acct-btn ghost" href="' + link("games/") + '">Games</a><a class="acct-btn ghost" href="' + link("blockworld/") + '">Blockworld</a><a class="acct-btn ghost" href="' + link("devhub/community.html") + '">Community board</a></p></div>';
+    '<p class="ac-row" style="margin-top:16px"><a class="acct-btn ghost" href="' + link("") + '">Home</a><a class="acct-btn ghost" href="' + link("games/") + '">Games</a><a class="acct-btn ghost" href="' + link("devhub/community.html") + '">Community board</a></p></div>';
 }
 // pages marked <body data-acct-lock="staff|owner"> show ONLY the lock card until a signed-in staff member opens them
 var lockState = null;
@@ -592,44 +592,9 @@ var FEAT = {
     var btn = b.querySelector("button"), pn = b.querySelector(".xp-mpanel");
     btn.onclick = function(){ pn.hidden = !pn.hidden; btn.setAttribute("aria-expanded", String(!pn.hidden)); };
     fetch(ROOT + "data/music.json").then(function(r){ return r.json(); }).then(function(m){
-      b.querySelector("ol").innerHTML = (m.tracks || []).map(function(t){ return '<li><a href="' + esc(t.url) + '" target="_blank" rel="noopener">' + esc(t.name) + '</a><span>' + esc(t.by) + ' \u00b7 ' + esc(t.game) + '</span></li>'; }).join("");
+      b.querySelector("ol").innerHTML = (m.tracks || []).length ? m.tracks.map(function(t){ return '<li><a href="' + esc(t.url) + '" target="_blank" rel="noopener">' + esc(t.name) + '</a><span>' + esc(t.by) + ' \u00b7 ' + esc(t.game) + '</span></li>'; }).join("") : '<li><span>No tracks yet.</span></li>';
     }).catch(function(){});
     return b;
-  }},
-  "far-lod":{on:function(){
-    var host = d.getElementById("progress"); if(!host || !d.body.hasAttribute("data-game-title")) return null;
-    var sec = d.createElement("section"); sec.className = "panel xp-lod"; sec.id = "xpLod";
-    sec.innerHTML = '<span class="xp-pill">EXPERIMENTAL</span><h2>Far terrain</h2><p>Like the Distant Horizons mod: chunks near you are full detail, far ones are drawn as cheap low-detail blocks, so you see way further for almost no FPS. Drag the sliders.</p>' +
-      '<div class="xp-lodrow"><canvas width="320" height="320" aria-label="Top-down view of loaded chunks"></canvas><div class="xp-lodctl">' +
-      '<label>Full-detail distance <b data-o="a">8</b> chunks<input type="range" min="2" max="32" value="8" data-i="a"></label>' +
-      '<label>Far LOD distance <b data-o="b">48</b> chunks<input type="range" min="0" max="128" value="48" data-i="b"></label>' +
-      '<ul><li>Full-detail chunks: <b data-o="fa"></b></li><li>LOD chunks: <b data-o="fb"></b></li><li>Drawing cost vs. all full detail: <b data-o="fc"></b></li></ul></div></div>';
-    host.parentNode.insertBefore(sec, host.nextSibling);
-    var cv = sec.querySelector("canvas"), g = cv.getContext("2d");
-    function q(s){ return sec.querySelector(s); }
-    function draw(){
-      var a = +q('[data-i=a]').value, bb = Math.max(a, +q('[data-i=b]').value), R = bb + 1, cell = cv.width / (2 * R + 1);
-      q('[data-o=a]').textContent = a; q('[data-o=b]').textContent = bb;
-      g.fillStyle = "#121212"; g.fillRect(0, 0, cv.width, cv.height);
-      var full = 0, lod = 0;
-      for(var x = -R; x <= R; x++) for(var z = -R; z <= R; z++){
-        var dd = Math.hypot(x, z), c = null;
-        if(dd <= a){ c = "#6aa83e"; full++; } else if(dd <= bb){ c = (dd <= (a + bb) / 2) ? "#3f6b27" : "#2c4a1c"; lod++; }
-        if(c){ g.fillStyle = c; g.fillRect((x + R) * cell, (z + R) * cell, Math.max(1, cell - (cell > 4 ? 1 : 0)), Math.max(1, cell - (cell > 4 ? 1 : 0))); }
-      }
-      g.fillStyle = "#ffd84a"; g.fillRect(R * cell, R * cell, Math.max(2, cell), Math.max(2, cell));
-      var allFull = full + lod, cost = full + lod * 0.06;
-      q('[data-o=fa]').textContent = full.toLocaleString(); q('[data-o=fb]').textContent = lod.toLocaleString();
-      q('[data-o=fc]').textContent = allFull ? Math.max(1, Math.round(cost / allFull * 100)) + "%" : "100%";
-    }
-    Array.prototype.forEach.call(sec.querySelectorAll("input"), function(i){ i.oninput = draw; });
-    draw();
-    return sec;
-  }},
-  "bw-daynight":{on:function(){
-    if(!d.body.hasAttribute("data-game-title")) return null;
-    d.body.classList.add("xp-daynight");
-    return {remove:function(){ d.body.classList.remove("xp-daynight"); }};
   }}
 };
 function applyExperiments(){
