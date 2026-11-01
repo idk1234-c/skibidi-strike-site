@@ -247,6 +247,7 @@ document.addEventListener("DOMContentLoaded", function(){
     if(f) setTimeout(function(){ f.focus(); }, 60);
   });
   bgmSetup();
+  renderMusic();
   var bu=document.getElementById("burger"), sm=document.getElementById("sideMenu"), bk=document.getElementById("sideBack");
   function sideClose(){ if(sm) sm.classList.remove("open"); if(bk) bk.classList.remove("open"); }
   if(bu) bu.addEventListener("click", function(ev){ ev.stopPropagation(); sm.classList.add("open"); bk.classList.add("open"); });
@@ -340,6 +341,34 @@ function sugSend(ev){
   }).catch(function(){
     msg.textContent = "Didn't go through. Try again in a minute.";
     btn.disabled = false;
+  });
+}
+
+// ---- music tab (soundtrack list from data/music.json; no song files hosted here) ----
+function renderMusic(){
+  var host = document.getElementById("trackList");
+  if(!host) return;
+  function esc(v){ return String(v == null ? "" : v).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+  fetch("data/music.json?v=2", {cache:"no-cache"}).then(function(r){ return r.json(); }).then(function(d){
+    var list = (d && d.tracks) || [], game = (d && d.game) || "Skibidi Strike", html = "";
+    if(!list.length){ host.innerHTML = '<p class="note">No tracks listed yet.</p>'; return; }
+    for(var i=0;i<list.length;i++){
+      var t = list[i], n = t.n || (i+1);
+      html += '<div class="tile track">'
+        + '<span class="track-no">' + (n < 10 ? "0" + n : n) + '</span>'
+        + '<h4>' + esc(t.title) + '</h4>'
+        + '<p class="track-artist">' + esc(t.artist || "Artist unknown") + '</p>'
+        + '<dl class="track-meta">'
+        + '<div><dt>Source clip</dt><dd>' + (t.clip ? esc(t.clip) + (t.clipSite ? ' <span class="track-site">(' + esc(t.clipSite) + ')</span>' : '') : 'no caption to credit') + '</dd></div>'
+        + '<div><dt>Used in</dt><dd>' + esc(t.usedIn || game) + '</dd></div>'
+        + '</dl>'
+        + (t.note ? '<p class="track-note">' + esc(t.note) + '</p>' : '')
+        + (t.listen ? '<a class="track-listen" href="' + esc(t.listen) + '" target="_blank" rel="noopener">Listen' + (t.listenLabel ? ' <span>&middot; ' + esc(t.listenLabel) + '</span>' : '') + '</a>' : '<span class="track-listen off">No public link</span>')
+        + '</div>';
+    }
+    host.innerHTML = html;
+  }).catch(function(){
+    host.innerHTML = '<p class="note">The track list didn\'t load. Refresh to try again.</p>';
   });
 }
 

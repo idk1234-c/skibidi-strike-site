@@ -336,3 +336,22 @@ nav .studio-chip + .logo{margin-left:-10px}
 .gsoon .gmore{color:var(--accent)}
 @media(max-width:1100px){nav .studio-chip .sc-name{display:none}nav .studio-chip{padding:3px}nav .studio-chip + .logo{margin-left:-14px}}
 @media(max-width:720px){nav .studio-chip .av{width:30px;height:30px}nav .studio-chip + .logo{margin-left:-2px}}
+
+/* ---- music tab ---- */
+.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:20px}
+.tile.track{display:flex;flex-direction:column;gap:6px;padding:22px 22px 18px}
+.track-no{font-family:var(--font-ui);font-size:.72rem;letter-spacing:.25em;color:var(--accent);opacity:.9}
+.tile.track h4{margin-bottom:0}
+.track-artist{color:var(--txt)!important;font-size:.92rem}
+.track-meta{display:grid;gap:4px;margin:6px 0 2px;font-size:.84rem}
+.track-meta div{display:flex;gap:10px;align-items:baseline}
+.track-meta dt{font-family:var(--font-ui);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);min-width:86px}
+.track-meta dd{color:var(--txt);word-break:break-word}
+.track-site{color:var(--dim)}
+.track-note{font-size:.8rem!important;font-style:italic}
+.track-listen{align-self:flex-start;margin-top:auto;padding:7px 14px;border:1px solid var(--rim);border-radius:6px;background:rgba(16,16,20,.85);color:#fff;font-family:var(--font-ui);font-weight:500;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;transition:.15s}
+.track-listen span{color:var(--dim);letter-spacing:.08em;text-transform:none}
+.track-listen:hover{background:var(--accent-fill);border-color:color-mix(in srgb,var(--accent) 70%,#fff);box-shadow:0 0 14px color-mix(in srgb,var(--accent) 40%,transparent)}
+.track-listen:hover span{color:#fff}
+.track-listen:focus-visible{outline:2px solid var(--accent2);outline-offset:3px}
+.track-listen.off{border-style:dashed;color:var(--dim);background:none}

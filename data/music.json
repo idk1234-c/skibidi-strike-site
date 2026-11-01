@@ -1,4 +1,61 @@
 {
-  "_about": "Soundtrack list used by the Music tab experiment.",
-  "tracks": []
+  "_about": "Soundtrack list for the Music tab. Song files are NOT hosted on the site (copyright + size): each track links out to an official or public source. Game files: Assets/Resources/Music in the private repo.",
+  "game": "Skibidi Strike",
+  "tracks": [
+    {
+      "n": 1,
+      "title": "Come Make Me Happy",
+      "artist": "Rihanna (vocal sample from \"Sex With Me\") · Jersey Club remix, remixer unknown",
+      "clip": "@evelin.delvalle97",
+      "clipSite": "TikTok",
+      "listen": "https://www.youtube.com/results?search_query=come+make+me+happy+jersey+club+remix",
+      "listenLabel": "YouTube search"
+    },
+    {
+      "n": 2,
+      "title": "Come Make Me Happy (Skibidi Remix)",
+      "artist": "Rihanna (vocal sample from \"Sex With Me\") · mixed with the Skibidi Toilet theme, remixer unknown",
+      "clip": "@drayze_songz",
+      "clipSite": "TikTok",
+      "listen": "https://www.youtube.com/results?search_query=come+make+me+happy+skibidi+remix",
+      "listenLabel": "YouTube search"
+    },
+    {
+      "n": 3,
+      "title": "Everybody Wants to Rule the World",
+      "artist": "Tears for Fears",
+      "clip": "@MoonHalo",
+      "clipSite": "TikTok",
+      "listen": "https://www.youtube.com/watch?v=aGCdLKXNF3w",
+      "listenLabel": "Official video"
+    },
+    {
+      "n": 4,
+      "title": "The Uncanny Valley",
+      "artist": "Perturbator",
+      "clip": "@inksans_404",
+      "clipSite": "TikTok",
+      "listen": "https://www.youtube.com/watch?v=6ix-wYFZ9KA",
+      "listenLabel": "Official upload"
+    },
+    {
+      "n": 5,
+      "title": "Dying Light – Horizon",
+      "artist": "Paweł Błaszczak · Dying Light original soundtrack",
+      "clip": "@luxcool25",
+      "clipSite": "TikTok",
+      "listen": "https://www.youtube.com/watch?v=_vYZ0JjbmPA",
+      "listenLabel": "Official upload"
+    },
+    {
+      "n": 6,
+      "title": "A Death in the Family",
+      "artist": "Artist unknown",
+      "clip": "",
+      "clipSite": "",
+      "note": "Source clip had no caption to credit. Track name chosen by the studio.",
+      "listen": "",
+      "listenLabel": ""
+    }
+  ]
 }
