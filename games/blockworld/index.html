@@ -54,6 +54,19 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
 .gameplay .vidwrap video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
 .gameplay .vidcap{margin-top:10px;color:var(--dim);font-size:.9rem;text-align:center}
 @media(max-width:560px){.gameplay .vidwrap{border-radius:10px}.gameplay .vidcap{font-size:.84rem}}
+.log{list-style:none;display:grid;gap:10px}
+.log li{display:flex;gap:14px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.log .ver{flex:0 0 auto;min-width:86px;font-family:var(--pix);font-size:.62rem;line-height:1.6;color:var(--grass2);padding-top:3px}
+.log p{color:var(--dim);font-size:.94rem}
+.log b{color:#fff;font-weight:600}
+.log .web{display:inline-block;margin-left:4px;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--line);border-radius:999px;color:var(--grass2);white-space:nowrap}
+.news .note{margin:0 0 14px}
+.more{margin-top:10px}
+.more summary{cursor:pointer;list-style:none;display:inline-block;padding:8px 14px;border:1px solid var(--line);border-radius:999px;font-size:.85rem;background:var(--panel2);color:var(--txt);margin-bottom:10px}
+.more summary::-webkit-details-marker{display:none}
+.more summary:hover{border-color:var(--grass)}
+.more[open] summary{margin-bottom:10px}
+@media(max-width:560px){.log li{flex-direction:column;gap:6px}.log .ver{min-width:0}}
 @media(max-width:560px){.hero{padding-top:30px}.art{height:150px}}
 </style>
 </head>
@@ -87,6 +100,49 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
     <p class="vidcap">Heads up: I forgot I was watching something in the background while recording lol &#128128;</p>
   </section>
 
+  <section class="page news" id="whats-new">
+    <h2 class="sec">What's new</h2>
+    <p class="note">Updated Nov 2, 2026. The web test runs v0.5.56, so anything marked &ldquo;coming to the web version soon&rdquo; is in the PC version first.</p>
+    <ul class="log">
+      <li><span class="ver">v0.5.64</span><p>Security monitors list the cameras in the dimension you're in. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.63</span><p>New <b>Security &amp; Control</b> mod: security cameras and monitors, sirens, spinning alarm lights, a speaker with 12 sounds, motion sensors, wireless links for any block, the Typewriter remote, and a simple computer with a control seat. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.62</span><p>Arsenal energy system: generators, solar panels, batteries, cables and a charger that power sci-fi guns and cannons. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.61</span><p>New <b>Skibidi Toilets</b> mod: toilets that hop at you at night, Astro Toilets in the End, and two bosses. <b>Jimmy</b> rules the Porcelain Wastes, and the 9-block-tall <b>Astro Jimmy</b> guards his outpost in the End. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.60</span><p>Cannon controllers: link up to 16 cannons and fire them from anywhere, with a scope view and a drone view on the advanced controller. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.59</span><p>Auto-Loader arm and Ammo Depot: your cannons reload themselves. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.58</span><p>Game modes: Survival, Hardcore and Creative, difficulty from Peaceful to Hard, Keep Inventory, new death screens, World Settings in the pause menu, and Enable All / Disable All in the Mods menu. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.57</span><p><b>Arsenal v2</b>: build your own cannons from a mount, a breech and barrels, then glue them and use the Cannon Assembler. More barrels means a heavier gun. <span class="web">Coming to the web version soon</span></p></li>
+      <li><span class="ver">v0.5.56</span><p>Underlay: carpets, trapdoors and pressure plates can sit under chests, beds, torches and more.</p></li>
+      <li><span class="ver">v0.5.54&ndash;55</span><p>Real 3D shapes and true hitboxes for bells, anvils, cauldrons, brewing stands, chests and other odd-shaped blocks, glass panes you can see through, and fixes for dark houses and blue villagers.</p></li>
+    </ul>
+    <details class="more">
+      <summary>Show older updates</summary>
+      <ul class="log">
+        <li><span class="ver">v0.5.53</span><p>Shared Blocks: up to 8 small blocks in one block space, like two fence posts side by side or a candle on a slab.</p></li>
+        <li><span class="ver">v0.5.52</span><p>Arsenal sci-fi weapons: laser rifle, plasma blaster, railgun and energy cannon.</p></li>
+        <li><span class="ver">v0.5.51</span><p>Arsenal hand guns: pistol, rifle, shotgun, sniper rifle with a real scope, SMG and a rocket launcher.</p></li>
+        <li><span class="ver">v0.5.50</span><p>New <b>Arsenal: Guns &amp; Cannons</b> mod, starting with cannons you load, aim and fire.</p></li>
+        <li><span class="ver">v0.5.49</span><p>Chains get ropes, vines and string, slack, hanging lanterns and banners, and zip lines.</p></li>
+        <li><span class="ver">v0.5.48</span><p>OFFSET touch button, so offset building works on phones too.</p></li>
+        <li><span class="ver">v0.5.47</span><p>Workstation Displays (items lie on crafting tables and anvils, the enchanting book floats and opens) and Smooth Inventory mods.</p></li>
+        <li><span class="ver">v0.5.46</span><p>Decor mods are steadier while the world loads.</p></li>
+        <li><span class="ver">v0.5.45</span><p>Shutters mod: wooden, iron and copper window shutters that swing open like doors.</p></li>
+        <li><span class="ver">v0.5.44</span><p>Relatively Placed Blocks mod: place blocks half or a quarter of a block off the grid.</p></li>
+        <li><span class="ver">v0.5.43</span><p>Double Fence &amp; Farm Gates and Connectible Chains mods.</p></li>
+        <li><span class="ver">v0.5.42</span><p>Candles in 16 colours, plus Soul Candles and Diagonal Fences mods.</p></li>
+        <li><span class="ver">v0.5.41</span><p>3D Skin Layers and Lively Mobs mods.</p></li>
+        <li><span class="ver">v0.5.40</span><p>Falling Leaves and Ambient Sounds &amp; Cave Echo mods.</p></li>
+        <li><span class="ver">v0.5.39</span><p>Lively Hands and a better Zoom mods.</p></li>
+        <li><span class="ver">v0.5.38</span><p>Touch controls on phones and tablets: joystick and buttons turn on the moment you touch the screen.</p></li>
+        <li><span class="ver">v0.5.37</span><p>A much taller world: build up to y 1007, dig down to y -112 through deep caves with geodes and lava lakes, and climb giant snowy peaks.</p></li>
+        <li><span class="ver">v0.5.36</span><p>Deepbed Stone at the bottom of the world: dig through it and fall into the Nether. Fall off the End and you land back in the Overworld sky.</p></li>
+        <li><span class="ver">v0.5.35</span><p>Strongholds, Eyes of Ender, the End and the Ender Dragon.</p></li>
+        <li><span class="ver">v0.5.34</span><p>Nether fortresses, monster spawners and Nether mobs.</p></li>
+        <li><span class="ver">v0.5.33</span><p><b>The Nether</b>: portals, five Nether biomes and new ores.</p></li>
+      </ul>
+    </details>
+  </section>
+
   <section class="page">
     <h2 class="sec">What it is</h2>
     <p class="note">A block-building world game in the spirit of the classics: dig, build, craft and explore, with an original engine and 100% original art. It is not a mod of anyone else's game and uses no assets from other games.</p>
@@ -97,17 +153,22 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
     <div class="tiles">
       <div class="tile"><h4>Infinite terrain</h4><p>Chunked world with caves, trees and hills, streamed around you.</p></div>
       <div class="tile"><h4>Build and dig</h4><p>Break and place blocks with a hotbar, day and night cycle.</p></div>
-      <div class="tile"><h4>Monsters and beds</h4><p>Three difficulty levels, beds to survive the night.</p></div>
-      <div class="tile"><h4>Skins</h4><p>A dressing room is coming, and player skins are in.</p></div>
+      <div class="tile"><h4>Monsters and beds</h4><p>Difficulty from Peaceful to Hard, beds to survive the night.</p></div>
+      <div class="tile"><h4>Skins</h4><p>Player skins, a Dressing Room and an emote wheel.</p></div>
       <div class="tile"><h4>XP and enchanting</h4><p>Earn experience and enchant your gear.</p></div>
       <div class="tile"><h4>Sound and music</h4><p>Ambient audio with a music toggle in the settings.</p></div>
+      <div class="tile"><h4>The Nether and the End</h4><p>Portals, Nether fortresses, strongholds and the Ender Dragon.</p></div>
+      <div class="tile"><h4>A much taller world</h4><p>Build up to y 1007, dig down to y -112, giant snowy peaks.</p></div>
+      <div class="tile"><h4>Game modes</h4><p>Survival, Hardcore and Creative, with Keep Inventory and World Settings.</p></div>
+      <div class="tile"><h4>Weather, oceans and rivers</h4><p>Rain, wind, lightning, waterfalls, oceans and rivers.</p></div>
+      <div class="tile"><h4>Mods you switch on</h4><p>Guns &amp; cannons, Skibidi Toilets, security cameras, decor and more, each with its own switch per world.</p></div>
     </div>
   </section>
 
   <section class="page">
     <h2 class="sec">Coming next</h2>
     <div class="chips">
-      <span>Inventory + crafting</span><span>Fishing + name tags</span><span>Villages</span><span>Online co-op</span><span>Weather</span><span>Oceans, rivers + waterfalls</span><span>Temperature system</span><span>Power + machines</span><span>Recipe viewer</span><span>Skibidi flavor (later)</span>
+      <span>Online co-op</span><span>Brewing + smithing</span><span>Temperature system</span><span>Power + machines</span><span>Recipe viewer</span><span>More for the Skibidi mod</span>
     </div>
     <p class="note">Order of work: the base game comes first and stays pure, then the extras. Nothing lands half-built.</p>
   </section>
@@ -124,7 +185,7 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
 
   <section class="page">
     <h2 class="sec">Phones and tablets</h2>
-    <p class="note">Planned, like Skibidi Strike: a browser build with touch controls so nobody needs a computer to play. It comes after the PC version is solid; the world is heavy to render, so older phones may need reduced settings.</p>
+    <p class="note">The web test has touch controls: a joystick and on-screen buttons that turn on the moment you touch the screen. Turn your phone sideways, and give the first load a minute on cell data. The world is heavy to render, so older phones may need lower settings.</p>
   </section>
 
   <section class="page">
