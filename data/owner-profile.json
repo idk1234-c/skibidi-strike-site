@@ -1,0 +1,70 @@
+{
+  "_about": "The owner's public profile page (profile/?u=owner). Edit this file to change it. Banner: by default it plays the 'featured' episode from the playlist (muted, looping; Sound / Full screen / Playlist buttons on top). To use something else, set banner to a path inside the site: an .mp4/.webm video, an animated .gif/.webp, or a still .jpg/.png (blank = use the featured episode, or the animated placeholder if there are no episodes). Bump bannerVersion whenever you replace a file so browsers load the new one. Playlist: add more episodes as more {title, video, poster, length} entries; a video can be an .mp4 or a .json list of parts (big videos are stored in pieces). avatar = optional photo path for visitors (blank = initials). Social links with an empty url stay hidden; types: youtube, tiktok, instagram, discord, x, twitch, roblox, github, website. Links must start with https://",
+  "title": "Founder & Creator",
+  "studio": "TTVM Studios",
+  "tagline": "Creator of this website",
+  "banner": "",
+  "bannerTitle": "Episode 4",
+  "bannerPoster": "",
+  "bannerVersion": "1",
+  "featured": 0,
+  "playlistTitle": "Full playlist",
+  "playlist": [
+    {
+      "title": "Episode 4",
+      "video": "img/owner/episode4.json",
+      "poster": "img/owner/episode4_poster.jpg",
+      "length": "1:01",
+      "note": "LEGO stop-motion"
+    }
+  ],
+  "avatar": "",
+  "bio": "",
+  "links": [
+    {
+      "type": "youtube",
+      "label": "YouTube",
+      "url": ""
+    },
+    {
+      "type": "tiktok",
+      "label": "TikTok",
+      "url": ""
+    },
+    {
+      "type": "instagram",
+      "label": "Instagram",
+      "url": ""
+    },
+    {
+      "type": "discord",
+      "label": "Discord",
+      "url": ""
+    },
+    {
+      "type": "x",
+      "label": "X",
+      "url": ""
+    },
+    {
+      "type": "twitch",
+      "label": "Twitch",
+      "url": ""
+    },
+    {
+      "type": "roblox",
+      "label": "Roblox",
+      "url": ""
+    },
+    {
+      "type": "github",
+      "label": "GitHub",
+      "url": ""
+    },
+    {
+      "type": "website",
+      "label": "Website",
+      "url": ""
+    }
+  ]
+}

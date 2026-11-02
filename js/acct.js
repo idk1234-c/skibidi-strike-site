@@ -623,7 +623,9 @@ function teamHtml(list){
   if(!list.length) return "";
   return '<ul class="tm-list">' + list.map(function(m){
     var r = m.role === "owner" ? "owner" : "mod", label = m.label || (r === "owner" ? "Owner" : "Moderator");
-    return '<li class="tm-card r-' + r + '"><span class="tm-av" style="--h:' + hue(m.name) + '" aria-hidden="true">' + esc(m.initials || initials(m.name)) + '<i class="tm-ico">' + TM_ICON[r] + '</i></span>' +
+    // the owner's card opens his public profile (the special owner profile page)
+    var go = r === "owner" ? '<a class="tm-link" href="' + link("profile/?u=owner") + '" aria-label="View ' + esc(m.name) + '\'s profile"></a>' : "";
+    return '<li class="tm-card r-' + r + (go ? " has-link" : "") + '">' + go + '<span class="tm-av" style="--h:' + hue(m.name) + '" aria-hidden="true">' + esc(m.initials || initials(m.name)) + '<i class="tm-ico">' + TM_ICON[r] + '</i></span>' +
       '<span class="tm-txt"><b class="tm-name">' + esc(m.name) + '</b><span class="tm-row"><i class="tm-badge r-' + r + '">' + esc(label) + '</i>' +
       (m.studio ? '<span class="tm-sub">' + esc(m.studio) + '</span>' : "") + '</span></span></li>';
   }).join("") + '</ul>';
@@ -664,7 +666,7 @@ w.TTVM = {
   blockHtml:blockHtml, warnItem:warnItem, toast:toast, modal:modal, gate:gateFn, link:link,
   localSeen:function(){ return get(K.seen) || {}; },
   exp:{state:expState, set:expSet, on:expOn, allowed:expAllowed, list:experiments},
-  isProtected:isProtected, isLockedOwner:isLockedOwner, teamHtml:teamHtml, fillTeam:fillTeam,
+  isProtected:isProtected, isLockedOwner:isLockedOwner, ownerH:OWNER_LOCK[0], teamHtml:teamHtml, fillTeam:fillTeam,
   activeNotices:activeNotices, copyrightHtml:copyrightHtml, initials:initials
 };
 function boot(){ render(); interceptPlay(); refresh().then(flushToast, flushToast); fillTeam(); }
