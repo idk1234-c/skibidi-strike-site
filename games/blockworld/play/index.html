@@ -90,7 +90,7 @@ main{max-width:980px;margin:0 auto;padding:0 20px 40px}
   var cube = document.getElementById('bwcube');
   var fsBtn = document.getElementById('bwfs');
   var buildUrl = 'Build';
-  var VER = 'eca4f13940';
+  var VER = '0ddb77e8f1';
   var game = null;
 
   function setPct(v){
@@ -175,9 +175,9 @@ main{max-width:980px;margin:0 auto;padding:0 20px 40px}
 
   var config = {
     arguments: [],
-    dataUrl: buildUrl + '/WebBuild.data.unityweb',
-    frameworkUrl: buildUrl + '/WebBuild.framework.js.unityweb?v=' + VER,
-    codeUrl: buildUrl + '/WebBuild.wasm.unityweb',
+    dataUrl: buildUrl + '/BlockworldWeb.data.unityweb',
+    frameworkUrl: buildUrl + '/BlockworldWeb.framework.js.unityweb?v=' + VER,
+    codeUrl: buildUrl + '/BlockworldWeb.wasm.unityweb',
     streamingAssetsUrl: 'StreamingAssets',
     companyName: 'DefaultCompany',
     productName: 'blockworld',
@@ -206,7 +206,7 @@ main{max-width:980px;margin:0 auto;padding:0 20px 40px}
   function start(){
     msg.textContent = 'Building the world...';
     var s = document.createElement('script');
-    s.src = buildUrl + '/WebBuild.loader.js?v=' + VER;
+    s.src = buildUrl + '/BlockworldWeb.loader.js?v=' + VER;
     s.onerror = function(){ fail("COULDN'T LOAD", "The game files didn't download. Check your connection and reload the page."); };
     s.onload = function(){
       createUnityInstance(canvas, config, function(p){

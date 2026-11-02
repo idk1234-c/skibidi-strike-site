@@ -1,29 +1,29 @@
 {
  "note": "Large files are stored in parts (each under 2.5 MB) and joined in the browser by games/blockworld/play/index.html. They are gzip files (Unity Gzip + Decompression Fallback).",
- "build": "Blockworld web build (skibidi-strike 7c5da6c)",
+ "build": "Blockworld web build (skibidi-strike 4ef8d8a)",
  "files": {
   "data": {
-   "name": "WebBuild.data.unityweb",
-   "size": 6868310,
-   "sha1": "3e327942f0e42dc1fd1b35f274ae9572eb8befdf",
-   "v": "3e327942f0",
+   "name": "BlockworldWeb.data.unityweb",
+   "size": 6938925,
+   "sha1": "9b3e70c57bc2f140ba3b6cf2dacdb019cae686aa",
+   "v": "9b3e70c57b",
    "parts": [
-    "WebBuild.data.unityweb.part00",
-    "WebBuild.data.unityweb.part01",
-    "WebBuild.data.unityweb.part02"
+    "BlockworldWeb.data.unityweb.part00",
+    "BlockworldWeb.data.unityweb.part01",
+    "BlockworldWeb.data.unityweb.part02"
    ],
    "gzip": true
   },
   "wasm": {
-   "name": "WebBuild.wasm.unityweb",
-   "size": 8381256,
-   "sha1": "eca4f139406744e8132d769d9b3be9aec8ef0296",
-   "v": "eca4f13940",
+   "name": "BlockworldWeb.wasm.unityweb",
+   "size": 8587492,
+   "sha1": "0ddb77e8f1bfe5b8d3395823f19e36d6c4d0fe6b",
+   "v": "0ddb77e8f1",
    "parts": [
-    "WebBuild.wasm.unityweb.part00",
-    "WebBuild.wasm.unityweb.part01",
-    "WebBuild.wasm.unityweb.part02",
-    "WebBuild.wasm.unityweb.part03"
+    "BlockworldWeb.wasm.unityweb.part00",
+    "BlockworldWeb.wasm.unityweb.part01",
+    "BlockworldWeb.wasm.unityweb.part02",
+    "BlockworldWeb.wasm.unityweb.part03"
    ],
    "gzip": true
   }
