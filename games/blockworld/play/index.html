@@ -39,6 +39,15 @@ main{max-width:980px;margin:0 auto;padding:0 20px 40px}
 .hidden{display:none!important}
 .foot{color:var(--dim);font-size:.8rem;text-align:center;margin-top:14px}
 .foot a{color:var(--grass2)}
+.tools{display:flex;justify-content:center;gap:12px;margin-top:14px}
+.tools button{font-family:var(--ui);font-weight:600;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 16px;cursor:pointer}
+.tools button:hover{background:#fff;color:#0c0d10;border-color:#fff}
+#bwstage{position:relative}
+#bwstage:fullscreen,#bwstage:-webkit-full-screen{border:0;border-radius:0;max-width:none;margin:0}
+#bwstage:fullscreen canvas,#bwstage:-webkit-full-screen canvas{width:100vw;height:100vh}
+.state .pct{font-family:var(--pix);font-size:.7rem;color:var(--grass2);margin-top:10px;display:none}
+.state.err h2{color:#ff8a8a}
+@media(max-height:500px){header.bar{padding:8px 14px}.hero{padding:10px 0 0}.hero p{display:none}.hero h1{font-size:1rem}.frame{margin-top:10px}.frame canvas{height:calc(100vh - 120px)}}
 </style>
 </head>
 <body>
@@ -49,97 +58,176 @@ main{max-width:980px;margin:0 auto;padding:0 20px 40px}
 <main>
   <section class="hero">
     <h1>PLAY <em>BLOCKWORLD</em></h1>
-    <p>Web test build. Best on a computer - phones and tablets get their own version later.</p>
+    <p>Web test build. Plays best on a computer with a keyboard and mouse. Click the game to start, your worlds save in this browser.</p>
   </section>
-  <div class="frame">
+  <div class="frame" id="bwstage">
     <span class="sky" aria-hidden="true"></span>
     <span class="ground" aria-hidden="true"></span>
     <canvas id="bwcanvas" tabindex="0"></canvas>
     <div class="state" id="bwstate">
       <div class="box">
         <div class="cube" id="bwcube"></div>
-        <h2 id="bwhead">WAITING FOR THE WEB BUILD</h2>
-        <p id="bwmsg">The web build isn't uploaded yet. This page boots the game automatically the moment it lands - leave it open, it checks every minute.</p>
-        <div class="bar" id="bwbar"><i id="bwfill"></i></div>
+        <h2 id="bwhead">LOADING BLOCKWORLD</h2>
+        <p id="bwmsg">Downloading the world...</p>
+        <div class="bar" id="bwbar" style="display:block"><i id="bwfill"></i></div>
+        <div class="pct" id="bwpct" style="display:block">0%</div>
       </div>
     </div>
   </div>
+  <div class="tools"><button type="button" id="bwfs">Fullscreen</button></div>
   <p class="foot"><a href="../">Back to Blockworld</a> &middot; part of <a href="../../">Ttvm Studios</a></p>
 </main>
 <script>
 (function(){
   var canvas = document.getElementById('bwcanvas');
+  var stage = document.getElementById('bwstage');
   var state = document.getElementById('bwstate');
   var head = document.getElementById('bwhead');
   var msg = document.getElementById('bwmsg');
   var bar = document.getElementById('bwbar');
   var fill = document.getElementById('bwfill');
+  var pct = document.getElementById('bwpct');
   var cube = document.getElementById('bwcube');
-  var NAMES = ['Blockworld','blockworld','Block World','WebGL'];
-  var booted = false, checking = false;
-  function probe(url){
-    return fetch(url, {method:'HEAD'}).then(function(r){ return r.ok; }).catch(function(){ return false; });
+  var fsBtn = document.getElementById('bwfs');
+  var buildUrl = 'Build';
+  var VER = 'eca4f13940';
+  var game = null;
+
+  function setPct(v){
+    v = Math.max(0, Math.min(1, v || 0));
+    fill.style.width = Math.round(v * 100) + '%';
+    pct.textContent = Math.round(v * 100) + '%';
   }
-  function boot(name, dataUrl, frameworkUrl, codeUrl){
-    head.textContent = 'LOADING BLOCKWORLD';
-    msg.textContent = 'Downloading the world...';
-    bar.style.display = 'block';
-    var s = document.createElement('script');
-    s.src = 'Build/' + name + '.loader.js';
-    s.onload = function(){
-      if (typeof createUnityInstance !== 'function'){ fail('The build files are there but the loader did not start.'); return; }
-      createUnityInstance(canvas, {dataUrl:dataUrl, frameworkUrl:frameworkUrl, codeUrl:codeUrl}, function(p){
-        fill.style.width = Math.round(p*100) + '%';
-      }).then(function(instance){
-        booted = true;
-        state.classList.add('hidden');
-        canvas.focus();
-      }).catch(function(){ fail('The build started but hit an error loading its files.'); });
-    };
-    s.onerror = function(){ fail('The loader was found but would not load.'); };
-    document.body.appendChild(s);
-  }
-  function fail(why){
-    if (booted) return;
+  function fail(title, why){
+    state.classList.remove('hidden');
+    state.classList.add('err');
     cube.classList.add('hidden');
     bar.style.display = 'none';
-    head.textContent = 'BUILD TROUBLE';
-    msg.textContent = why + ' Amos probably needs to re-export it - check back soon.';
+    pct.style.display = 'none';
+    head.textContent = title;
+    msg.textContent = why;
   }
-  function check(){
-    if (booted || checking) return;
-    checking = true;
-    var chain = Promise.resolve(false);
-    var found = null;
-    NAMES.reduce(function(acc, name){
-      return acc.then(function(){
-        if (found) return;
-        return probe('Build/' + name + '.loader.js').then(function(ok){ if (ok) found = name; });
-      });
-    }, chain).then(function(){
-      checking = false;
-      if (!found || booted) return;
-      // pick the file variants that exist
-      var cands = [
-        {d:'Build/'+found+'.data.br', f:'Build/'+found+'.framework.js.br', w:'Build/'+found+'.wasm.br'},
-        {d:'Build/'+found+'.data.gz', f:'Build/'+found+'.framework.js.gz', w:'Build/'+found+'.wasm.gz'},
-        {d:'Build/'+found+'.data', f:'Build/'+found+'.framework.js', w:'Build/'+found+'.wasm'}
-      ];
-      var pick = null;
-      cands.reduce(function(acc, c){
-        return acc.then(function(){
-          if (pick) return;
-          return Promise.all([probe(c.d), probe(c.f), probe(c.w)]).then(function(rs){
-            if (rs[0] && rs[1] && rs[2]) pick = c;
-          });
+
+  function hasWebGL2(){
+    try { var c = document.createElement('canvas'); return !!(window.WebGL2RenderingContext && c.getContext('webgl2')); }
+    catch(e){ return false; }
+  }
+  if (!hasWebGL2()){
+    fail("CAN'T START HERE", "This browser can't run 3D games right now. Try the latest Chrome, Edge, Firefox or Safari, and make sure hardware acceleration is on.");
+    fsBtn.style.display = 'none';
+    return;
+  }
+
+  var fsOk = document.fullscreenEnabled || document.webkitFullscreenEnabled;
+  if (!fsOk) fsBtn.style.display = 'none';
+  fsBtn.addEventListener('click', function(){
+    if (game){ game.SetFullscreen(1); return; }
+    (stage.requestFullscreen || stage.webkitRequestFullscreen || function(){}).call(stage);
+  });
+  canvas.addEventListener('pointerdown', function(){ canvas.focus(); });
+
+  // Big build files are stored in parts (Build/parts.json) and joined here.
+  // They are gzip files: unpacked by the browser when it can, otherwise by the Unity loader.
+  var dl = {total: 0, got: 0};
+  function dlProgress(){
+    if (!dl.total) return;
+    var v = dl.got / dl.total;
+    setPct(v * 0.8);
+    msg.textContent = 'Downloading the world... ' + (dl.got / 1048576).toFixed(1) + ' / ' + (dl.total / 1048576).toFixed(1) + ' MB';
+  }
+  function getPart(url){
+    return fetch(url).then(function(r){
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + url);
+      if (!r.body || !r.body.getReader) return r.arrayBuffer().then(function(b){ dl.got += b.byteLength; dlProgress(); return b; });
+      var reader = r.body.getReader(), chunks = [];
+      function pump(){
+        return reader.read().then(function(x){
+          if (x.done) return new Blob(chunks);
+          chunks.push(x.value); dl.got += x.value.byteLength; dlProgress();
+          return pump();
         });
-      }, Promise.resolve()).then(function(){
-        if (pick && !booted) boot(found, pick.d, pick.f, pick.w);
-      });
+      }
+      return pump();
     });
   }
-  check();
-  setInterval(check, 45000);
+  function unpack(blob, type){
+    if (!window.DecompressionStream || !blob.stream) return Promise.resolve(blob);
+    try {
+      var s = blob.stream().pipeThrough(new DecompressionStream('gzip'));
+      return new Response(s).blob().then(function(b){ return new Blob([b], {type: type}); }).catch(function(){ return blob; });
+    } catch(e){ return Promise.resolve(blob); }
+  }
+  function joinFile(f, type){
+    var urls = f.parts.map(function(p){ return buildUrl + '/' + p + '?v=' + f.v; });
+    var out = new Array(urls.length), next = 0;
+    function worker(){
+      if (next >= urls.length) return Promise.resolve();
+      var i = next++;
+      return getPart(urls[i]).then(function(b){ out[i] = b; return worker(); });
+    }
+    var lanes = []; for (var k = 0; k < 4; k++) lanes.push(worker());
+    return Promise.all(lanes).then(function(){
+      var blob = new Blob(out, {type: f.gzip ? 'application/octet-stream' : type});
+      if (blob.size !== f.size) throw new Error('size mismatch for ' + f.name);
+      return f.gzip ? unpack(blob, type) : blob;
+    }).then(function(b){ return URL.createObjectURL(b); });
+  }
+
+  var config = {
+    arguments: [],
+    dataUrl: buildUrl + '/WebBuild.data.unityweb',
+    frameworkUrl: buildUrl + '/WebBuild.framework.js.unityweb?v=' + VER,
+    codeUrl: buildUrl + '/WebBuild.wasm.unityweb',
+    streamingAssetsUrl: 'StreamingAssets',
+    companyName: 'DefaultCompany',
+    productName: 'blockworld',
+    productVersion: '0.1.0',
+    autoSyncPersistentDataPath: true,
+    fullscreenElementID: 'bwstage',
+    showBanner: function(m, type){ if (type === 'error') console.error(String(m).replace(/<[^>]*>/g, '')); else console.warn(String(m).replace(/<[^>]*>/g, '')); }
+  };
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  if (isMobile) config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+
+  function prepare(){
+    return fetch(buildUrl + '/parts.json?v=' + VER, {cache: 'no-cache'}).then(function(r){
+      if (!r.ok) throw new Error('parts.json HTTP ' + r.status);
+      return r.json();
+    }).then(function(m){
+      dl.total = (m.files.data ? m.files.data.size : 0) + (m.files.wasm ? m.files.wasm.size : 0);
+      var jobs = [];
+      if (m.files.data) jobs.push(joinFile(m.files.data, 'application/octet-stream').then(function(u){ config.dataUrl = u; }));
+      if (m.files.wasm) jobs.push(joinFile(m.files.wasm, 'application/wasm').then(function(u){ config.codeUrl = u; }));
+      config.cacheControl = function(){ return 'no-store'; };
+      return Promise.all(jobs);
+    });
+  }
+
+  function start(){
+    msg.textContent = 'Building the world...';
+    var s = document.createElement('script');
+    s.src = buildUrl + '/WebBuild.loader.js?v=' + VER;
+    s.onerror = function(){ fail("COULDN'T LOAD", "The game files didn't download. Check your connection and reload the page."); };
+    s.onload = function(){
+      createUnityInstance(canvas, config, function(p){
+        setPct(0.8 + 0.2 * Math.max(0, Math.min(1, p || 0)));
+      }).then(function(inst){
+        game = inst;
+        setPct(1);
+        state.classList.add('hidden');
+        canvas.focus();
+      }).catch(function(err){
+        console.error(err);
+        fail('THE GAME HIT A PROBLEM', 'Something went wrong while starting Blockworld. Reload the page to try again, or try another browser like Chrome or Edge.');
+      });
+    };
+    document.body.appendChild(s);
+  }
+
+  prepare().then(start).catch(function(err){
+    console.error(err);
+    fail("COULDN'T LOAD", "Part of the game didn't download. Check your connection and reload the page.");
+  });
 })();
 </script>
 </body>

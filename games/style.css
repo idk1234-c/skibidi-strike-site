@@ -117,3 +117,10 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
 .bw-cubes i:nth-child(3){left:52%;top:48%;width:16px;height:16px}
 .bw-logo{left:22px;top:20px;font-family:var(--pix);font-size:1rem;letter-spacing:.08em;color:#1c3810;text-shadow:0 2px 0 rgba(255,255,255,.45)}
 .bw-logo em{font-style:normal;color:#2e6b1f}
+
+/* "Play in browser" button under a game card */
+.games li.has-play .game{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.games li.has-play .game:hover{transform:none}
+.playweb{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;background:linear-gradient(180deg,#6fc255,#5aa843);color:#123008;font-family:var(--ui);font-weight:700;font-size:.95rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;transition:filter .15s}
+.playweb:hover{filter:brightness(1.1)}
+.playweb:focus-visible{outline:2px solid #fff;outline-offset:3px}

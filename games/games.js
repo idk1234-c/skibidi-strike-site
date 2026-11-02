@@ -2,7 +2,8 @@
    ADD A GAME: add one entry to GAMES below. The page sorts them newest first by "added",
    so a new game shows up on top on its own.
    Tags you can use (each has its own colour): "NEW", "ALPHA / BETA TEST", "FULLY PUBLISHED", "RECENTLY UPDATED".
-   art: "ss" is the drawn preview below; leave it out and the card gets a plain one. */
+   art: "ss" is the drawn preview below; leave it out and the card gets a plain one.
+   play: a link to the in-browser version adds a "Play in browser" button under the card. */
 var GAMES = [
   {
     name: "Blockworld",
@@ -13,7 +14,8 @@ var GAMES = [
     added: "2026-11-01",
     updated: "2026-11-01",
     art: "bw",
-    cta: "Play"
+    cta: "Open",
+    play: "blockworld/play/"
   },
   {
     name: "Skibidi Strike",
@@ -54,12 +56,13 @@ var GAMES = [
     }).join("");
     var meta = "Added " + day(g.added);
     if(g.updated && g.updated !== g.added) meta += " &middot; Updated " + day(g.updated);
-    return '<li><a class="game" href="' + esc(g.url) + '" id="g-' + esc(g.slug) + '">' + art(g) +
+    var playBtn = g.play ? '<a class="playweb" href="' + esc(g.play) + '">&#9654; Play ' + esc(g.name) + ' in browser</a>' : '';
+    return '<li' + (g.play ? ' class="has-play"' : '') + '><a class="game" href="' + esc(g.url) + '" id="g-' + esc(g.slug) + '">' + art(g) +
       '<div class="gb"><div class="tags">' + tags + '</div>' +
       '<h2>' + esc(g.name) + '</h2>' +
       '<p class="blurb">' + esc(g.blurb) + '</p>' +
       '<div class="gfoot"><span class="meta">' + meta + '</span><span class="go">' + esc(g.cta || "Open") + ' ' + esc(g.name) + ' <span aria-hidden="true">&rarr;</span></span></div>' +
-      '</div></a></li>';
+      '</div></a>' + playBtn + '</li>';
   }
   function render(){
     var host = document.getElementById("gameList");
