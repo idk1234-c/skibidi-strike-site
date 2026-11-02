@@ -3,16 +3,16 @@
    so a new game shows up on top on its own.
    Tags you can use (each has its own colour): "NEW", "ALPHA / BETA TEST", "FULLY PUBLISHED", "RECENTLY UPDATED".
    art: "ss" is the drawn preview below; leave it out and the card gets a plain one.
-   play: a link to the in-browser version adds a "Play in browser" button under the card. */
+   play: a link to the in-browser version adds a second "Play in browser" button inside the card. */
 var GAMES = [
   {
     name: "Blockworld",
     slug: "blockworld",
     url: "blockworld/",
-    tags: ["NEW"],
+    tags: ["NEW", "ALPHA / BETA TEST"],
     blurb: "Ttvm Studios' own block-building world game: infinite terrain, caves, building, and online co-op multiplayer on the way. In development.",
     added: "2026-11-01",
-    updated: "2026-11-01",
+    updated: "2026-11-02",
     art: "bw",
     cta: "Open",
     play: "blockworld/play/"
@@ -45,7 +45,7 @@ var GAMES = [
     return MONTHS[+p[1] - 1] + " " + (+p[2]) + ", " + p[0];
   }
   function art(g){
-    if(g.art === "bw") return '<div class="art art-bw" aria-hidden="true"><span class="bw-ground"></span><span class="bw-cubes"><i></i><i></i><i></i></span><b class="bw-logo">BLOCK<em>WORLD</em></b></div>';
+    if(g.art === "bw") return '<div class="art art-bw" aria-hidden="true"><span class="bw-moon"></span><span class="bw-glow"></span><span class="bw-far">' + new Array(13).join("<i></i>") + '</span><span class="bw-hills">' + new Array(17).join("<i></i>") + '</span><b class="bw-logo">BLOCK <em>WORLD</em></b></div>';
     if(g.art === "ss") return '<div class="art art-ss" aria-hidden="true"><span class="ss-glow"></span><span class="ss-city"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="ss-smoke"></span><b class="ss-logo">SKIBIDI <em>STRIKE</em></b></div>';
     var ini = String(g.name || "?").split(/\s+/).map(function(w){ return w.charAt(0); }).join("").slice(0, 2).toUpperCase();
     return '<div class="art art-plain" aria-hidden="true"><b>' + esc(ini) + '</b></div>';
@@ -56,13 +56,13 @@ var GAMES = [
     }).join("");
     var meta = "Added " + day(g.added);
     if(g.updated && g.updated !== g.added) meta += " &middot; Updated " + day(g.updated);
-    var playBtn = g.play ? '<a class="playweb" href="' + esc(g.play) + '">&#9654; Play ' + esc(g.name) + ' in browser</a>' : '';
-    return '<li' + (g.play ? ' class="has-play"' : '') + '><a class="game" href="' + esc(g.url) + '" id="g-' + esc(g.slug) + '">' + art(g) +
+    var playBtn = g.play ? '<a class="go go-play" href="' + esc(g.play) + '"><span aria-hidden="true">&#9654;</span> Play in browser</a>' : '';
+    return '<li><div class="game' + (g.play ? ' has-play' : '') + '" id="g-' + esc(g.slug) + '">' + art(g) +
       '<div class="gb"><div class="tags">' + tags + '</div>' +
       '<h2>' + esc(g.name) + '</h2>' +
       '<p class="blurb">' + esc(g.blurb) + '</p>' +
-      '<div class="gfoot"><span class="meta">' + meta + '</span><span class="go">' + esc(g.cta || "Open") + ' ' + esc(g.name) + ' <span aria-hidden="true">&rarr;</span></span></div>' +
-      '</div></a>' + playBtn + '</li>';
+      '<div class="gfoot"><span class="meta">' + meta + '</span><span class="gos"><a class="go go-main" href="' + esc(g.url) + '">' + esc(g.cta || "Open") + ' ' + esc(g.name) + ' <span aria-hidden="true">&rarr;</span></a>' + playBtn + '</span></div>' +
+      '</div></div></li>';
   }
   function render(){
     var host = document.getElementById("gameList");

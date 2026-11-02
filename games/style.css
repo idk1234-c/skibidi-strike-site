@@ -35,9 +35,10 @@ main{max-width:1000px;margin:0 auto;padding:0 20px 40px}
 
 /* game cards */
 .games{display:grid;gap:18px;margin-top:34px}
-.game{display:grid;grid-template-columns:400px 1fr;text-decoration:none;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:border-color .15s,transform .15s,box-shadow .15s}
+.game{position:relative;display:grid;grid-template-columns:400px 1fr;text-decoration:none;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:border-color .15s,transform .15s,box-shadow .15s}
 .game:hover{border-color:#4a505d;transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.45)}
-.game:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.game:focus-within{border-color:#4a505d}
+.go:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .gb{padding:22px 24px;display:flex;flex-direction:column;min-width:0}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .tag{display:inline-block;font-family:var(--ui);font-weight:600;font-size:.74rem;letter-spacing:.12em;line-height:1;padding:6px 9px 5px;border-radius:5px;border:1px solid}
@@ -50,8 +51,14 @@ main{max-width:1000px;margin:0 auto;padding:0 20px 40px}
 .blurb{color:var(--dim);margin-top:8px;max-width:46ch}
 .gfoot{margin-top:auto;padding-top:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
 .meta{color:#7d838e;font-size:.82rem}
-.go{font-family:var(--ui);font-weight:600;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;color:#fff;padding:9px 14px;border:1px solid var(--rim);border-radius:8px;background:var(--panel2);transition:background .15s,border-color .15s}
-.game:hover .go{background:#fff;color:#0c0d10;border-color:#fff}
+.gos{display:flex;flex-wrap:wrap;gap:10px}
+@media(min-width:561px){.gos{margin-left:auto}}
+.go{display:inline-flex;align-items:center;gap:6px;font-family:var(--ui);font-weight:600;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;color:#fff;padding:9px 14px;border:1px solid var(--rim);border-radius:8px;background:var(--panel2);transition:background .15s,border-color .15s}
+/* the whole card opens the game; the play button sits above that layer */
+.go-main::after{content:"";position:absolute;inset:0;z-index:1;border-radius:14px}
+.go-play{position:relative;z-index:2}
+.game:hover .go-main,.go-play:hover{background:#fff;color:#0c0d10;border-color:#fff}
+.game:has(.go-play:hover) .go-main{background:var(--panel2);color:#fff;border-color:var(--rim)}
 
 /* previews */
 .art{position:relative;min-height:230px;overflow:hidden;border-right:1px solid var(--line)}
@@ -107,20 +114,25 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
 @media(max-width:400px){.quick{display:none}}
 @media(prefers-reduced-motion:reduce){.game,.go{transition:none}.game:hover{transform:none}}
 
-/* Blockworld art: blocky ground, floating cubes, pixel logo */
-.art-bw{background:linear-gradient(180deg,#6db3e8 0%,#a9d3f2 55%,#d3ecff 100%)}
-.bw-ground{position:absolute;left:0;right:0;bottom:0;height:104px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),linear-gradient(180deg,#5aa843 0 28px,#7a5230 28px 62px,#68452a 62px 100%)}
-.bw-ground::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 1px,transparent 1px 26px),linear-gradient(180deg,#6fc255,#5aa843)}
-.bw-cubes i{position:absolute;width:26px;height:26px;border-radius:4px;background:linear-gradient(180deg,#79c464 0 30%,#8a5c33 30%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 6px 0 rgba(0,0,0,.15)}
-.bw-cubes i:nth-child(1){left:64%;top:28%}
-.bw-cubes i:nth-child(2){left:78%;top:44%;width:20px;height:20px}
-.bw-cubes i:nth-child(3){left:52%;top:48%;width:16px;height:16px}
-.bw-logo{left:22px;top:20px;font-family:var(--pix);font-size:1rem;letter-spacing:.08em;color:#1c3810;text-shadow:0 2px 0 rgba(255,255,255,.45)}
-.bw-logo em{font-style:normal;color:#2e6b1f}
-
-/* "Play in browser" button under a game card */
-.games li.has-play .game{border-bottom-left-radius:0;border-bottom-right-radius:0}
-.games li.has-play .game:hover{transform:none}
-.playweb{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;background:linear-gradient(180deg,#6fc255,#5aa843);color:#123008;font-family:var(--ui);font-weight:700;font-size:.95rem;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;transition:filter .15s}
-.playweb:hover{filter:brightness(1.1)}
-.playweb:focus-visible{outline:2px solid #fff;outline-offset:3px}
+/* Blockworld: blocky hills at night */
+.art-bw{background:radial-gradient(ellipse at 50% 115%,rgba(76,214,96,.34),transparent 62%),linear-gradient(180deg,#0a0c12 0%,#101722 58%,#0e1710 100%)}
+.bw-moon{position:absolute;right:16%;top:22px;width:22px;height:22px;background:#e8ecd8;box-shadow:0 0 0 1px rgba(0,0,0,.2) inset,0 0 26px 6px rgba(220,235,200,.18)}
+.bw-glow{position:absolute;left:0;right:0;bottom:0;height:60%;background:radial-gradient(ellipse at 70% 100%,rgba(140,230,90,.16),transparent 60%)}
+.bw-far,.bw-hills{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end}
+.bw-far{height:150px}
+.bw-far i{flex:1;background:#0f1619;box-shadow:inset 0 2px 0 rgba(111,194,85,.22)}
+.bw-hills{height:120px}
+.bw-hills i{flex:1;background:linear-gradient(180deg,#5fb447 0 7px,#2f6a25 7px 10px,transparent 10px),repeating-linear-gradient(0deg,transparent 0 17px,rgba(0,0,0,.45) 17px 18px),repeating-linear-gradient(90deg,transparent 0 17px,rgba(0,0,0,.45) 17px 18px),linear-gradient(180deg,#3a2818,#1c140d 70%);box-shadow:inset 0 1px 0 rgba(150,240,110,.5)}
+.bw-far i:nth-child(1){height:52%}.bw-far i:nth-child(2){height:64%}.bw-far i:nth-child(3){height:76%}
+.bw-far i:nth-child(4){height:88%}.bw-far i:nth-child(5){height:76%}.bw-far i:nth-child(6){height:64%}
+.bw-far i:nth-child(7){height:58%}.bw-far i:nth-child(8){height:70%}.bw-far i:nth-child(9){height:82%}
+.bw-far i:nth-child(10){height:94%}.bw-far i:nth-child(11){height:100%}.bw-far i:nth-child(12){height:88%}
+.bw-hills i:nth-child(1){height:46%}.bw-hills i:nth-child(2){height:46%}.bw-hills i:nth-child(3){height:61%}
+.bw-hills i:nth-child(4){height:76%}.bw-hills i:nth-child(5){height:76%}.bw-hills i:nth-child(6){height:61%}
+.bw-hills i:nth-child(7){height:46%}.bw-hills i:nth-child(8){height:31%}.bw-hills i:nth-child(9){height:31%}
+.bw-hills i:nth-child(10){height:31%}.bw-hills i:nth-child(11){height:46%}.bw-hills i:nth-child(12){height:46%}
+.bw-hills i:nth-child(13){height:61%}.bw-hills i:nth-child(14){height:61%}.bw-hills i:nth-child(15){height:46%}
+.bw-hills i:nth-child(16){height:31%}
+.bw-logo{left:22px;top:20px;font-family:var(--ui);font-weight:700;font-size:1.7rem;letter-spacing:.12em;color:#fff;line-height:1}
+.bw-logo em{font-style:normal;color:#5fd24a;text-shadow:0 0 14px rgba(95,210,74,.55)}
+@media(max-width:560px){.bw-logo{font-size:1.45rem}}
