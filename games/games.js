@@ -13,7 +13,7 @@ var GAMES = [
     added: "2026-11-01",
     updated: "2026-11-01",
     art: "bw",
-    cta: "Peek"
+    cta: "Play"
   },
   {
     name: "Skibidi Strike",

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Play Blockworld - TTVM Studios</title>
+<meta name="description" content="Play Blockworld in your browser - the web test build of Ttvm Studios' block-building world game.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Press+Start+2P&display=swap">
+<style>
+:root{--grass:#5aa843;--grass2:#6fc255;--dirt:#7a5230;--stone:#3b3f46;--bg:#0c0d10;--panel:#14161b;--panel2:#181a20;--line:#262a33;--txt:#e8e9ee;--dim:#9ba1ac;--ui:'Oswald','Arial Narrow',Impact,sans-serif;--pix:'Press Start 2P',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--ui);line-height:1.5}
+a{color:var(--grass2)}
+header.bar{display:flex;align-items:center;gap:18px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.mark .av{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:linear-gradient(180deg,var(--grass2),var(--grass));color:#123008;font-size:.8rem;font-weight:700}
+nav.quick{display:flex;gap:18px;margin-left:auto}
+nav.quick a{color:var(--dim);text-decoration:none;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase}
+nav.quick a:hover{color:#fff}
+main{max-width:980px;margin:0 auto;padding:0 20px 40px}
+.hero{text-align:center;padding:34px 0 10px}
+.hero h1{font-family:var(--pix);font-size:clamp(1.2rem,4vw,2rem);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.5)}
+.hero h1 em{font-style:normal;color:var(--grass2)}
+.hero p{color:var(--dim);max-width:620px;margin:12px auto 0}
+.frame{position:relative;margin:26px auto 0;max-width:860px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#101319}
+.frame .sky{position:absolute;left:0;right:0;top:0;height:46%;background:linear-gradient(180deg,#6db3e8,#a9d3f2)}
+.frame .ground{position:absolute;left:0;right:0;bottom:0;height:54%;background:repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),linear-gradient(180deg,var(--grass) 0 30px,var(--dirt) 30px 62px,#68452a 62px 100%)}
+.frame canvas{position:relative;display:block;width:100%;height:min(64vh,520px);background:transparent}
+.state{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;z-index:3;background:rgba(12,13,16,.72)}
+.state .box{max-width:520px}
+.state .cube{width:52px;height:52px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(180deg,#79c464 0 30%,#8a5c33 30%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 8px 0 rgba(0,0,0,.3);animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.state h2{font-family:var(--pix);font-size:.85rem;color:#fff;margin-bottom:10px}
+.state p{color:var(--dim);font-size:.95rem}
+.state .bar{width:280px;max-width:80%;height:14px;margin:16px auto 0;border:1px solid var(--line);border-radius:7px;background:var(--panel2);overflow:hidden;display:none}
+.state .bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--grass),var(--grass2));transition:width .2s}
+.hidden{display:none!important}
+.foot{color:var(--dim);font-size:.8rem;text-align:center;margin-top:14px}
+.foot a{color:var(--grass2)}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="mark" href="../../"><span class="av">TS</span> TTVM Studios</a>
+  <nav class="quick"><a href="../">Blockworld</a><a href="../../">All games</a></nav>
+</header>
+<main>
+  <section class="hero">
+    <h1>PLAY <em>BLOCKWORLD</em></h1>
+    <p>Web test build. Best on a computer - phones and tablets get their own version later.</p>
+  </section>
+  <div class="frame">
+    <span class="sky" aria-hidden="true"></span>
+    <span class="ground" aria-hidden="true"></span>
+    <canvas id="bwcanvas" tabindex="0"></canvas>
+    <div class="state" id="bwstate">
+      <div class="box">
+        <div class="cube" id="bwcube"></div>
+        <h2 id="bwhead">WAITING FOR THE WEB BUILD</h2>
+        <p id="bwmsg">The web build isn't uploaded yet. This page boots the game automatically the moment it lands - leave it open, it checks every minute.</p>
+        <div class="bar" id="bwbar"><i id="bwfill"></i></div>
+      </div>
+    </div>
+  </div>
+  <p class="foot"><a href="../">Back to Blockworld</a> &middot; part of <a href="../../">Ttvm Studios</a></p>
+</main>
+<script>
+(function(){
+  var canvas = document.getElementById('bwcanvas');
+  var state = document.getElementById('bwstate');
+  var head = document.getElementById('bwhead');
+  var msg = document.getElementById('bwmsg');
+  var bar = document.getElementById('bwbar');
+  var fill = document.getElementById('bwfill');
+  var cube = document.getElementById('bwcube');
+  var NAMES = ['Blockworld','blockworld','Block World','WebGL'];
+  var booted = false, checking = false;
+  function probe(url){
+    return fetch(url, {method:'HEAD'}).then(function(r){ return r.ok; }).catch(function(){ return false; });
+  }
+  function boot(name, dataUrl, frameworkUrl, codeUrl){
+    head.textContent = 'LOADING BLOCKWORLD';
+    msg.textContent = 'Downloading the world...';
+    bar.style.display = 'block';
+    var s = document.createElement('script');
+    s.src = 'Build/' + name + '.loader.js';
+    s.onload = function(){
+      if (typeof createUnityInstance !== 'function'){ fail('The build files are there but the loader did not start.'); return; }
+      createUnityInstance(canvas, {dataUrl:dataUrl, frameworkUrl:frameworkUrl, codeUrl:codeUrl}, function(p){
+        fill.style.width = Math.round(p*100) + '%';
+      }).then(function(instance){
+        booted = true;
+        state.classList.add('hidden');
+        canvas.focus();
+      }).catch(function(){ fail('The build started but hit an error loading its files.'); });
+    };
+    s.onerror = function(){ fail('The loader was found but would not load.'); };
+    document.body.appendChild(s);
+  }
+  function fail(why){
+    if (booted) return;
+    cube.classList.add('hidden');
+    bar.style.display = 'none';
+    head.textContent = 'BUILD TROUBLE';
+    msg.textContent = why + ' Amos probably needs to re-export it - check back soon.';
+  }
+  function check(){
+    if (booted || checking) return;
+    checking = true;
+    var chain = Promise.resolve(false);
+    var found = null;
+    NAMES.reduce(function(acc, name){
+      return acc.then(function(){
+        if (found) return;
+        return probe('Build/' + name + '.loader.js').then(function(ok){ if (ok) found = name; });
+      });
+    }, chain).then(function(){
+      checking = false;
+      if (!found || booted) return;
+      // pick the file variants that exist
+      var cands = [
+        {d:'Build/'+found+'.data.br', f:'Build/'+found+'.framework.js.br', w:'Build/'+found+'.wasm.br'},
+        {d:'Build/'+found+'.data.gz', f:'Build/'+found+'.framework.js.gz', w:'Build/'+found+'.wasm.gz'},
+        {d:'Build/'+found+'.data', f:'Build/'+found+'.framework.js', w:'Build/'+found+'.wasm'}
+      ];
+      var pick = null;
+      cands.reduce(function(acc, c){
+        return acc.then(function(){
+          if (pick) return;
+          return Promise.all([probe(c.d), probe(c.f), probe(c.w)]).then(function(rs){
+            if (rs[0] && rs[1] && rs[2]) pick = c;
+          });
+        });
+      }, Promise.resolve()).then(function(){
+        if (pick && !booted) boot(found, pick.d, pick.f, pick.w);
+      });
+    });
+  }
+  check();
+  setInterval(check, 45000);
+})();
+</script>
+</body>
+</html>
