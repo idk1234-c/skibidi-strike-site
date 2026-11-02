@@ -50,6 +50,10 @@ h2.sec{font-size:1.5rem;letter-spacing:.08em;text-transform:uppercase;color:#fff
 footer{border-top:1px solid var(--line);padding:26px 20px 34px;text-align:center;color:#7d838e;font-size:.85rem}
 footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
 .playwrap{margin-top:24px}.playbtn{display:inline-block;font-family:var(--pix);font-size:.85rem;color:#123008;background:linear-gradient(180deg,var(--grass2),var(--grass));padding:16px 32px;border-radius:10px;text-decoration:none;box-shadow:0 4px 0 #3c6b2b,0 8px 18px rgba(0,0,0,.35)}.playbtn:hover{filter:brightness(1.07)}
+.gameplay .vidwrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000;aspect-ratio:16/9;box-shadow:0 10px 28px rgba(0,0,0,.4)}
+.gameplay .vidwrap video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.gameplay .vidcap{margin-top:10px;color:var(--dim);font-size:.9rem;text-align:center}
+@media(max-width:560px){.gameplay .vidwrap{border-radius:10px}.gameplay .vidcap{font-size:.84rem}}
 @media(max-width:560px){.hero{padding-top:30px}.art{height:150px}}
 </style>
 </head>
@@ -76,6 +80,12 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
   <div class="art" aria-hidden="true">
     <span class="bw-ground"></span><i></i><i></i><i></i>
   </div>
+
+  <section class="page gameplay" id="gameplay">
+    <h2 class="sec">Gameplay</h2>
+    <div class="vidwrap"><video controls playsinline preload="metadata" poster="gameplay.jpg" width="854" height="480"><source src="gameplay.mp4" type="video/mp4">Your browser can't play this video. <a href="gameplay.mp4">Watch it here</a>.</video></div>
+    <p class="vidcap">Heads up: I forgot I was watching something in the background while recording lol &#128128;</p>
+  </section>
 
   <section class="page">
     <h2 class="sec">What it is</h2>
