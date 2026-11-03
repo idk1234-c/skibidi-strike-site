@@ -1,61 +1,146 @@
 {
-  "_about": "Soundtrack list for the Music tab. Song files are NOT hosted on the site (copyright + size): each track links out to an official or public source. Game files: Assets/Resources/Music in the private repo.",
+  "_about": "Soundtrack list for the Music tab. Every track is free music: Kevin MacLeod (incompetech.com), Creative Commons Attribution 4.0, credited on each entry. Audio is hosted on the site in parts (audio/music/*.partN, joined in the browser). Game files: Assets/Resources/MenuMusic.mp3 + Assets/Resources/Music in the private repo. Rule: only CC0 / public domain / CC BY (with credit) music here, no copyrighted songs.",
   "game": "Skibidi Strike",
   "tracks": [
     {
       "n": 1,
-      "title": "Come Make Me Happy",
-      "artist": "Rihanna (vocal sample from \"Sex With Me\") · Jersey Club remix, remixer unknown",
-      "clip": "@evelin.delvalle97",
-      "clipSite": "TikTok",
-      "listen": "https://www.youtube.com/results?search_query=come+make+me+happy+jersey+club+remix",
-      "listenLabel": "YouTube search"
+      "title": "Night of Chaos",
+      "artist": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "credit": "“Night of Chaos” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 License. http://creativecommons.org/licenses/by/4.0/",
+      "usedIn": "Skibidi Strike · menu music",
+      "audio": {
+        "type": "audio/mpeg",
+        "size": 2521735,
+        "base": "audio/music/",
+        "parts": [
+          "night-of-chaos.mp3.part0",
+          "night-of-chaos.mp3.part1"
+        ]
+      },
+      "listen": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300042",
+      "listenLabel": "incompetech.com"
     },
     {
       "n": 2,
-      "title": "Come Make Me Happy (Skibidi Remix)",
-      "artist": "Rihanna (vocal sample from \"Sex With Me\") · mixed with the Skibidi Toilet theme, remixer unknown",
-      "clip": "@drayze_songz",
-      "clipSite": "TikTok",
-      "listen": "https://www.youtube.com/results?search_query=come+make+me+happy+skibidi+remix",
-      "listenLabel": "YouTube search"
+      "title": "Cyborg Ninja",
+      "artist": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "credit": "“Cyborg Ninja” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 License. http://creativecommons.org/licenses/by/4.0/",
+      "usedIn": "Skibidi Strike · in-game playlist",
+      "audio": {
+        "type": "audio/mpeg",
+        "size": 2521785,
+        "base": "audio/music/",
+        "parts": [
+          "cyborg-ninja.mp3.part0",
+          "cyborg-ninja.mp3.part1"
+        ]
+      },
+      "listen": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600008",
+      "listenLabel": "incompetech.com"
     },
     {
       "n": 3,
-      "title": "Everybody Wants to Rule the World",
-      "artist": "Tears for Fears",
-      "clip": "@MoonHalo",
-      "clipSite": "TikTok",
-      "listen": "https://www.youtube.com/watch?v=aGCdLKXNF3w",
-      "listenLabel": "Official video"
+      "title": "Dark Fog",
+      "artist": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "credit": "“Dark Fog” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 License. http://creativecommons.org/licenses/by/4.0/",
+      "usedIn": "Skibidi Strike · in-game playlist",
+      "audio": {
+        "type": "audio/mpeg",
+        "size": 2869367,
+        "base": "audio/music/",
+        "parts": [
+          "dark-fog.mp3.part0",
+          "dark-fog.mp3.part1"
+        ]
+      },
+      "listen": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300031",
+      "listenLabel": "incompetech.com"
     },
     {
       "n": 4,
-      "title": "The Uncanny Valley",
-      "artist": "Perturbator",
-      "clip": "@inksans_404",
-      "clipSite": "TikTok",
-      "listen": "https://www.youtube.com/watch?v=6ix-wYFZ9KA",
-      "listenLabel": "Official upload"
+      "title": "Darkling",
+      "artist": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "credit": "“Darkling” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 License. http://creativecommons.org/licenses/by/4.0/",
+      "usedIn": "Skibidi Strike · in-game playlist",
+      "audio": {
+        "type": "audio/mpeg",
+        "size": 2717333,
+        "base": "audio/music/",
+        "parts": [
+          "darkling.mp3.part0",
+          "darkling.mp3.part1"
+        ]
+      },
+      "listen": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1700050",
+      "listenLabel": "incompetech.com"
     },
     {
       "n": 5,
-      "title": "Dying Light – Horizon",
-      "artist": "Paweł Błaszczak · Dying Light original soundtrack",
-      "clip": "@luxcool25",
-      "clipSite": "TikTok",
-      "listen": "https://www.youtube.com/watch?v=_vYZ0JjbmPA",
-      "listenLabel": "Official upload"
+      "title": "Hitman",
+      "artist": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "credit": "“Hitman” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 License. http://creativecommons.org/licenses/by/4.0/",
+      "usedIn": "Skibidi Strike · in-game playlist",
+      "audio": {
+        "type": "audio/mpeg",
+        "size": 2812522,
+        "base": "audio/music/",
+        "parts": [
+          "hitman.mp3.part0",
+          "hitman.mp3.part1"
+        ]
+      },
+      "listen": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300013",
+      "listenLabel": "incompetech.com"
     },
     {
       "n": 6,
-      "title": "A Death in the Family",
-      "artist": "Artist unknown",
-      "clip": "",
-      "clipSite": "",
-      "note": "Source clip had no caption to credit. Track name chosen by the studio.",
-      "listen": "",
-      "listenLabel": ""
+      "title": "Volatile Reaction",
+      "artist": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "credit": "“Volatile Reaction” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 License. http://creativecommons.org/licenses/by/4.0/",
+      "usedIn": "Skibidi Strike · in-game playlist",
+      "audio": {
+        "type": "audio/mpeg",
+        "size": 2646707,
+        "base": "audio/music/",
+        "parts": [
+          "volatile-reaction.mp3.part0",
+          "volatile-reaction.mp3.part1"
+        ]
+      },
+      "listen": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400039",
+      "listenLabel": "incompetech.com"
+    },
+    {
+      "n": 7,
+      "title": "Phantom from Space",
+      "artist": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "credit": "“Phantom from Space” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 License. http://creativecommons.org/licenses/by/4.0/",
+      "usedIn": "Skibidi Strike · in-game playlist",
+      "audio": {
+        "type": "audio/mpeg",
+        "size": 2503348,
+        "base": "audio/music/",
+        "parts": [
+          "phantom-from-space.mp3.part0",
+          "phantom-from-space.mp3.part1"
+        ]
+      },
+      "listen": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1500038",
+      "listenLabel": "incompetech.com"
     }
   ]
 }
