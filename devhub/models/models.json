@@ -17,6 +17,78 @@
       "by": "Titan TV Man",
       "notes": "The second Titan: TV head with red lights, claw hands and an energy jet pack.",
       "date": "2026-11-03"
+    },
+    {
+      "id": "videotapper",
+      "name": "Video Tapper 1.0",
+      "glb": "files/videotapper.glb",
+      "thumb": "files/videotapper.jpg",
+      "by": "Titan TV Man",
+      "notes": "Video Tapper 1.0 from Skibidi Soundwave. Model by nautayugh on Sketchfab (CC BY 4.0), adapted for Skibidi Strike.",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "videotapper19",
+      "name": "Video Tapper 1.9",
+      "glb": "files/videotapper_1_9.glb",
+      "thumb": "files/videotapper_1_9.jpg",
+      "by": "Titan TV Man",
+      "notes": "Video Tapper 1.9. Model by Professor_E12 on Sketchfab (CC BY 4.0), adapted for Skibidi Strike.",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "videotapper2",
+      "name": "Video Tapper 2.0",
+      "glb": "files/videotapper_2.glb",
+      "thumb": "files/videotapper_2.jpg",
+      "by": "Titan TV Man",
+      "notes": "Video Tapper 2.0. Model by EvesStudio2008 on Sketchfab (CC BY 4.0), adapted for Skibidi Strike.",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "videotapper3",
+      "name": "Video Tapper 3.0",
+      "glb": "files/videotapper_3.glb",
+      "thumb": "files/videotapper_3.jpg",
+      "by": "Titan TV Man",
+      "notes": "Video Tapper 3.0 with two arm cannons, a halo ring and a green shield aura. Base model by EvesStudio2008 on Sketchfab (CC BY 4.0).",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "alliancebrute",
+      "name": "Brute 1.0",
+      "glb": "files/alliancebrute.glb",
+      "thumb": "files/alliancebrute.jpg",
+      "by": "Titan TV Man",
+      "notes": "Brute 1.0 from Skibidi Soundwave. Model by Skibidi_boom6 on Sketchfab (CC BY 4.0), adapted for Skibidi Strike.",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "alliancebrute2",
+      "name": "Brute 2.0",
+      "glb": "files/alliancebrute_2.glb",
+      "thumb": "files/alliancebrute_2.jpg",
+      "by": "Titan TV Man",
+      "notes": "Brute 2.0. Model by EvesStudio2008 on Sketchfab (CC BY 4.0), adapted for Skibidi Strike.",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "alliancebrute21",
+      "name": "Brute 2.1",
+      "glb": "files/alliancebrute_2_1.glb",
+      "thumb": "files/alliancebrute_2_1.jpg",
+      "by": "Titan TV Man",
+      "notes": "Brute 2.1 with railgun, shield and backpack cannons. Model by Skibidi_boom6 on Sketchfab (CC BY 4.0).",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "alliancebruteproto",
+      "name": "Prototype Brute",
+      "glb": "files/alliancebruteproto.glb",
+      "thumb": "files/alliancebruteproto.jpg",
+      "by": "Titan TV Man",
+      "notes": "Prototype Brute, before his upgrades. Model by Emperor178 on Sketchfab (CC BY 4.0), adapted for Skibidi Strike.",
+      "date": "2026-11-03"
     }
   ]
 }
