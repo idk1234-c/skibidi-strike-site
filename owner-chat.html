@@ -7,7 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <title>Studio chats — Skibidi Strike</title>
 <link rel="stylesheet" href="style.css?v=23">
-<link rel="stylesheet" href="owner-chat.css?v=5">
+<link rel="stylesheet" href="owner-chat.css?v=6">
 </head>
 <body class="oc-body">
 
@@ -86,6 +86,11 @@
         <div class="oc-err" id="ocSchedErr" role="alert"></div>
         <p class="oc-schedhelp">It stays hidden (only you see it, greyed out) until that time, then it shows up in the chat.</p>
       </div>
+      <div class="oc-ctxbar" id="ocCtxBar" hidden>
+        <span class="oc-ctx-ic" id="ocCtxIc" aria-hidden="true"></span>
+        <div class="oc-ctx-txt"><span class="oc-ctx-title" id="ocCtxTitle"></span><span class="oc-ctx-snip" id="ocCtxSnip"></span></div>
+        <button type="button" class="oc-ctx-x" id="ocCtxClose" aria-label="Cancel">&times;</button>
+      </div>
       <div class="oc-compose-tools">
         <label class="oc-vn" title="Tags the message as dictated so the coders read it generously">
           <input type="checkbox" id="ocVoiceNote"><span class="oc-vn-box" aria-hidden="true"></span><span>Send as voice note</span>
@@ -112,12 +117,23 @@
   </div>
 </div>
 
+<div class="oc-sheet" id="ocSheet" hidden role="dialog" aria-label="Message options">
+  <div class="oc-sheet-box">
+    <div class="oc-sheet-head"><span id="ocSheetWho"></span><span class="oc-sheet-prev" id="ocSheetPrev"></span></div>
+    <button type="button" data-act="reply"><span aria-hidden="true">&#8617;&#65039;</span> Reply</button>
+    <button type="button" data-act="edit"><span aria-hidden="true">&#9999;&#65039;</span> Edit</button>
+    <button type="button" data-act="copy"><span aria-hidden="true">&#128203;</span> Copy text</button>
+    <button type="button" data-act="delete" class="bad"><span aria-hidden="true">&#128465;&#65039;</span> Delete</button>
+    <button type="button" data-act="close" class="oc-sheet-cancel">Cancel</button>
+  </div>
+</div>
+
 <div class="oc-lightbox" id="ocLightbox" hidden role="dialog" aria-label="Photo"><img id="ocLightboxImg" alt="Photo"><span class="oc-lightbox-x" aria-hidden="true">&times;</span></div>
 
 <script src="js/announce.js?v=3" defer></script>
 <script src="js/visit.js?v=1"></script>
 <script src="ss-core.js?v=5"></script>
 <script src="voice-clean.js?v=1"></script>
-<script src="owner-chat.js?v=5"></script>
+<script src="owner-chat.js?v=6"></script>
 </body>
 </html>

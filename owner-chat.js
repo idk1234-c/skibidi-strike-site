@@ -3,6 +3,8 @@
 // it only works with the owner's own GitHub key, saved in this browser.
 // v3 (Titan TV Man): sections (AI chats / Devs & Mods / Requests) from chat/index.json,
 // pinned chats, and "send later" (a message with a future "sendAt" stays hidden until then).
+// v6: Reply (replyTo: <message id>, shown as a quoted box) and Edit (editedAt, "(edited)"),
+// plus owner soft delete (deleted: true). Hold a message on a phone, or hover it on a computer.
 // ALL storage goes through one adapter object, GitHubChatStore below (the UI never calls GitHub),
 // so it can be swapped for another backend (e.g. Firebase) by setting window.ChatStore before this file loads.
 (function(){
@@ -52,6 +54,10 @@ var state = {
   readTry: {},         // key -> last time we saved "Amos has read this"
   newOpen: false,      // "+ New chat" form open
   creating: false,
+  ctx: null,           // composer mode: {mode:"reply"|"edit", key, id, draft}
+  overlay: {},         // msg id -> {text, editedAt} or {deleted} while an edit/delete is saving
+  sheet: null,         // msg id the Hold menu is open for
+  hl: null,            // {id, until} message briefly highlighted after tapping a quote
   sig: ""
 };
 
@@ -136,7 +142,7 @@ function seenKey(k){ return "ss_chat_seen_" + k; }
 // up as a normal message at that time. (Static site: scheduling = visibility by time.)
 function tOf(iso){ var n = Date.parse(iso); return isNaN(n) ? null : n; }
 function isScheduled(m, now){ var n = m && m.sendAt ? tOf(m.sendAt) : null; return n !== null && n > (now || Date.now()); }
-function shownTime(m){ return (m && m.sendAt && tOf(m.sendAt) !== null) ? m.sendAt : (m ? m.time : ""); }
+function shownTime(m){ return (m && m.sendAt && tOf(m.sendAt) !== null) ? m.sendAt : (m ? (m.time || m.ts || "") : ""); }
 function messagesOf(k){
   var d = state.data[k];
   var list = (d && d.doc && Array.isArray(d.doc.messages)) ? d.doc.messages.slice() : [];
@@ -162,6 +168,43 @@ function scheduledOf(k){
     .sort(function(a,b){ return tOf(a.sendAt) - tOf(b.sendAt); });
 }
 function lastMsg(k){ var l = visibleOf(k); return l.length ? l[l.length-1] : null; }
+// ---------- reply / edit helpers ----------
+// a message's key: its id, or (for hand-written messages with no id) one made from who + when
+function hashStr(s){ var h = 5381; for(var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function mkey(m){
+  if(!m) return "";
+  if((typeof m.id === "string" && m.id) || typeof m.id === "number") return String(m.id);
+  var when = m.time || m.ts || "";
+  return "k-" + hashStr(String(m.from || "") + "|" + String(when) + "|" + (when ? "" : String(m.text || "").slice(0, 80)));
+}
+function findMsg(k, id){
+  if(!id) return null;
+  var l = messagesOf(k);
+  for(var i = 0; i < l.length; i++) if(mkey(l[i]) === id) return withOverlay(l[i]);
+  var p = state.pending[k] || [];
+  for(var j = 0; j < p.length; j++) if(p[j].id === id) return p[j];
+  return null;
+}
+function withOverlay(m){
+  var o = m && state.overlay[mkey(m)]; if(!o) return m;
+  var c = shallow(m);
+  if(o.deleted){ c.deleted = true; c.text = ""; delete c.image; delete c.style; delete c.voice; }
+  else { c.text = o.text; c.editedAt = o.editedAt; }
+  c.saving = true;
+  return c;
+}
+function whoName(from){ return from === ME ? "You" : String(from || "?"); }
+function snippetOf(m, n){
+  if(!m) return "";
+  if(m.deleted) return "message deleted";
+  var s = String(m.text || "").replace(/\s+/g, " ").trim();
+  if(!s) return m.image ? "\ud83d\udcf7 Photo" : "";
+  return s.length > n ? s.slice(0, n).replace(/\s+$/, "") + "\u2026" : s;
+}
+function isLive(m){ return !!m && !m.sending && !m.failed && !m.saving && !m.deleted; }
+function canReply(m){ return isLive(m) && !m.scheduled && !isScheduled(m); }
+function canEdit(m){ return isLive(m) && m.from === ME; }
+function canDelete(m){ return isLive(m) && !m.scheduled && !isScheduled(m); }  // owner page: any message (still-scheduled ones use Cancel)
 function schedSig(){
   var now = Date.now(), n = 0;
   state.threads.forEach(function(t){ messagesOf(t.key).forEach(function(m){ if(m.sendAt && isScheduled(m, now)) n++; }); });
@@ -180,6 +223,9 @@ function schedSig(){
 //   send(id, msg)                      append msg {id, from, text, time, voice?, sendAt?}
 //   cancelScheduled(id, msgId, from)   remove the sender's own still-scheduled message
 //                                         -> {removed:bool, tooLate:bool}
+//   edit(id, msgId, from, text)        change the text of the sender's own message (sets editedAt) -> {found}
+//   remove(id, msgId, by)              soft delete (deleted:true, text "") -> {found}
+//   (a message may carry replyTo: <id of the message it answers>)
 //   setPinned(id, pinned)              -> threads (same shape as listThreads)
 //   createThread(section, title)       -> {id, threads}
 //   listRequests()                     -> [{id, from, text, time, url}] (people asking to talk to the owner)
@@ -352,6 +398,31 @@ function GitHubChatStore(){
         doc.messages = keep;
       }, "chat(" + id + "): cancel a scheduled message from " + from).then(function(){ return out; });
     },
+    // the sender changes the text of their own message (adds editedAt). Only that one message is touched;
+    // rmw re-reads the newest file first and retries if someone else saved at the same moment.
+    edit: function(id, msgId, from, text){
+      var out = {found:false};
+      return rmw(fileOf(id), function(r){ return threadDoc(r, id); }, function(doc){
+        var m = null;
+        doc.messages.forEach(function(x){ if(x && typeof x === "object" && mkey(x) === msgId) m = x; });
+        out.found = !!(m && m.from === from && !m.deleted);
+        if(!out.found || m.text === text) return false;
+        m.text = text; m.editedAt = new Date().toISOString();
+      }, "chat(" + id + "): " + from + " edited a message").then(function(){ return out; });
+    },
+    // owner soft delete: the message stays (so replies to it still make sense) but its text/photo are cleared
+    remove: function(id, msgId, by){
+      var out = {found:false};
+      return rmw(fileOf(id), function(r){ return threadDoc(r, id); }, function(doc){
+        var m = null;
+        doc.messages.forEach(function(x){ if(x && typeof x === "object" && mkey(x) === msgId) m = x; });
+        out.found = !!m;
+        if(!m || m.deleted) return false;
+        if(m.id === undefined || m.id === null || m.id === "") m.id = msgId;   // keep replies to it pointing at it
+        m.deleted = true; m.deletedAt = new Date().toISOString(); m.deletedBy = by; m.text = "";
+        delete m.image; delete m.style; delete m.voice;
+      }, "chat(" + id + "): message deleted by " + by).then(function(){ return out; });
+    },
     setPinned: function(id, pinned){
       return saveIndex(function(doc){
         var hit = null;
@@ -491,8 +562,9 @@ function sendMessage(t, text, o){
   if(o.sendAt) msg.sendAt = o.sendAt;
   var st = cleanStyle(o.style); if(st) msg.style = st;
   if(o.image) msg.image = o.image;
+  if(o.replyTo) msg.replyTo = o.replyTo;
   var p = {id: msg.id, from: msg.from, text: msg.text, time: msg.time, voice: msg.voice, sendAt: msg.sendAt, style: msg.style,
-           image: msg.image, photo: o.photo || null, localImage: o.photo ? o.photo.url : null};
+           image: msg.image, replyTo: msg.replyTo, photo: o.photo || null, localImage: o.photo ? o.photo.url : null};
   (state.pending[t.key] = state.pending[t.key] || []).push(p);
   renderThread(); scrollBottom(true);
   var up = (o.photo && !msg.image) ? Store.uploadImage(o.photo.b64).then(function(ref){ msg.image = p.image = ref; imgUrls[ref] = o.photo.url; p.photo = null; })
@@ -525,6 +597,40 @@ function cancelScheduled(t, id){
     flash("Couldn't cancel. " + friendly(err), true);
   });
 }
+function editMessage(t, id, text){
+  var o = findMsg(t.key, id); if(!o) return;
+  if(o.text === text) return;
+  state.overlay[id] = {text: text, editedAt: new Date().toISOString()};
+  renderThread();
+  return Store.edit(t.key, id, ME, text).then(function(r){
+    return afterWrite(t).then(function(){
+      delete state.overlay[id];
+      renderThread(); renderSide();
+      flash(r.found ? "Edited" : "Couldn't find that message anymore.", !r.found);
+    });
+  }, function(err){
+    delete state.overlay[id]; renderThread();
+    if(err.status === 401){ logout("That key stopped working. Paste a new one."); return; }
+    flash("Couldn't save the edit. " + friendly(err), true);
+    startEdit(id); $("ocText").value = text; growBox();   // nothing typed gets lost
+  });
+}
+function deleteMessage(t, id){
+  state.overlay[id] = {deleted: true};
+  if(state.ctx && state.ctx.id === id) setCtx(null);
+  renderThread();
+  return Store.remove(t.key, id, ME).then(function(r){
+    return afterWrite(t).then(function(){
+      delete state.overlay[id];
+      renderThread(); renderSide();
+      flash(r.found ? "Deleted" : "Couldn't find that message anymore.", !r.found);
+    });
+  }, function(err){
+    delete state.overlay[id]; renderThread();
+    if(err.status === 401){ logout("That key stopped working. Paste a new one."); return; }
+    flash("Couldn't delete. " + friendly(err), true);
+  });
+}
 function removePending(k, id){
   state.pending[k] = (state.pending[k] || []).filter(function(m){ return m.id !== id; });
 }
@@ -539,10 +645,10 @@ function friendly(err){
   return err.message || "Something went wrong.";
 }
 var flashT;
-function flash(msg, bad){
+function flash(msg, bad, ms){
   var el = $("ocFlash"); if(!el) return;
   el.textContent = msg; el.className = "oc-flash on" + (bad ? " bad" : "");
-  clearTimeout(flashT); flashT = setTimeout(function(){ el.className = "oc-flash"; }, bad ? 5000 : 2200);
+  clearTimeout(flashT); flashT = setTimeout(function(){ el.className = "oc-flash"; }, ms || (bad ? 5000 : 2200));
 }
 
 // ---------- text style, photos, seen ----------
@@ -622,7 +728,7 @@ function unread(k){
 function markSeen(k){ var l = lastMsg(k); if(l) localStorage.setItem(seenKey(k), String(l.id)); }
 function tabHtml(t){
   var l = lastMsg(t.key), on = state.open === t.key, sch = scheduledOf(t.key).length;
-  var prev = l ? ((l.from === ME ? "You: " : (t.who.length !== 1 ? String(l.from || "?").split(" ")[0] + ": " : "")) + String(l.text || ""))
+  var prev = l ? ((l.from === ME ? "You: " : (t.who.length !== 1 ? String(l.from || "?").split(" ")[0] + ": " : "")) + (l.deleted ? "message deleted" : String(l.text || "")))
                : (sch ? "" : "No messages yet");
   if(sch) prev = "\u23f0 " + sch + " scheduled" + (prev ? " \u00b7 " + prev : "");
   return '<button type="button" class="oc-tab' + (on ? ' on' : '') + (unread(t.key) && !on ? ' unread' : '') + (t.pinned ? ' pinned' : '') + '" data-k="' + esc(t.key) + '" aria-current="' + (on ? 'true' : 'false') + '">'
@@ -696,20 +802,50 @@ function renderStatus(){
   if(d && d.error) { setStatusError(d.error); return; }
   el.textContent = s + " \u00b7 " + (d && d.loadedAt ? "updated " + ago(d.loadedAt) : "loading\u2026");
 }
+var REPLY_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M10 8V4.5L3 11l7 6.5V14c4.4 0 7.6 1.3 10 4.8-.9-5-3.9-9.6-10-10.8Z"/></svg>';
+var EDIT_SVG = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M4 17.3V20h2.7l8-8-2.7-2.7-8 8Zm12.7-7.9a.9.9 0 0 0 0-1.3l-1.8-1.8a.9.9 0 0 0-1.3 0L12.3 7.6 15 10.3l1.7-.9Z"/></svg>';
+var MORE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6 10.2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6Zm6 0a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6Zm6 0a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6Z"/></svg>';
+// the little quoted box above a reply (tap it to jump to the original)
+function quoteHtml(t, m){
+  if(!m.replyTo) return "";
+  var o = findMsg(t.key, m.replyTo);
+  if(o && o.from !== ME && isScheduled(o)) o = null;
+  return '<button type="button" class="oc-quote' + (o ? '' : ' gone') + '" data-goto="' + esc(m.replyTo) + '" aria-label="Go to the message this replies to">'
+    + (o ? '<b class="' + person(o.from).cls + '">' + esc(whoName(o.from)) + '</b>' : '')
+    + '<span>' + esc(o ? (snippetOf(o, 90) || "\u2026") : "Original message not found") + '</span></button>';
+}
+function actsHtml(m){
+  if(!isLive(m)) return "";
+  var h = '<div class="oc-acts" aria-label="Message actions">';
+  if(canReply(m)) h += '<button type="button" data-act="reply" aria-label="Reply" title="Reply">' + REPLY_SVG + '</button>';
+  if(canEdit(m)) h += '<button type="button" data-act="edit" aria-label="Edit" title="Edit">' + EDIT_SVG + '</button>';
+  h += '<button type="button" data-act="more" aria-label="More" title="More">' + MORE_SVG + '</button>';
+  return h + '</div>';
+}
 function bubble(m, prev, next, t){
   var mine = m.from === ME, sched = !!m.scheduled;
   var mt = shownTime(m), pt = prev ? shownTime(prev) : null, nt = next ? shownTime(next) : null;
-  var startGroup = sched || !prev || prev.from !== m.from || (new Date(mt) - new Date(pt) > 5*60000);
-  var endGroup = sched || !next || next.from !== m.from || (new Date(nt) - new Date(mt) > 5*60000);
-  var h = '<div class="oc-row ' + (mine ? 'me' : 'them') + (startGroup ? ' start' : '') + (endGroup ? ' end' : '') + (sched ? ' sched' : '') + '">';
+  var startGroup = sched || !prev || prev.from !== m.from || (new Date(mt) - new Date(pt) > 5*60000) || !!m.replyTo;
+  var endGroup = sched || !next || next.from !== m.from || (new Date(nt) - new Date(mt) > 5*60000) || !!(next && next.replyTo);
+  var key = mkey(m), hl = state.hl && state.hl.id === key && state.hl.until > Date.now();
+  var h = '<div class="oc-row ' + (mine ? 'me' : 'them') + (startGroup ? ' start' : '') + (endGroup ? ' end' : '') + (sched ? ' sched' : '') + (hl ? ' oc-hl' : '') + (isLive(m) ? ' live' : '') + '" data-id="' + esc(key) + '">';
   if(!mine) h += endGroup ? avatar(m.from, true) : '<span class="oc-av-sp"></span>';
+  if(mine) h += actsHtml(m);
   h += '<div class="oc-col">';
   if(startGroup && !mine) h += '<div class="oc-meta"><b class="' + person(m.from).cls + '">' + esc(m.from) + '</b> <time>' + esc(fmtTime(mt)) + '</time></div>';
   if(startGroup && mine && !sched) h += '<div class="oc-meta"><time>' + esc(fmtTime(mt)) + '</time></div>';
-  var img = imageHtml(m);
-  if(img) h += '<div class="oc-imgwrap' + (m.sending ? ' sending' : '') + '">' + img + '</div>';
-  if(String(m.text || "").trim() || !img) h += '<div class="oc-bub' + styleClass(m.style) + (m.failed ? ' failed' : '') + (m.sending ? ' sending' : '') + '">' + linkify(m.text) + '</div>';
-  if(m.voice === true) h += '<div class="oc-sub oc-vtag">\ud83c\udfa4 voice note</div>';
+  h += quoteHtml(t, m);
+  if(m.deleted){
+    h += '<div class="oc-bub oc-deleted">\ud83d\udeab message deleted</div>';
+  } else {
+    var img = imageHtml(m);
+    if(img) h += '<div class="oc-imgwrap' + (m.sending ? ' sending' : '') + '">' + img + '</div>';
+    if(String(m.text || "").trim() || !img) h += '<div class="oc-bub' + styleClass(m.style) + (m.failed ? ' failed' : '') + (m.sending || m.saving ? ' sending' : '') + '">' + linkify(m.text)
+      + (m.editedAt ? ' <span class="oc-edited">(edited)</span>' : '') + '</div>';
+    else if(m.editedAt) h += '<div class="oc-sub oc-edited">(edited)</div>';
+    if(m.voice === true) h += '<div class="oc-sub oc-vtag">\ud83c\udfa4 voice note</div>';
+  }
+  if(m.saving) h += '<div class="oc-sub">Saving\u2026</div>';
   if(sched && !m.sending && !m.failed){
     h += '<div class="oc-sub oc-schedtag">\u23f0 Scheduled for ' + esc(fmtWhen(m.sendAt)) + ' \u00b7 only you can see it'
       + (state.cancelling[m.id] ? ' \u00b7 canceling\u2026' : ' <button type="button" class="oc-cancel" data-id="' + esc(m.id) + '">Cancel</button>') + '</div>';
@@ -717,7 +853,9 @@ function bubble(m, prev, next, t){
   if(m.sending && !m.failed) h += '<div class="oc-sub">' + (m.sendAt ? 'Scheduling\u2026' : 'Sending\u2026') + '</div>';
   if(m.receipt) h += '<div class="oc-sub oc-receipt">' + esc(m.receipt) + '</div>';
   if(m.failed) h += '<div class="oc-sub bad">Not sent. ' + esc(m.error || "") + ' <button type="button" class="oc-retry" data-id="' + esc(m.id) + '">Retry</button></div>';
-  h += '</div></div>';
+  h += '</div>';
+  if(!mine) h += actsHtml(m);
+  h += '</div>';
   return h;
 }
 function renderThread(){
@@ -729,12 +867,12 @@ function renderThread(){
   if(t.note){ note.textContent = t.note; note.hidden = false; } else note.hidden = true;
   var d = state.data[t.key], now = Date.now();
   // file order = the order messages were appended (clocks can differ, so no sorting by time)
-  var list = visibleOf(t.key);
-  var sched = scheduledOf(t.key).map(function(m){ var c = {}; for(var k in m) c[k] = m[k]; c.scheduled = true; return c; });
+  var list = visibleOf(t.key).map(withOverlay);
+  var sched = scheduledOf(t.key).map(function(m){ var c = shallow(withOverlay(m)); c.scheduled = true; return c; });
   var have = {}; messagesOf(t.key).forEach(function(m){ have[m.id] = 1; });
   (state.pending[t.key] || []).forEach(function(p){
     if(have[p.id]) return;
-    var c = {id:p.id, from:p.from, text:p.text, time:p.time, voice:p.voice, sendAt:p.sendAt, style:p.style, image:p.image, localImage:p.localImage, sending:true, failed:p.failed, error:p.error};
+    var c = {id:p.id, from:p.from, text:p.text, time:p.time, voice:p.voice, sendAt:p.sendAt, style:p.style, image:p.image, replyTo:p.replyTo, localImage:p.localImage, sending:true, failed:p.failed, error:p.error};
     if(p.sendAt && isScheduled(p, now)){ c.scheduled = true; sched.push(c); } else list.push(c);
   });
   for(var j = list.length - 1; j >= 0; j--){
@@ -765,14 +903,169 @@ function scrollBottom(force){ var b = $("ocMsgs"); b.scrollTop = b.scrollHeight;
 
 function openThread(k, fromUser){
   var t = threadByKey(k) || state.threads[0];
+  if(state.ctx && state.ctx.key !== t.key) setCtx(null);
+  closeSheet();
   state.open = t.key; state.sec = t.section;
   try { history.replaceState(null, "", "#" + t.key); } catch(e){}
   renderSide(); renderThread(); scrollBottom(true);
-  refresh(t).then(function(){ scrollBottom(true); });
+  refresh(t).then(function(){
+    scrollBottom(true);
+    try {   // one-time tip so the new Reply / Edit is easy to find
+      if(!localStorage.getItem("ss_chat_tip_reply") && messagesOf(t.key).length){
+        localStorage.setItem("ss_chat_tip_reply", "1");
+        flash(matchMedia("(hover:none)").matches ? "New: hold a message to reply or edit it (or swipe it right to reply)" : "New: point at a message to reply \u21a9 or edit \u270e it", false, 6000);
+      }
+    } catch(e){}
+  });
   if(fromUser){
     var on = document.querySelector('.oc-sec.cur .oc-tab.on'), row = on && on.parentNode;
     if(row && row.scrollWidth > row.clientWidth) row.scrollLeft = on.offsetLeft - row.offsetLeft - (row.clientWidth - on.offsetWidth)/2;
   }
+}
+
+
+// ---------- reply / edit (composer bar, Hold menu, swipe) ----------
+function setCtx(c){
+  var prev = state.ctx, ta = $("ocText");
+  if(prev && prev.mode === "edit" && !(c && c.mode === "edit")) ta.value = prev.draft || "";  // back to what you were typing
+  state.ctx = c || null;
+  var bar = $("ocCtxBar"), th = $("ocThread");
+  th.classList.toggle("oc-editing", !!(c && c.mode === "edit"));
+  if(!c){ bar.hidden = true; $("ocSend").textContent = "Send"; $("ocSend").setAttribute("aria-label", "Send"); growBox(); return; }
+  var m = findMsg(c.key, c.id);
+  bar.className = "oc-ctxbar " + (c.mode === "edit" ? "edit" : "reply");
+  $("ocCtxIc").innerHTML = c.mode === "edit" ? EDIT_SVG : REPLY_SVG;
+  $("ocCtxTitle").innerHTML = c.mode === "edit" ? "Editing message"
+    : 'Replying to <b class="' + person(m && m.from).cls + '">' + esc(m && m.from === ME ? "yourself" : whoName(m && m.from)) + '</b>';
+  $("ocCtxSnip").textContent = snippetOf(m, 60);
+  bar.hidden = false;
+  $("ocSend").textContent = c.mode === "edit" ? "Save" : "Send";
+  $("ocSend").setAttribute("aria-label", c.mode === "edit" ? "Save edit" : "Send reply");
+  growBox();
+}
+function startReply(id){
+  var t = threadByKey(state.open); if(!t) return;
+  var m = findMsg(t.key, id); if(!canReply(m)) return;
+  if(state.ctx && state.ctx.mode === "edit") setCtx(null);
+  setCtx({mode:"reply", key:t.key, id:id});
+  focusText();
+}
+function startEdit(id){
+  var t = threadByKey(state.open); if(!t) return;
+  var m = findMsg(t.key, id); if(!canEdit(m)) return;
+  var draft = (state.ctx && state.ctx.mode === "edit") ? state.ctx.draft : $("ocText").value;
+  closePops(); voiceStop(true);
+  setCtx({mode:"edit", key:t.key, id:id, draft:draft});
+  $("ocText").value = String(m.text || "");
+  growBox(); focusText();
+}
+function focusText(){
+  var ta = $("ocText");
+  try { ta.focus({preventScroll:true}); } catch(e){ ta.focus(); }
+  var n = ta.value.length; try { ta.setSelectionRange(n, n); } catch(e){}
+}
+function jumpTo(id){
+  var row = $("ocMsgs").querySelector('.oc-row[data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+  if(!row){ flash("That message isn't in this chat anymore.", true); return; }
+  state.hl = {id: id, until: Date.now() + 1800};
+  row.scrollIntoView({block: "center", behavior: "smooth"});
+  row.classList.remove("oc-hl"); void row.offsetWidth; row.classList.add("oc-hl");
+  setTimeout(function(){ if(state.hl && state.hl.id === id && state.hl.until <= Date.now() + 50){ state.hl = null; var r = $("ocMsgs").querySelector('.oc-row.oc-hl'); if(r) r.classList.remove("oc-hl"); } }, 1850);
+}
+function openSheet(id, fromHold){
+  var t = threadByKey(state.open); if(!t) return;
+  var m = findMsg(t.key, id); if(!isLive(m)) return;
+  state.sheet = id; state.sheetAt = fromHold ? Date.now() : 0;
+  $("ocSheetWho").innerHTML = '<b class="' + person(m.from).cls + '">' + esc(whoName(m.from)) + '</b>';
+  $("ocSheetPrev").textContent = snippetOf(m, 120);
+  var sh = $("ocSheet");
+  sh.querySelector('[data-act="reply"]').hidden = !canReply(m);
+  sh.querySelector('[data-act="edit"]').hidden = !canEdit(m);
+  sh.querySelector('[data-act="copy"]').hidden = !String(m.text || "").trim();
+  sh.querySelector('[data-act="delete"]').hidden = !canDelete(m);
+  sh.hidden = false;
+  var first = sh.querySelector('.oc-sheet-box button:not([hidden])'); if(first) try { first.focus({preventScroll:true}); } catch(e){}
+}
+function closeSheet(){ var sh = $("ocSheet"); if(sh) sh.hidden = true; state.sheet = null; }
+function copyText(s){
+  function fallback(){
+    var x = document.createElement("textarea"); x.value = s; x.setAttribute("readonly", ""); x.style.position = "fixed"; x.style.opacity = "0";
+    document.body.appendChild(x); x.select(); var ok = false; try { ok = document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(x); flash(ok ? "Copied" : "Couldn't copy", !ok);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(s).then(function(){ flash("Copied"); }, fallback);
+  else fallback();
+}
+function sheetAct(act, id){
+  var t = threadByKey(state.open); closeSheet(); if(!t || !id) return;
+  var m = findMsg(t.key, id);
+  if(act === "reply") startReply(id);
+  else if(act === "edit") startEdit(id);
+  else if(act === "copy" && m) copyText(String(m.text || ""));
+  else if(act === "delete" && canDelete(m)){
+    if(confirm(m.from === ME ? "Delete this message? Everyone will see \u201cmessage deleted\u201d." : "Delete " + m.from + "'s message for everyone?")) deleteMessage(t, id);
+  }
+}
+// hold (phones) = menu, swipe right = reply. Desktop: the small buttons next to a message, or right-click.
+function wireGestures(box){
+  var G = null, eatClick = 0, HOLD_MS = 450, SWIPE_AT = 56;
+  function rowOf(el){ return el && el.closest ? el.closest(".oc-row.live[data-id]") : null; }
+  function reset(g){
+    if(!g) return; clearTimeout(g.timer);
+    if(g.swiping && g.row){ g.row.classList.remove("oc-drag", "oc-swipe-ready"); g.row.style.transform = ""; }
+  }
+  box.addEventListener("pointerdown", function(ev){
+    if(ev.pointerType === "mouse") return;
+    var row = rowOf(ev.target);
+    if(!row || ev.target.closest(".oc-acts, .oc-quote, .oc-cancel, .oc-retry")) return;
+    reset(G);
+    var g = G = {id: row.getAttribute("data-id"), row: row, x: ev.clientX, y: ev.clientY, pid: ev.pointerId, dx: 0, swiping: false};
+    g.timer = setTimeout(function(){
+      if(G !== g || g.swiping) return;
+      G = null; eatClick = Date.now();
+      if(navigator.vibrate) try { navigator.vibrate(12); } catch(e){}
+      openSheet(g.id, true);
+    }, HOLD_MS);
+  });
+  box.addEventListener("pointermove", function(ev){
+    var g = G; if(!g || ev.pointerId !== g.pid) return;
+    var dx = ev.clientX - g.x, dy = ev.clientY - g.y;
+    if(!g.swiping){
+      if(Math.abs(dx) < 9 && Math.abs(dy) < 9) return;
+      clearTimeout(g.timer);
+      var m = findMsg(state.open, g.id);
+      if(dx > 9 && Math.abs(dy) < dx * 0.7 && canReply(m)){ g.swiping = true; g.row.classList.add("oc-drag"); }
+      else { G = null; return; }
+    }
+    g.dx = Math.max(0, Math.min(dx, 96));
+    g.row.style.transform = "translateX(" + Math.round(g.dx * 0.75) + "px)";
+    g.row.classList.toggle("oc-swipe-ready", g.dx >= SWIPE_AT);
+  });
+  function end(ev, cancel){
+    var g = G; if(!g || (ev && ev.pointerId !== g.pid)) return;
+    G = null; reset(g);
+    if(g.swiping){ eatClick = Date.now(); if(!cancel && g.dx >= SWIPE_AT){ if(navigator.vibrate) try { navigator.vibrate(8); } catch(e){} startReply(g.id); } }
+  }
+  box.addEventListener("pointerup", function(ev){ end(ev, false); });
+  box.addEventListener("pointercancel", function(ev){ end(ev, true); });
+  box.addEventListener("scroll", function(){ if(G && !G.swiping){ reset(G); G = null; } }, {passive: true});
+  // the click right after a hold/swipe shouldn't also open a photo or a link
+  box.addEventListener("click", function(ev){ if(Date.now() - eatClick < 700){ ev.preventDefault(); ev.stopPropagation(); } }, true);
+  box.addEventListener("contextmenu", function(ev){
+    var row = rowOf(ev.target); if(!row) return;
+    if(ev.target.closest("a") && !matchMedia("(hover:none)").matches) return;  // right-click a link on a computer = normal menu
+    ev.preventDefault();
+    if(G){ reset(G); G = null; }
+    if(state.sheet !== row.getAttribute("data-id")){ eatClick = Date.now(); openSheet(row.getAttribute("data-id"), matchMedia("(hover:none)").matches); }
+  });
+  box.addEventListener("click", function(ev){
+    var q = ev.target.closest ? ev.target.closest(".oc-quote[data-goto]") : null;
+    if(q){ jumpTo(q.getAttribute("data-goto")); return; }
+    var a = ev.target.closest ? ev.target.closest(".oc-acts [data-act]") : null;
+    if(!a) return;
+    var row = a.closest(".oc-row[data-id]"), id = row && row.getAttribute("data-id"), act = a.getAttribute("data-act");
+    if(act === "more") openSheet(id); else sheetAct(act, id);
+  });
 }
 
 // ---------- send later (clock button) ----------
@@ -968,6 +1261,7 @@ function logout(msg){
   stopTimers();
   localStorage.removeItem(TOKEN_KEY);
   state.token = null; state.data = {}; state.pending = {}; state.list = null; buildThreads();
+  setCtx(null); closeSheet(); state.overlay = {};
   Store.setToken(null);
   $("ocMsgs").innerHTML = ""; $("ocSide").innerHTML = "";
   showLogin(msg);
@@ -1063,9 +1357,18 @@ document.addEventListener("DOMContentLoaded", function(){
   $("ocCompose").addEventListener("submit", function(ev){
     ev.preventDefault();
     var text = ta.value.replace(/\s+$/,"");
+    var t = threadByKey(state.open); if(!t) return;
+    if(state.ctx && state.ctx.mode === "edit"){
+      var ec = state.ctx, orig = findMsg(t.key, ec.id);
+      if(!text.trim() && !(orig && orig.image)){ flash("A message can't be empty. To remove it, hold it and tap Delete.", true); return; }
+      if(!text.trim()) text = "";
+      setCtx(null);   // puts back whatever you were typing before
+      growBox();
+      if(orig && orig.text !== text) editMessage(t, ec.id, text);
+      return;
+    }
     if(!text.trim() && !state.photo) return;
     if(!text.trim()) text = "";
-    var t = threadByKey(state.open); if(!t) return;
     var sendAt = null;
     if(state.schedAt){
       if(state.schedAt.getTime() < Date.now() + 30000){ openSched(); $("ocSchedErr").textContent = "That time already passed. Pick a new one."; return; }
@@ -1076,8 +1379,9 @@ document.addEventListener("DOMContentLoaded", function(){
     ta.value = ""; grow(); ta.focus();
     $("ocVoiceNote").checked = false; hideVoiceBar();
     var photo = state.photo;
-    setSched(null); closePops(); setPhoto(null);
-    sendMessage(t, text, {voice: voice, sendAt: sendAt, style: state.style, photo: photo});
+    var replyTo = (state.ctx && state.ctx.mode === "reply" && state.ctx.key === t.key) ? state.ctx.id : null;
+    setSched(null); closePops(); setPhoto(null); setCtx(null);
+    sendMessage(t, text, {voice: voice, sendAt: sendAt, style: state.style, photo: photo, replyTo: replyTo});
   });
   // + menu (voice, photo, text style, schedule) and Send ▾ (send now / schedule send)
   $("ocPlus").addEventListener("click", function(ev){ ev.stopPropagation(); togglePop("ocPlusMenu"); });
@@ -1131,7 +1435,27 @@ document.addEventListener("DOMContentLoaded", function(){
     var x = quickTimes()[+b.getAttribute("data-i")]; if(x) pickSched(x.d);
   });
   $("ocSchedClear").addEventListener("click", function(){ setSched(null); });
-  document.addEventListener("keydown", function(ev){ if(ev.key === "Escape"){ closePops(); closeLightbox(); } });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key !== "Escape") return;
+    if(!$("ocSheet").hidden){ closeSheet(); return; }
+    if(!$("ocLightbox").hidden){ closeLightbox(); return; }
+    var popOpen = Array.prototype.some.call(document.querySelectorAll(".oc-pop"), function(p){ return !p.hidden; });
+    if(popOpen){ closePops(); return; }
+    if(state.ctx){ setCtx(null); return; }
+  });
+  wireGestures($("ocMsgs"));
+  $("ocCtxClose").addEventListener("click", function(){ setCtx(null); focusText(); });
+  $("ocCtxBar").addEventListener("click", function(ev){
+    if(ev.target.closest && ev.target.closest("#ocCtxClose")) return;
+    if(state.ctx) jumpTo(state.ctx.id);
+  });
+  $("ocSheet").addEventListener("click", function(ev){
+    if(Date.now() - (state.sheetAt || 0) < 450) return;   // the finger lifting after a hold isn't a tap on the menu
+    var b = ev.target.closest ? ev.target.closest("[data-act]") : null;
+    if(!b){ if(ev.target === this) closeSheet(); return; }
+    var act = b.getAttribute("data-act");
+    if(act === "close") closeSheet(); else sheetAct(act, state.sheet);
+  });
 
   $("ocMsgs").addEventListener("click", function(ev){
     var t = threadByKey(state.open); if(!t) return;
@@ -1147,7 +1471,7 @@ document.addEventListener("DOMContentLoaded", function(){
     if(!p) return;
     removePending(t.key, id);
     var at = p.sendAt && isScheduled(p) ? p.sendAt : null;
-    sendMessage(t, p.text, {voice: p.voice, sendAt: at, style: p.style, image: p.image, photo: p.photo});
+    sendMessage(t, p.text, {voice: p.voice, sendAt: at, style: p.style, image: p.image, photo: p.photo, replyTo: p.replyTo});
   });
   window.addEventListener("hashchange", function(){
     var k = (location.hash || "").slice(1);
