@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="../acct.css?v=9">
+<style>html:not(.acct-owner) .dh-owneronly{display:none}</style>
 </head>
 <body class="ac-page" data-page="hub" data-acct-lock="staff">
 <header class="ac-bar">
@@ -21,6 +22,7 @@
   <p class="pf-note" id="dhMode" style="margin:-8px 0 18px"></p>
   <div class="dh-grid">
     <a class="dh-card" href="../owner-chat.html"><span class="dh-lock">OWNER</span><span class="dh-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><h3>Chats</h3><p>Studio chats with Titan TV Man and UTC Studios. Owner only.</p><span class="go">Open chats &rarr;</span></a>
+    <a class="dh-card dh-owneronly" href="visitors.html"><span class="dh-lock">OWNER</span><span class="dh-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><h3>Visitors</h3><p>Everyone who visits, guests too: phone or computer, where they came from, what they play and for how long. Owner only.</p><span class="go">See visitors &rarr;</span></a>
     <a class="dh-card" href="community.html"><span class="dh-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.5c2.4.2 4 1.8 4.6 4.5"/></svg></span><h3>Community</h3><p>The board for everyone signed in: ideas, clips, bugs and hype.</p><span class="go">Open the board &rarr;</span></a>
     <a class="dh-card" href="../#credits"><span class="dh-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.8z"/></svg></span><h3>Credits</h3><p>Everyone who made Skibidi Strike happen, and every model creator.</p><span class="go">See the credits &rarr;</span></a>
     <a class="dh-card" href="panel.html"><span class="dh-lock dev">DEV+</span><span class="dh-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.6-3.3 8-8 9-4.7-1-8-4.4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><h3 id="dhPanelName">Studio panels</h3><p id="dhPanelText">For the studio team: owner, moderators and devs.</p><span class="go">Open &rarr;</span></a>
@@ -43,7 +45,8 @@
 </main>
 <footer class="ac-foot">TTVM Studios &middot; <a href="../games/">Games</a> <span class="acct-staffonly">&middot; <a href="../devhub/">Dev</a> </span>&middot; <a href="../">Skibidi Strike</a></footer>
 <script src="../js/auth-config.js?v=2"></script>
-<script src="../js/acct.js?v=10"></script>
+<script src="../js/acct.js?v=11"></script>
+<script src="../js/visit.js?v=1"></script>
 <script src="../js/announce.js?v=3" defer></script>
 <script src="devhub.js?v=6"></script>
 </body>
