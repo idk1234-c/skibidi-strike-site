@@ -8,6 +8,15 @@
       "by": "Titan TV Man",
       "notes": "The first Titan, rigged with 20 parts and ready to animate in Unity.",
       "date": "2026-11-02"
+    },
+    {
+      "id": "titan2",
+      "name": "Titan 2",
+      "glb": "files/titan2.glb",
+      "thumb": "files/titan2.jpg",
+      "by": "Titan TV Man",
+      "notes": "The second Titan: TV head with red lights, claw hands and an energy jet pack.",
+      "date": "2026-11-03"
     }
   ]
 }
