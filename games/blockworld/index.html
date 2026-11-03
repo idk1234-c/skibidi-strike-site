@@ -67,6 +67,11 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
 .more summary:hover{border-color:var(--grass)}
 .more[open] summary{margin-bottom:10px}
 @media(max-width:560px){.log li{flex-direction:column;gap:6px}.log .ver{min-width:0}}
+.notmc{display:flex;gap:14px;align-items:flex-start;margin:26px auto 0;max-width:760px;padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--grass);border-radius:12px;text-align:left}
+.notmc .ic{flex:0 0 auto;width:30px;height:30px;border-radius:6px;background:linear-gradient(180deg,#79c464 0 34%,#8a5c33 34%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.notmc h3{font-size:1.05rem;letter-spacing:.06em;color:#fff;margin-bottom:4px}
+.notmc p{color:var(--dim);font-size:.92rem;margin:0}
+@media(max-width:560px){.notmc{margin-top:20px;padding:14px}.notmc .ic{width:24px;height:24px}}
 @media(max-width:560px){.hero{padding-top:30px}.art{height:150px}}
 </style>
 </head>
@@ -89,6 +94,12 @@ footer .fine{font-size:.74rem;margin-top:6px;color:#5f6570}
     <p>Ttvm Studios' own block-building world game. Fresh code, fresh original art, and one rule above all: it has to run smooth on modest PCs first.</p>
     <p class="playwrap"><a class="playbtn" href="play/">&#9654; Play the web test</a></p>
   </section>
+
+  <aside class="notmc" aria-label="About Blockworld and Minecraft">
+    <span class="ic" aria-hidden="true"></span>
+    <div><h3>Not Minecraft &mdash; inspired by it</h3>
+    <p>Blockworld is an original game made by TTVM Studios. Minecraft was a big inspiration, but all of Blockworld&rsquo;s code, textures, sound effects and soundtrack are our own. Blockworld is not an official Minecraft product and is not approved by or associated with Mojang or Microsoft.</p></div>
+  </aside>
 
   <div class="art" aria-hidden="true">
     <span class="bw-ground"></span><i></i><i></i><i></i>
