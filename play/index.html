@@ -133,6 +133,10 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
 .homehint b{color:#fff}
 .homehint button{flex:none;width:32px;height:32px;border:0;background:transparent;color:var(--dim);font:400 22px/1 system-ui,sans-serif;cursor:pointer}
 .homehint[hidden]{display:none}
+/* Credits & ownership (Nov 2) on the loading screen */
+.own{margin-top:14px;font-size:.62rem;line-height:1.45;color:#6b7581;letter-spacing:.02em;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-align:left}
+.own b{color:var(--dim);font-weight:600}
+@media (max-height:500px){.own{max-height:4.4em;overflow:auto}}
 </style>
 </head>
 <body>
@@ -164,6 +168,7 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
       <p class="errmsg" id="errmsg"></p>
       <div class="btns"><button class="btn red" type="button" onclick="location.reload()">Try again</button><a class="btn" href="../">Back to the site</a></div>
       <p class="hint" id="hint">First load is about 58 MB, so give it a moment. Best on a computer with keyboard and mouse.</p>
+      <p class="own" id="ownership"><b>Credits &amp; ownership:</b> Skibidi Toilet and its characters (Skibidi Toilets, Cameramen, Speakermen, TV Men, Titans, G-Toilet and others) are created by and belong to DaFuq!?Boom (Alexey Gerasimov). This is an unofficial, free fan game made by TTVM Studios. It is not affiliated with or endorsed by DaFuq!?Boom. Some sound effects come from Half-Life / Valve games. Half-Life is a trademark of Valve Corporation; those sounds belong to Valve. All other trademarks belong to their owners.</p>
     </div>
   </div>
 </main>

@@ -369,3 +369,9 @@ button.track-listen:disabled{opacity:.6;cursor:wait}
 .track-audio{width:100%;height:36px;margin-top:6px}
 .track-credit{color:var(--dim)}
 .track-meta dd a{color:var(--accent2,var(--accent))}
+
+/* Credits & ownership (Nov 2): who owns Skibidi Toilet + the Half-Life sounds */
+.ownership{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);padding:16px 18px}
+.ownership h3{color:var(--accent);font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;margin:0 0 6px}
+.ownership p{color:var(--dim);font-size:.85rem;line-height:1.55;margin:6px 0 0}
+.own-foot{margin:10px auto 0;max-width:760px;font-size:.72rem;line-height:1.5;color:#6b7581}
