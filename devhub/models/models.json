@@ -1,0 +1,13 @@
+{
+  "models": [
+    {
+      "id": "titan1",
+      "name": "Titan 1",
+      "glb": "files/titan1.glb",
+      "thumb": "files/titan1.jpg",
+      "by": "Titan TV Man",
+      "notes": "The first Titan: camera head, red-and-black armor, back cannon. Rigged for Unity.",
+      "date": "2026-11-02"
+    }
+  ]
+}
