@@ -349,26 +349,61 @@ function renderMusic(){
   var host = document.getElementById("trackList");
   if(!host) return;
   function esc(v){ return String(v == null ? "" : v).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
-  fetch("data/music.json?v=2", {cache:"no-cache"}).then(function(r){ return r.json(); }).then(function(d){
+  fetch("data/music.json?v=3", {cache:"no-cache"}).then(function(r){ return r.json(); }).then(function(d){
     var list = (d && d.tracks) || [], game = (d && d.game) || "Skibidi Strike", html = "";
     if(!list.length){ host.innerHTML = '<p class="note">No tracks listed yet.</p>'; return; }
     for(var i=0;i<list.length;i++){
       var t = list[i], n = t.n || (i+1);
+      var lic = t.license ? (t.licenseUrl ? '<a href="' + esc(t.licenseUrl) + '" target="_blank" rel="noopener">' + esc(t.license) + '</a>' : esc(t.license)) : 'not listed';
       html += '<div class="tile track">'
         + '<span class="track-no">' + (n < 10 ? "0" + n : n) + '</span>'
         + '<h4>' + esc(t.title) + '</h4>'
         + '<p class="track-artist">' + esc(t.artist || "Artist unknown") + '</p>'
         + '<dl class="track-meta">'
-        + '<div><dt>Source clip</dt><dd>' + (t.clip ? esc(t.clip) + (t.clipSite ? ' <span class="track-site">(' + esc(t.clipSite) + ')</span>' : '') : 'no caption to credit') + '</dd></div>'
+        + '<div><dt>License</dt><dd>' + lic + '</dd></div>'
         + '<div><dt>Used in</dt><dd>' + esc(t.usedIn || game) + '</dd></div>'
         + '</dl>'
+        + (t.credit ? '<p class="track-note track-credit">' + esc(t.credit) + '</p>' : '')
         + (t.note ? '<p class="track-note">' + esc(t.note) + '</p>' : '')
-        + (t.listen ? '<a class="track-listen" href="' + esc(t.listen) + '" target="_blank" rel="noopener">Listen' + (t.listenLabel ? ' <span>&middot; ' + esc(t.listenLabel) + '</span>' : '') + '</a>' : '<span class="track-listen off">No public link</span>')
+        + '<div class="track-btns">'
+        + (t.audio && t.audio.parts && t.audio.parts.length ? '<button type="button" class="track-listen track-play" data-i="' + i + '">&#9654; Play</button>' : '')
+        + (t.listen ? '<a class="track-listen" href="' + esc(t.listen) + '" target="_blank" rel="noopener">Source' + (t.listenLabel ? ' <span>&middot; ' + esc(t.listenLabel) + '</span>' : '') + '</a>' : '')
+        + '</div>'
+        + '<audio class="track-audio" controls preload="none" hidden></audio>'
         + '</div>';
     }
     host.innerHTML = html;
+    var btns = host.querySelectorAll(".track-play");
+    for(var b=0;b<btns.length;b++) btns[b].addEventListener("click", function(){ musicPlay(this, list[+this.getAttribute("data-i")]); });
   }).catch(function(){
     host.innerHTML = '<p class="note">The track list didn\'t load. Refresh to try again.</p>';
+  });
+}
+// joins a track's audio parts into one file in the browser, then plays it (one track at a time)
+function musicPlay(btn, t){
+  var tile = btn.closest(".track"), au = tile && tile.querySelector(".track-audio");
+  if(!au || !t || !t.audio) return;
+  var all = document.querySelectorAll("#trackList .track-audio");
+  for(var k=0;k<all.length;k++){ if(all[k] !== au && !all[k].paused) all[k].pause(); }
+  if(au.src){ au.hidden = false; var p0 = au.play(); if(p0 && p0.catch) p0.catch(function(){}); return; }
+  if(btn.disabled) return;
+  btn.disabled = true; btn.textContent = "Loading...";
+  var base = t.audio.base || "";
+  Promise.all(t.audio.parts.map(function(p){
+    return fetch(base + p).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); });
+  })).then(function(bufs){
+    au.src = URL.createObjectURL(new Blob(bufs, {type: t.audio.type || "audio/mpeg"}));
+    au.hidden = false; btn.hidden = true;
+    au.addEventListener("play", function(){
+      var others = document.querySelectorAll("#trackList .track-audio");
+      for(var k=0;k<others.length;k++){ if(others[k] !== au && !others[k].paused) others[k].pause(); }
+    });
+    var p = au.play(); if(p && p.catch) p.catch(function(){});
+  }).catch(function(){
+    btn.disabled = false; btn.innerHTML = "&#9654; Play";
+    var m = tile.querySelector(".track-err");
+    if(!m){ m = document.createElement("p"); m.className = "track-note track-err"; tile.appendChild(m); }
+    m.textContent = "Couldn't load this track. Try again in a moment.";
   });
 }
 
