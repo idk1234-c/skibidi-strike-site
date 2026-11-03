@@ -31,7 +31,7 @@ var UNLOCKS = [
   ["rocketcam", "ROCKET CAMERAMAN"], ["camerastrider", "CAMERA STRIDER"], ["speakerstrider", "SPEAKER STRIDER"],
   ["tvstrider", "TV STRIDER"], ["camheli", "CAMERA HELI"],
   ["titan_cameraman", "TITAN CAMERAMAN (all versions)"], ["titan_speakerman", "TITAN SPEAKERMAN (all versions)"],
-  ["titan_tvman", "TITAN TV MAN (all versions)"], ["titan_tvwoman", "TITAN TV WOMAN"], ["alliance_brute", "BRUTE"],
+  ["titan_tvman", "TITAN TV MAN (all versions)"], ["alliance_brute", "BRUTE"],
   ["titan_clockman", "TITAN CLOCKMAN"], ["titan_drillman", "TITAN DRILLMAN"], ["video_taper", "VIDEO TAPPER"],
   ["prototype_brute", "PROTOTYPE BRUTE"], ["titan_cameraman_upgraded", "UPGRADED TITAN CAMERAMAN"],
   ["pumpkin_titan_cameraman", "PUMPKIN TITAN CAMERAMAN"], ["frost_titan_speakerman", "FROST TITAN SPEAKERMAN"],
