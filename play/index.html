@@ -18,7 +18,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="../acct.css?v=9">
 <script src="../js/auth-config.js?v=2"></script>
-<script src="../js/acct.js?v=10"></script>
+<script src="../js/acct.js?v=11"></script>
+<script src="../js/visit.js?v=1" data-game="skibidi"></script>
 <script src="../js/announce.js?v=3" defer></script>
 <style>
 :root{--bg:#09090b;--bg2:#101014;--panel:#141419;--line:#2b2e37;--rim:#4d596b;--txt:#e3e3ea;--dim:#9a9ba8;--red:#ff3324;--gold:#ffd933;--font:'Oswald','Bebas Neue','Arial Narrow',Impact,sans-serif;--bar:48px}
@@ -188,6 +189,7 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
   document.getElementById("rotOk").addEventListener("click", function(){ document.body.classList.add("rot-ok"); });
 
   function showError(title, msg){
+    try { if(window.ttvmVisit) ttvmVisit.fail(title); } catch(e){}
     cover.classList.remove("gone");
     cover.classList.add("err");
     status.textContent = title;
@@ -270,6 +272,19 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
 
   var dpr = window.devicePixelRatio || 1;
   var buildUrl = "Build";
+
+  // Unity's own error box ("An error occurred running the Unity content...") is replaced by a friendly one
+  function crashed(m){
+    try { if(window.ttvmVisit) ttvmVisit.fail("crash: " + String(m || "").replace(/\s+/g, " ").slice(0, 90)); } catch(e){}
+    if(document.getElementById("crashBox")) return true;
+    var signed = false; try { signed = !!localStorage.getItem("ttvm_session"); } catch(e){}
+    var o = document.createElement("div"); o.id = "crashBox";
+    o.setAttribute("style", "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:20px");
+    o.innerHTML = '<button type="button" style="max-width:420px;width:100%;background:#15161c;color:#fff;border:1px solid #3a3d48;border-radius:16px;padding:22px 20px;font:600 18px system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;cursor:pointer">The game crashed \ud83d\ude35<span style="display:block;margin-top:8px;font-weight:400;font-size:15px;color:#c9c9d3">Tap to reload.' + (signed ? ' Your sign-in is still saved.' : '') + '</span></button>';
+    o.querySelector("button").onclick = function(){ location.reload(); };
+    document.body.appendChild(o);
+    return true;
+  }
   var config = {
     arguments: [],
     dataUrl: buildUrl + "/WebBuild.data",
@@ -282,7 +297,8 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
     autoSyncPersistentDataPath: true,
     fullscreenElementID: "stage",
     devicePixelRatio: Math.min(dpr, isMobile ? 1.5 : 2),
-    showBanner: function(msg, type){ toast(msg, type); }
+    showBanner: function(msg, type){ toast(msg, type); },
+    errorHandler: function(msg){ return crashed(msg); }
   };
 
   function progress(p){
@@ -361,11 +377,13 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
         else progress(p);
       }).then(function(inst){
         game = inst;
+        try { if(window.ttvmVisit) ttvmVisit.ok(); } catch(e){}
         fill.style.width = "100%"; pct.textContent = "100%";
         cover.classList.add("gone");
         canvas.focus();
       }).catch(function(err){
         console.error(err);
+        try { if(window.ttvmVisit) ttvmVisit.fail("start: " + String((err && err.message) || err).slice(0, 90)); } catch(e){}
         showError("The game hit a problem", "Something went wrong while starting Skibidi Strike. Reload the page to try again. If it keeps happening, try another browser like Chrome or Edge.");
       });
     };
