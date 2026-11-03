@@ -19,7 +19,7 @@ var READY = w.AUTH_READY === true && /\.apps\.googleusercontent\.com$/.test(CLIE
 var REPO_PRIVATE = {repo:"idk1234-c/skibidi-strike", dir:"website/data/"};
 var REPO_PUBLIC  = {repo:"idk1234-c/skibidi-strike-site", dir:"data/"};
 var TOKEN_KEY = "ss_chat_token";           // same GitHub key the chats page uses
-var K = {session:"ttvm_session", mode:"ttvm_mode", seen:"ttvm_seen", warnSeen:"ttvm_warn_seen", local:"ttvm_profile_", restrict:"ttvm_restricted"};
+var K = {session:"ttvm_session", mode:"ttvm_mode", seen:"ttvm_seen", warnSeen:"ttvm_warn_seen", local:"ttvm_profile_", restrict:"ttvm_restricted", wasIn:"ttvm_was_in", gbHide:"ttvm_guestbar_hide", silent:"ttvm_silent"};
 
 var RANK = {guest:0, user:1, dev:2, mod:3, owner:4};
 var ROLE_NAME = {guest:"Guest", user:"Member", dev:"Dev", mod:"Moderator", owner:"Owner"};
@@ -220,33 +220,56 @@ function googleKeys(){
   return certsP;
 }
 function b64u(s){ s = String(s).replace(/-/g, "+").replace(/_/g, "/"); while(s.length % 4) s += "="; var b = atob(s), u = new Uint8Array(b.length); for(var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
-// resolves the token's payload only when Google's signature, this site's client id and Google as issuer all check out; otherwise null
-function verifyIdToken(tok){
+// checkToken resolves {state, p}:
+//  "ok"      = Google's signature, this site's client id and Google as issuer all check out right now
+//  "bad"     = not a real Google sign-in for this site (edited or broken) -> dropped
+//  "unknown" = couldn't finish the check right now: no connection / weak phone signal, or Google has
+//              since swapped its signing keys (it does that every week or two). The sign-in is kept.
+function checkToken(tok){
   try {
-    var parts = String(tok || "").split("."); if(parts.length !== 3) return Promise.resolve(null);
+    var parts = String(tok || "").split("."); if(parts.length !== 3) return Promise.resolve({state:"bad"});
     var hd = JSON.parse(new TextDecoder().decode(b64u(parts[0]))), p = decodeJwt(tok);
-    if(!hd || hd.alg !== "RS256" || !hd.kid || !p) return Promise.resolve(null);
-    if(p.aud !== CLIENT_ID || (p.iss !== "accounts.google.com" && p.iss !== "https://accounts.google.com") || !p.email || p.email_verified === false) return Promise.resolve(null);
-    if(!(w.crypto && w.crypto.subtle && w.TextEncoder)) return Promise.resolve(null);
+    if(!hd || hd.alg !== "RS256" || !hd.kid || !p) return Promise.resolve({state:"bad"});
+    if(p.aud !== CLIENT_ID || (p.iss !== "accounts.google.com" && p.iss !== "https://accounts.google.com") || !p.email || p.email_verified === false) return Promise.resolve({state:"bad"});
+    if(!(w.crypto && w.crypto.subtle && w.TextEncoder)) return Promise.resolve({state:"unknown", p:p});
     return googleKeys().then(function(j){
       var jwk = (j.keys || []).filter(function(k){ return k.kid === hd.kid; })[0];
-      if(!jwk) return null;
+      if(!jwk) return {state:"unknown", p:p, rotated:true};
       return w.crypto.subtle.importKey("jwk", {kty:"RSA", n:jwk.n, e:jwk.e, alg:"RS256", ext:true}, {name:"RSASSA-PKCS1-v1_5", hash:"SHA-256"}, false, ["verify"])
         .then(function(key){ return w.crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64u(parts[2]), new TextEncoder().encode(parts[0] + "." + parts[1])); })
-        .then(function(ok){ return ok ? p : null; });
-    }).catch(function(){ return null; });
-  } catch(e){ return Promise.resolve(null); }
+        .then(function(ok){ return ok ? {state:"ok", p:p} : {state:"bad"}; }, function(){ return {state:"unknown", p:p}; });
+    }, function(){ return {state:"unknown", p:p}; });
+  } catch(e){ return Promise.resolve({state:"bad"}); }
 }
+// resolves the token's payload only when the full check passes right now (used for brand-new sign-ins)
+function verifyIdToken(tok){ return checkToken(tok).then(function(r){ return r.state === "ok" ? r.p : null; }); }
+// A sign-in now stays until the person taps Sign out (or a moderator kicks them).
+// It used to be thrown away whenever the check above couldn't finish (weak signal, Google key swap)
+// and after 30 days, which signed people out at random, mostly on phones.
 function loadSession(){
   if(!READY) return Promise.resolve(null);
   var s = get(K.session);
   if(!s || !s.cred){ if(s) put(K.session, null); return Promise.resolve(null); }
-  return verifyIdToken(s.cred).then(function(p){
-    if(!p || !p.iat || now() - p.iat * 1000 > 30 * 864e5){ put(K.session, null); return null; }
+  return checkToken(s.cred).then(function(r){
+    var p = r.p;
+    if(r.state === "bad" || !p){ put(K.session, null); return null; }
+    // a key swap is only forgiven for a sign-in that passed the full check on this device before
+    if(r.state === "ok"){ if(!s.v){ s.v = 1; put(K.session, s); } }
+    else if(r.rotated && !s.v){ put(K.session, null); return null; }
+    put(K.wasIn, 1);
     return emailHash(p.email).then(function(h){
-      return {h:h, sub:p.sub, name:p.name || p.given_name || "Player", email:p.email, hint:maskEmail(p.email), picture:p.picture || "", at:p.iat * 1000, cred:s.cred};
+      return {h:h, sub:p.sub, name:p.name || p.given_name || "Player", email:p.email, hint:maskEmail(p.email), picture:p.picture || "", at:(p.iat || 0) * 1000, cred:s.cred, fresh:r.state === "ok", rotated:!!r.rotated};
     });
   });
+}
+// Google swapped its keys since this sign-in: quietly ask Google for a new one (at most once a day).
+// Nothing changes for the person if Google can't do it silently; they simply stay signed in.
+var silentAsk = false, silentDone = false;
+function silentRefresh(){
+  if(silentDone || !READY) return; silentDone = true;
+  var last = +(get(K.silent) || 0); if(now() - last < 864e5) return;
+  put(K.silent, now());
+  gis().then(function(id){ silentAsk = true; try { id.prompt(); } catch(e){ silentAsk = false; } }).catch(function(){});
 }
 function roleOf(h, roles){
   if(!h) return "guest";
@@ -294,6 +317,8 @@ function refresh(){
       seen();
       emit();
       warnToast();
+      guestBar();
+      if(S.session && S.session.rotated) silentRefresh();
       return S;
     });
   });
@@ -323,7 +348,7 @@ function gis(){
     var s = d.createElement("script"); s.src = "https://accounts.google.com/gsi/client"; s.async = true;
     s.onload = function(){
       try {
-        w.google.accounts.id.initialize({client_id:CLIENT_ID, callback:onCredential, auto_select:false, cancel_on_tap_outside:true, ux_mode:"popup"});
+        w.google.accounts.id.initialize({client_id:CLIENT_ID, callback:onCredential, auto_select:true, cancel_on_tap_outside:true, ux_mode:"popup"});
         res(w.google.accounts.id);
       } catch(e){ rej(e); }
     };
@@ -334,9 +359,15 @@ function gis(){
 }
 function onCredential(resp){
   var cred = resp && resp.credential;
+  var quiet = silentAsk && !!S.session; silentAsk = false;
   verifyIdToken(cred).then(function(p){
-    if(!p){ toast("Sign-in didn't work. Try again."); return; }
-    put(K.session, {cred:cred, at:now()});
+    if(!p){ if(!quiet) toast("Sign-in didn't work. Try again."); return; }
+    if(quiet){
+      // the quiet refresh: same person, new Google sign-in. Never switches to a different account.
+      if(S.session && S.session.sub === p.sub){ put(K.session, {cred:cred, at:now(), v:1}); S.session.cred = cred; S.session.fresh = true; S.session.rotated = false; S.session.at = (p.iat || 0) * 1000; emit(); }
+      return;
+    }
+    put(K.session, {cred:cred, at:now(), v:1});
     cache = {};
     closeMenus();
     return refresh().then(function(){
@@ -352,8 +383,36 @@ function renderGoogleButton(el, opts){
   gis().then(function(id){ el.innerHTML = ""; id.renderButton(el, {theme:"filled_black", size:"large", shape:"pill", text:"signin_with", width:(opts && opts.width) || 240}); })
     .catch(function(){ el.innerHTML = '<p class="acct-small">Google sign-in couldn\'t load. Check your connection and reload.</p>'; });
 }
+// ---------- guest pill (bottom of the page, never on the game screens) ----------
+// Guests: "You're playing as a guest". Someone whose sign-in was lost: "Signed out - tap to sign back in".
+// The x hides it for 3 days. Never shown to signed-in people.
+function guestBar(){
+  var el = d.getElementById("acctGuestBar");
+  if(!READY || !S.loaded || S.session){ if(el) el.remove(); return; }
+  if(el || !d.body) return;
+  if(d.getElementById("unity-canvas") || d.body.hasAttribute("data-acct-signin") || d.body.hasAttribute("data-acct-lock") || d.body.hasAttribute("data-no-guestbar")) return;
+  var was = !!get(K.wasIn);
+  if(now() - (+(get(K.gbHide) || 0)) < 3 * 864e5) return;
+  if(!d.getElementById("acctGuestBarCss")){
+    var st = d.createElement("style"); st.id = "acctGuestBarCss";
+    st.textContent = ".acct-gbar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:900;display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100vw - 20px);box-sizing:border-box;padding:7px 6px 7px 16px;border-radius:999px;background:rgba(16,16,22,.95);color:#fff;border:1px solid rgba(255,255,255,.16);box-shadow:0 8px 28px rgba(0,0,0,.45);font:500 14px/1.3 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:acctGbIn .35s ease-out}" +
+      ".acct-gbar a{color:inherit;text-decoration:none}.acct-gbar-txt{min-width:0}.acct-gbar-txt b{color:#ffd933;font-weight:700}" +
+      ".acct-gbar-btn{flex:none;background:#ff3324;color:#fff!important;font-weight:700;border-radius:999px;padding:8px 15px;white-space:nowrap}" +
+      ".acct-gbar-x{flex:none;background:none;border:0;color:#aaa;font-size:22px;line-height:1;width:34px;height:34px;border-radius:50%;cursor:pointer;padding:0}.acct-gbar-x:hover{color:#fff;background:rgba(255,255,255,.08)}" +
+      "@keyframes acctGbIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}" +
+      "@media (max-width:560px){.acct-gbar{width:calc(100vw - 20px);border-radius:16px;font-size:13px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}}";
+    d.head.appendChild(st);
+  }
+  var href = link("signin/?next=" + encodeURIComponent(location.pathname));
+  el = d.createElement("div"); el.id = "acctGuestBar"; el.className = "acct-gbar"; el.setAttribute("role", "region"); el.setAttribute("aria-label", "Sign in");
+  el.innerHTML = was
+    ? '<a class="acct-gbar-txt" href="' + esc(href) + '">Signed out \u2014 <b>tap to sign back in</b></a><a class="acct-gbar-btn" href="' + esc(href) + '">Sign in</a><button type="button" class="acct-gbar-x" aria-label="Hide">\u00d7</button>'
+    : '<a class="acct-gbar-txt" href="' + esc(href) + '">You\'re playing as a guest \ud83d\udc4b Sign in to save your progress and get member perks</a><a class="acct-gbar-btn" href="' + esc(href) + '">Sign in</a><button type="button" class="acct-gbar-x" aria-label="Hide">\u00d7</button>';
+  el.querySelector(".acct-gbar-x").onclick = function(){ put(K.gbHide, now()); if(was) put(K.wasIn, null); el.remove(); };
+  d.body.appendChild(el);
+}
 function signOut(){
-  put(K.session, null);
+  put(K.session, null); put(K.wasIn, null); put(K.gbHide, now());
   try { w.google && w.google.accounts.id.disableAutoSelect(); } catch(e){}
   toast("Signed out");
   refresh();
@@ -667,7 +726,7 @@ w.TTVM = {
   localSeen:function(){ return get(K.seen) || {}; },
   exp:{state:expState, set:expSet, on:expOn, allowed:expAllowed, list:experiments},
   isProtected:isProtected, isLockedOwner:isLockedOwner, ownerH:OWNER_LOCK[0], teamHtml:teamHtml, fillTeam:fillTeam,
-  activeNotices:activeNotices, copyrightHtml:copyrightHtml, initials:initials
+  activeNotices:activeNotices, copyrightHtml:copyrightHtml, initials:initials, checkToken:checkToken
 };
 function boot(){ render(); interceptPlay(); refresh().then(flushToast, flushToast); fillTeam(); }
 if(d.readyState === "loading") d.addEventListener("DOMContentLoaded", boot); else boot();
