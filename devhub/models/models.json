@@ -89,6 +89,24 @@
       "by": "Titan TV Man",
       "notes": "Prototype Brute, before his upgrades. Model by Emperor178 on Sketchfab (CC BY 4.0), adapted for Skibidi Strike.",
       "date": "2026-11-03"
+    },
+    {
+      "id": "speakerheli",
+      "name": "Speaker Helicopter (Supply)",
+      "glb": "files/speakerheli.glb",
+      "thumb": "files/speakerheli.jpg",
+      "by": "Titan TV Man",
+      "notes": "Supply helicopter, Speakerman version: troop cabin with the side door open, big speaker boxes on top. Built from the Camera Helicopter by KonoDioDaD and the Speaker Helicopter by MrDreivar (Sketchfab, CC BY 4.0).",
+      "date": "2026-11-03"
+    },
+    {
+      "id": "tvheli",
+      "name": "TV Helicopter (Supply)",
+      "glb": "files/tvheli.glb",
+      "thumb": "files/tvheli.jpg",
+      "by": "Titan TV Man",
+      "notes": "Supply helicopter, TV Man version: troop cabin with the side door open and a big TV with a glowing blue screen on the nose. Built from the Camera Helicopter by KonoDioDaD (Sketchfab, CC BY 4.0).",
+      "date": "2026-11-03"
     }
   ]
 }
