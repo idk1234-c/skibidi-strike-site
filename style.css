@@ -362,3 +362,10 @@ body.paged #gameplay{display:none}
 .vidframe{margin-top:22px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9;box-shadow:0 8px 24px rgba(0,0,0,.35)}
 .vidframe video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
 @media(max-width:720px){#gameplay{padding-top:40px}.vidframe{border-radius:10px;margin-top:16px}}
+.track-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+.track-btns .track-listen{margin-top:0}
+button.track-listen{cursor:pointer}
+button.track-listen:disabled{opacity:.6;cursor:wait}
+.track-audio{width:100%;height:36px;margin-top:6px}
+.track-credit{color:var(--dim)}
+.track-meta dd a{color:var(--accent2,var(--accent))}
