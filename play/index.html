@@ -168,7 +168,7 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
       <div class="pct"><span id="phase">Downloading</span><b id="pct">0%</b></div>
       <p class="errmsg" id="errmsg"></p>
       <div class="btns"><button class="btn red" type="button" onclick="location.reload()">Try again</button><a class="btn" href="../">Back to the site</a></div>
-      <p class="hint" id="hint">First load is about 58 MB, so give it a moment. Best on a computer with keyboard and mouse.</p>
+      <p class="hint" id="hint">First load is about 106 MB, so give it a few minutes on a slow connection. Best on a computer with keyboard and mouse.</p>
       <p class="own" id="ownership"><b>Credits &amp; ownership:</b> Skibidi Toilet and its characters (Skibidi Toilets, Cameramen, Speakermen, TV Men, Titans, G-Toilet and others) are created by and belong to DaFuq!?Boom (Alexey Gerasimov). This is an unofficial, free fan game made by TTVM Studios. It is not affiliated with or endorsed by DaFuq!?Boom. Some sound effects come from Half-Life / Valve games. Half-Life is a trademark of Valve Corporation; those sounds belong to Valve. All other trademarks belong to their owners.</p>
     </div>
   </div>
@@ -317,7 +317,7 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
     var v = dl.got / dl.total;
     fill.style.width = Math.round(v * 85) + "%";
     pct.textContent = Math.round(v * 85) + "%";
-    phase.textContent = "Downloading " + (dl.got / 1048576).toFixed(0) + " / " + (dl.total / 1048576).toFixed(0) + " MB";
+    phase.textContent = "Downloading " + (dl.got / 1000000).toFixed(0) + " / " + (dl.total / 1000000).toFixed(0) + " MB";
   }
   function getPart(url){
     return fetch(url).then(function(r){
