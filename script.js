@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ---- build version ----
-var SS_BUILD = "v1.18 \u00b7 OCT 31 2026";
+var SS_BUILD = "v1.19 \u00b7 NOV 4 2026";
 
 // ---- page-view navigation ----
 function showPage(id){
