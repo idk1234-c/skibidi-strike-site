@@ -288,7 +288,7 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
   var config = {
     arguments: [],
     dataUrl: buildUrl + "/WebBuild.data",
-    frameworkUrl: buildUrl + "/WebBuild.framework.js?v=1eda158bf3",
+    frameworkUrl: buildUrl + "/WebBuild.framework.js?v=c50b83d634",
     codeUrl: buildUrl + "/WebBuild.wasm",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "Ttvm Studios",
@@ -367,7 +367,7 @@ html.app-mode body{padding-top:env(safe-area-inset-top,0px)}
 
   function start(){
     var s = document.createElement("script");
-    s.src = buildUrl + "/WebBuild.loader.js?v=1eda158bf3";
+    s.src = buildUrl + "/WebBuild.loader.js?v=c50b83d634";
     s.onerror = function(){
       showError("Couldn't load the game", "The game files didn't download. Check your connection and try again.");
     };
