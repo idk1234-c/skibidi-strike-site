@@ -351,7 +351,7 @@ function refreshChatHead(){
 function welcome(){
   const b=bot();
   const h=document.createElement("div"); h.className="hello";
-  h.innerHTML='<div class="big">'+(b.img?'<img src="'+b.img+'" style="width:76px;border-radius:18px">':(b.avatar||"🤖"))+'</div>'<h2></h2><p></p><div class="chips" style="justify-content:center"></div>';
+  h.innerHTML='<div class="big">'+(b.img?'<img src="'+b.img+'" style="width:76px;border-radius:18px">':(b.avatar||"🤖"))+'</div><h2></h2><p></p><div class="chips" style="justify-content:center"></div>';
   h.querySelector("h2").textContent="Hey, I'm "+b.name;
   h.querySelector("p").textContent=(acct.categories&&acct.categories.length)?("Tuned for: "+acct.categories.join(", ")):"Customize me in ⚙️ then say anything.";
   const ideas=["Plan my day","Explain something cool","Help me write something","Brainstorm ideas","Just talk to me"];
@@ -589,7 +589,7 @@ function onboarding(){
     const b=BOTS[k];
     const d=document.createElement("div"); d.className="bot"+(sel===k?" on":"");
     d.style.cssText="background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:14px 8px; cursor:pointer";
-    d.innerHTML='<div>'+(b.img?'<img src="'+b.img+'" style="width:60px;border-radius:12px">':'<span style="font-size:32px">'+b.avatar+'</span>')+'</div>'<h4 style="margin:6px 0 2px; font-size:14px">'+esc(b.name)+'</h4><p style="color:var(--muted); font-size:11px; margin:0">'+esc(b.tag)+'</p>';
+    d.innerHTML='<div>'+(b.img?'<img src="'+b.img+'" style="width:60px;border-radius:12px">':'<span style="font-size:32px">'+b.avatar+'</span>')+'</div><h4 style="margin:6px 0 2px; font-size:14px">'+esc(b.name)+'</h4><p style="color:var(--muted); font-size:11px; margin:0">'+esc(b.tag)+'</p>';
     d.onclick=()=>{ sel=k; [...bg.children].forEach(ch=>ch.style.borderColor="var(--line)"); d.style.borderColor="var(--accent)"; };
     bg.appendChild(d);
   });
