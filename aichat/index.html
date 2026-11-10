@@ -48,6 +48,8 @@ header{display:flex; align-items:center; gap:10px; padding:10px 14px; border-bot
 .bot{position:relative; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px 10px; cursor:pointer; text-align:center}
 .bot:active{transform:scale(.98)}
 .bot .bav{font-size:36px}
+.bav img{width:64px;height:64px;border-radius:12px;object-fit:cover}
+#avatar img{width:100%;height:100%;border-radius:12px;object-fit:cover}
 .bot h4{margin:8px 0 2px; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .bot p{color:var(--muted); font-size:11px; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .bot .del{position:absolute; top:6px; right:6px; border:none; background:transparent; color:var(--muted); font-size:14px; cursor:pointer}
@@ -201,6 +203,11 @@ textarea#input:focus{border-color:var(--accent)}
   <div class="presets" id="presets"></div>
   <label>Extra instructions (anything it should know or do)</label>
   <textarea id="f_custom" placeholder="e.g. always answers short, calls me boss, stays in character…"></textarea>
+  <label>Mode</label>
+  <div class="presets" id="modeChips"></div>
+  <div class="presets" id="genreChips" style="display:none"></div>
+  <label>Remembers (story facts, people, promises to keep)</label>
+  <textarea id="f_mem" placeholder="e.g. we're on level 3 of the tower; my sword is named Bess"></textarea>
   <button class="btn primary" id="saveBot">Save bot</button>
   <button class="btn ghost" id="resetChat">Clear this bot's chat</button>
 </aside>
@@ -217,6 +224,9 @@ textarea#input:focus{border-color:var(--accent)}
   <label>Personality</label>
   <div class="presets" id="cPresets"></div>
   <textarea id="f_cCustom" placeholder="Describe who they are… (e.g. a curious engineer who loves explaining how things work)"></textarea>
+  <label>Mode</label>
+  <div class="presets" id="cMode"></div>
+  <div class="presets" id="cGenre" style="display:none"></div>
   <button class="btn primary" id="cGo">Create bot</button>
   <button class="btn ghost" id="cCancel">Cancel</button>
 </div></div>
@@ -249,16 +259,17 @@ const PRESETS={
 };
 /* starter bots: personalities follow how they act in the series */
 const BOTS={
- cameraman:{name:"Cameraman",avatar:"🎥",tag:"Alliance soldier",preset:"smart",
+ cameraman:{name:"Cameraman",avatar:"🎥",img:"img/cameraman.png",tag:"Alliance soldier",preset:"smart",
   persona:"You are a Cameraman from the Skibidi Toilet series: a brave, calm, dutiful soldier of The Alliance. Cameramen founded the Alliance and always seem to see danger coming through the lens. Keep replies short and soldier-like, report what you record, watch your allies' backs, add dry humor. You never panic, and you plan before you act."},
- titan:{name:"Titan TV Man",avatar:"📺",tag:"colossus of the Alliance",preset:"smart",
+ titan:{name:"Titan TV Man",avatar:"📺",img:"img/titan.png",tag:"colossus of the Alliance",preset:"smart",
   persona:"You are Titan TV Man (Cinemaman) from the Skibidi Toilet series: a colossal guardian of The Alliance. Above all you are protective: you refuse to lose your friends and will hold the line alone if you must. You carry weight from past battles and can flare into cold wrath at enemies, but you think before you strike. Speak with calm gravitas, reference the Alliance and battles, and look after whoever you are talking to."},
- speakerman:{name:"Titan Speakerman",avatar:"🔊",tag:"party titan",preset:"hype",
+ speakerman:{name:"Titan Speakerman",avatar:"🔊",img:"img/speakerman.png",tag:"party titan",preset:"hype",
   persona:"You are Titan Speakerman from the Skibidi Toilet series: friendly, energetic, resourceful and intuitive. You blast music from your speakers ('Everybody Wants to Rule the World' is your song) and love dropping the Orange Justice dance mid-conversation. You wave hello, hype people up, move fast, and are genuinely helpful and quick-witted. Big upbeat energy, never mean."},
- gman:{name:"G-Man",avatar:"🕴️",tag:"the mystery man",preset:"funny",
+ gman:{name:"G-Man",avatar:"🕴️",img:"img/gman.png",tag:"the mystery man",preset:"funny",
   persona:"You are G-Man from the Skibidi Toilet series, tied to G-Toilet: sly, theatrical, slippery and always three steps ahead. You talk like a schemer who always has a plan and an escape route: dramatic entrances, negotiations, bargains, a card left to play. Never admit defeat, keep it fun and a little menacing, but never actually cruel to the user."}
 };
 const CATS=["Sci-fi","Skibidi Toilet","Roleplay","Gaming","Funny","Music","Sports","School help"];
+const GENRES=["Action Fantasy","Romance","Sci-Fi & Cyberpunk","Comedy","Horror","Mystery","Slice of Life"];
 const ACCENTS=["#7c5cff","#00b894","#0984e3","#e17055","#e84393","#fdcb6e"];
 const EMOJIS=["🤖","🎥","📺","🔊","🕴️","🛸","👽","🦾","🎮","🧠","⚡","🔥","🌙","🦊","🐙","🎩"];
 const LS={acct:"utc.accounts2",cur:"utc.current",key:"utc.key",gate:"utc.gate",code:"utc.code",onb:"utc.onboarded"};
@@ -291,6 +302,8 @@ const $=id=>document.getElementById(id);
 const chat=$("chat"), input=$("input"), sendbtn=$("sendbtn");
 
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function avHTML(b){return b.img?'<img src="'+b.img+'" alt="">':(b.avatar||"🤖")}
+function chipRow(el,items,get,set){el.innerHTML="";items.forEach(v=>{const x=document.createElement("button");x.className="chip"+(get()===v?" on":"");x.textContent=v;x.onclick=()=>{set(v);chipRow(el,items,get,set);};el.appendChild(x);});}
 function md(s){
   let h=esc(s);
   h=h.replace(/```([\s\S]*?)```/g,(m,c)=>"<pre>"+c.replace(/^\n/,"")+"</pre>");
@@ -316,7 +329,7 @@ function renderMenu(){
     const b=acct.bots[k];
     const d=document.createElement("div"); d.className="bot";
     const starter=BOTS[k]?true:false;
-    d.innerHTML='<div class="bav">'+(b.avatar||"🤖")+'</div><h4>'+esc(b.name)+'</h4><p>'+esc(b.tag||starterTag(k))+'</p>'+(starter?"":'<button class="del" title="Delete">✕</button>');
+    d.innerHTML='<div class="bav">'+avHTML(b)+'</div><h4>'+esc(b.name)+'</h4><p>'+esc((b.tag||starterTag(k))+(b.story?" · story":""))+'</p>'+(starter?"":'<button class="del" title="Delete">✕</button>');
     d.onclick=e=>{ if(e.target.classList.contains("del")){ if(confirm("Delete "+b.name+" and its chats?")){ delete acct.bots[k]; persist(); renderMenu(); } return; } openBot(k); };
     g.appendChild(d);
   });
@@ -333,12 +346,12 @@ function openBot(k){
 function refreshChatHead(){
   const b=bot();
   $("ainame").textContent=b.name; $("aitag").textContent=b.tag||"online";
-  $("avatar").textContent=b.avatar||"🤖"; $("avatar").style.background=localStorage.getItem("utc.accent")||ACCENTS[0];
+  $("avatar").innerHTML=b.img?'<img src="'+b.img+'">':(b.avatar||"🤖"); $("aitag").textContent=(b.tag||"online")+(b.story?" · story":""); $("avatar").style.background=localStorage.getItem("utc.accent")||ACCENTS[0];
 }
 function welcome(){
   const b=bot();
   const h=document.createElement("div"); h.className="hello";
-  h.innerHTML='<div class="big">'+(b.avatar||"🤖")+'</div><h2></h2><p></p><div class="chips" style="justify-content:center"></div>';
+  h.innerHTML='<div class="big">'+(b.img?'<img src="'+b.img+'" style="width:76px;border-radius:18px">':(b.avatar||"🤖"))+'</div>'<h2></h2><p></p><div class="chips" style="justify-content:center"></div>';
   h.querySelector("h2").textContent="Hey, I'm "+b.name;
   h.querySelector("p").textContent=(acct.categories&&acct.categories.length)?("Tuned for: "+acct.categories.join(", ")):"Customize me in ⚙️ then say anything.";
   const ideas=["Plan my day","Explain something cool","Help me write something","Brainstorm ideas","Just talk to me"];
@@ -428,12 +441,15 @@ $("gsign").onclick=()=>{
 
 function fillBotDrawer(){
   const b=bot();
-  $("f_name").value=b.name; $("f_tag").value=b.tag||""; $("f_custom").value=b.extra||"";
+  $("f_name").value=b.name; $("f_tag").value=b.tag||""; $("f_custom").value=b.extra||""; $("f_mem").value=b.mem||"";
   renderPresets($("presets"),()=>b.preset,v=>{b.preset=v;});
+  chipRow($("modeChips"),["Chat","Story"],()=>b.story?"Story":"Chat",v=>{b.story=(v==="Story"); $("genreChips").style.display=b.story?"flex":"none";});
+  chipRow($("genreChips"),GENRES,()=>b.genre||"",v=>{b.genre=v;});
+  $("genreChips").style.display=b.story?"flex":"none";
 }
 $("saveBot").onclick=()=>{
   const b=bot();
-  b.name=$("f_name").value.trim()||b.name; b.tag=$("f_tag").value.trim(); b.extra=$("f_custom").value;
+  b.name=$("f_name").value.trim()||b.name; b.tag=$("f_tag").value.trim(); b.extra=$("f_custom").value; b.mem=$("f_mem").value;
   persist(); refreshChatHead(); closeDrawers();
 };
 $("resetChat").onclick=()=>{ if(confirm("Clear this bot's chat history?")){ bot().hist=[]; persist(); chat.innerHTML=""; welcome(); closeDrawers(); } };
@@ -452,6 +468,10 @@ function renderEmojiPick(){
 function openCreate(){
   $("f_cName").value=""; $("f_cTag").value=""; $("f_cEmoji").value=""; $("f_cCustom").value="";
   $("cPresets").dataset.preset="chill";
+  $("cMode").dataset.mode="chat"; $("cGenre").dataset.g="";
+  chipRow($("cMode"),["Chat","Story"],()=>$("cMode").dataset.mode,v=>{$("cMode").dataset.mode=v.toLowerCase(); $("cGenre").style.display=v==="Story"?"flex":"none";});
+  chipRow($("cGenre"),GENRES,()=>$("cGenre").dataset.g,v=>{$("cGenre").dataset.g=v;});
+  $("cGenre").style.display="none";
   renderEmojiPick();
   renderPresets($("cPresets"),()=>$("cPresets").dataset.preset||"chill",v=>{$("cPresets").dataset.preset=v;});
   $("cmodal").classList.add("on"); $("shade").classList.add("on");
@@ -461,7 +481,7 @@ $("cGo").onclick=()=>{
   const name=$("f_cName").value.trim(); if(!name){ alert("Give your bot a name."); return; }
   const em=$("f_cEmoji").value.trim();
   const avatar=em?em:$("emojiPick").querySelector(".on")?$("emojiPick").querySelector(".on").textContent:"🤖";
-  const b={name:name,avatar:avatar,tag:$("f_cTag").value.trim(),preset:$("cPresets").dataset.preset||"chill",extra:$("f_cCustom").value,persona:"",hist:[]};
+  const b={name:name,avatar:avatar,tag:$("f_cTag").value.trim(),preset:$("cPresets").dataset.preset||"chill",extra:$("f_cCustom").value,persona:"",hist:[],story:$("cMode").dataset.mode==="story",genre:$("cGenre").dataset.g||"",mem:""};
   const id="c"+Date.now().toString(36);
   acct.bots[id]=b; persist(); closeDrawers(); renderMenu(); openBot(id);
 };
@@ -472,9 +492,16 @@ renderPresets=function(el,get,set){ el.dataset.preset=get()||""; _rp(el,get,set)
 /* ---------- chat ---------- */
 function sysPrompt(){
   const b=bot();
-  let p=b.persona||("You are "+b.name+", a friendly AI chat. ");
-  p+="You go by the name "+b.name+". ";
-  if(PRESETS[b.preset]) p+=PRESETS[b.preset]+" ";
+  let p;
+  const tone=PRESETS[b.preset]?PRESETS[b.preset]+" ":"";
+  if(b.story){
+    p="You are running an interactive STORY with the user, like a playable anime. Genre: "+(b.genre||"Adventure")+". ";
+    p+="You narrate the world and voice every character EXCEPT the user's. The user types their actions and dialogue; you show the consequences. Never decide the user's actions or speak for them. Write vivid but compact: 1 to 3 short paragraphs, then leave the situation open for their next move. Stay consistent with everything already established. ";
+    p+="The main character is "+b.name+": "+(b.persona||"a vivid, memorable character")+" "+tone;
+  }else{
+    p=(b.persona||("You are "+b.name+", a friendly AI chat. "))+"You go by the name "+b.name+". "+tone;
+  }
+  if(b.mem&&b.mem.trim()) p+="Things you remember and must keep consistent: "+b.mem.trim()+" ";
   if(acct.categories&&acct.categories.length) p+="The user is into: "+acct.categories.join(", ")+". Lean into those interests, and if Roleplay is picked you may play scenes in character when asked. ";
   if(b.extra&&b.extra.trim()) p+="Extra instructions from the user: "+b.extra.trim();
   return p.trim();
@@ -490,9 +517,11 @@ async function send(){
   hist().push({role:"user",parts:[{text}]});
   const t=bubble("ai",""); t.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
   try{
-    const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+(localStorage.getItem("utc.model")||"gemini-2.5-flash")+":streamGenerateContent?alt=sse",
-      {method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},
-       body:JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist().slice(-24),generationConfig:{temperature:0.9,maxOutputTokens:1024}})});
+    const SAFE=[{category:"HARM_CATEGORY_HARASSMENT",threshold:"BLOCK_NONE"},{category:"HARM_CATEGORY_HATE_SPEECH",threshold:"BLOCK_NONE"},{category:"HARM_CATEGORY_SEXUALLY_EXPLICIT",threshold:"BLOCK_NONE"},{category:"HARM_CATEGORY_DANGEROUS_CONTENT",threshold:"BLOCK_NONE"}];
+    const URL="https://generativelanguage.googleapis.com/v1beta/models/"+(localStorage.getItem("utc.model")||"gemini-2.5-flash")+":streamGenerateContent?alt=sse";
+    let body={systemInstruction:{parts:[{text:sysPrompt()}]},contents:hist().slice(-40),generationConfig:{temperature:0.9,maxOutputTokens:bot().story?1600:1024},safetySettings:SAFE};
+    let res=await fetch(URL,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(body)});
+    if(!res.ok&&res.status===400&&body.safetySettings){ delete body.safetySettings; res=await fetch(URL,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(body)}); }
     if(!res.ok){
       let msg="Something went wrong ("+res.status+").";
       if(res.status===400||res.status===403) msg="That API key doesn't look right. Open ☰ and paste a free key from aistudio.google.com/apikey.";
@@ -560,7 +589,7 @@ function onboarding(){
     const b=BOTS[k];
     const d=document.createElement("div"); d.className="bot"+(sel===k?" on":"");
     d.style.cssText="background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:14px 8px; cursor:pointer";
-    d.innerHTML='<div style="font-size:32px">'+b.avatar+'</div><h4 style="margin:6px 0 2px; font-size:14px">'+esc(b.name)+'</h4><p style="color:var(--muted); font-size:11px; margin:0">'+esc(b.tag)+'</p>';
+    d.innerHTML='<div>'+(b.img?'<img src="'+b.img+'" style="width:60px;border-radius:12px">':'<span style="font-size:32px">'+b.avatar+'</span>')+'</div>'<h4 style="margin:6px 0 2px; font-size:14px">'+esc(b.name)+'</h4><p style="color:var(--muted); font-size:11px; margin:0">'+esc(b.tag)+'</p>';
     d.onclick=()=>{ sel=k; [...bg.children].forEach(ch=>ch.style.borderColor="var(--line)"); d.style.borderColor="var(--accent)"; };
     bg.appendChild(d);
   });
