@@ -1,12 +1,12 @@
 {
  "note": "Large files are stored in parts (each under 2.5 MB) and joined in the browser by games/blockworld/play/index.html. They are gzip files (Unity Gzip + Decompression Fallback).",
- "build": "Blockworld web build v0.5.161-alpha (blockworld 211639a, cloud build)",
+ "build": "Blockworld web build v0.5.169-alpha (blockworld 94408dc, cloud build)",
  "files": {
   "data": {
    "name": "BlockworldWeb.data.unityweb",
-   "size": 4841698,
-   "sha1": "b55c833c8e76e6e350e6762f1406f61930225b04",
-   "v": "b55c833c8e",
+   "size": 4843526,
+   "sha1": "ead9b586091debaa1b37a90af1b59f16019f0f7c",
+   "v": "ead9b58609",
    "parts": [
     "BlockworldWeb.data.unityweb.part00",
     "BlockworldWeb.data.unityweb.part01"
@@ -15,9 +15,9 @@
   },
   "wasm": {
    "name": "BlockworldWeb.wasm.unityweb",
-   "size": 9498841,
-   "sha1": "8b4b4f8bb21021ba5036fc984d27bc1859121efd",
-   "v": "8b4b4f8bb2",
+   "size": 9506388,
+   "sha1": "c35c722b450050208d344498c94fcbdcea5dee2f",
+   "v": "c35c722b45",
    "parts": [
     "BlockworldWeb.wasm.unityweb.part00",
     "BlockworldWeb.wasm.unityweb.part01",
