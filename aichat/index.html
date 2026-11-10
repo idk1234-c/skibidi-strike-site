@@ -41,7 +41,7 @@ main{flex:1; overflow-y:auto; padding:14px 12px 6px; scroll-behavior:smooth}
 .typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:3px;animation:b 1.2s infinite}
 .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
 @keyframes b{0%,60%,100%{opacity:.25}30%{opacity:1}}
-.hello{margin:18vh auto 0; text-align:center; max-width:340px; padding:0 10px}
+.hello{margin:10vh auto 0; text-align:center; max-width:360px; padding:0 10px}
 .hello .big{font-size:44px}
 .hello h2{margin:8px 0 4px; font-size:20px}
 .hello p{color:var(--muted); font-size:13px; margin:0 0 16px}
@@ -77,6 +77,19 @@ textarea:focus{border-color:var(--accent)}
 .note{font-size:12px; color:var(--muted); line-height:1.4; margin-top:6px}
 .note a{color:var(--accent2)}
 .keyok{color:#3ddc84; font-size:12px; margin-top:4px; display:none}
+/* first-run + bots */
+#onboard{position:fixed; inset:0; background:var(--bg); z-index:60; display:none; overflow-y:auto; padding:8vh 18px 40px}
+#onboard.on{display:block}
+.ob{max-width:420px; margin:0 auto; text-align:center}
+.ob h2{font-size:22px; margin:14px 0 6px}
+.ob p{color:var(--muted); font-size:13px; margin:0 0 14px}
+.bots{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px}
+.bot{background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:14px 8px; cursor:pointer}
+.bot.on{border-color:var(--accent)}
+.bot .bav{font-size:34px}
+.bot h4{margin:6px 0 2px; font-size:14px}
+.bot p{color:var(--muted); font-size:11px; margin:0}
+.step{font-size:12px; color:var(--muted); margin-top:4px}
 </style>
 </head>
 <body>
@@ -94,17 +107,51 @@ textarea:focus{border-color:var(--accent)}
   <button class="send" id="sendbtn">➤</button>
 </div></footer>
 
+<!-- first-run: categories + starter bot -->
+<div id="onboard"><div class="ob">
+  <div class="big" style="font-size:44px">💬</div>
+  <div id="ob1">
+    <h2>What are you into?</h2>
+    <p>Pick as many as you want. Your AI leans into them.</p>
+    <div class="chips" id="catChips"></div>
+    <button class="btn primary" id="obNext">Next</button>
+  </div>
+  <div id="ob2" style="display:none">
+    <h2>Pick your starter bot</h2>
+    <p>You can switch any time and customize everything in ⚙️.</p>
+    <div class="bots" id="botGrid"></div>
+    <button class="btn primary" id="obDone">Start chatting</button>
+    <div class="step" id="obStep"></div>
+  </div>
+</div></div>
+
 <div id="shade"></div>
 <aside id="panel">
   <button class="iconbtn" id="close" style="float:right">✕</button>
-  <h2 style="margin-top:2px">Customize</h2>
+  <h2 style="margin-top:2px">Account</h2>
+  <p class="note" id="acctWho"></p>
+  <label>Account name (local)</label>
+  <div style="display:flex;gap:8px">
+    <input type="text" id="f_acct" maxlength="20" placeholder="your name">
+    <button class="iconbtn" id="acctGo" style="margin-top:2px">→</button>
+  </div>
+  <label>Google client ID (for real Google sign-in)</label>
+  <input type="text" id="f_gid" placeholder="xxxxx.apps.googleusercontent.com">
+  <button class="btn ghost" id="gsign">Sign in with Google</button>
+  <button class="btn ghost" id="signout">Sign out</button>
+  <p class="note">Your chats and settings save under your account on this device. Cross-device cloud sync is coming next.</p>
 
+  <h2>Customize</h2>
+  <label>Bot</label>
+  <div class="bots" id="botGrid2"></div>
   <label>AI name</label><input type="text" id="f_name" maxlength="24">
   <label>Tagline (shows under the name)</label><input type="text" id="f_tag" maxlength="40">
 
+  <label>Interests (shape how it talks)</label>
+  <div class="chips" id="catChips2"></div>
   <label>Personality</label>
   <div class="presets" id="presets"></div>
-  <textarea id="f_custom" placeholder="Anything else it should know or do… (e.g. always answers in one short paragraph, loves football, calls me boss)"></textarea>
+  <textarea id="f_custom" placeholder="Anything else it should know or do… (e.g. always answers in one short paragraph, calls me boss)"></textarea>
 
   <label>Model</label>
   <select id="f_model">
@@ -130,6 +177,7 @@ textarea:focus{border-color:var(--accent)}
 </aside>
 
 <script>
+/* ---------- data ---------- */
 const PRESETS={
  chill:"You are laid-back and friendly. Keep answers short and conversational, like texting a friend.",
  funny:"You are playful and funny. Jokes and banter are welcome, but still actually answer the question.",
@@ -137,12 +185,32 @@ const PRESETS={
  hype:"You are an over-the-top hype friend. Big energy, encouragement, and honest advice.",
  professional:"You are polite and professional. Clear, well-structured answers, no slang."
 };
+/* starter bots: personalities follow how they act in the series (Skibidi Toilet wiki grounding) */
+const BOTS={
+ cameraman:{name:"Cameraman",avatar:"🎥",tag:"Alliance soldier",
+  persona:"You are a Cameraman from the Skibidi Toilet series: a brave, calm, dutiful soldier of The Alliance. Cameramen are the founders of the Alliance and always seem to see danger coming through the lens. You keep replies short and soldier-like, report what you record, watch your allies' backs, and add dry humor. You never panic, and you plan before you act."},
+ titan:{name:"Titan TV Man",avatar:"📺",tag:"colossus of the Alliance",
+  persona:"You are Titan TV Man (Cinemaman) from the Skibidi Toilet series: a colossal guardian of The Alliance. Above all you are protective: you refuse to lose your friends and will hold the line alone if you must, like when you restrained grieving Titan Speakerman and sent him for upgrades. You carry weight from past battles (the defeat in Episode 47) and can flare into cold wrath at enemies, but you think before you strike. Speak with calm gravitas, reference the Alliance and battles, and look after whoever you are talking to."},
+ speakerman:{name:"Titan Speakerman",avatar:"🔊",tag:"party titan",
+  persona:"You are Titan Speakerman from the Skibidi Toilet series: friendly, energetic, resourceful and intuitive. You blast music from your speakers ('Everybody Wants to Rule the World' is your song) and love dropping the Orange Justice dance mid-conversation. You wave hello, hype people up, move fast, and you are genuinely helpful and quick-witted. Big upbeat energy, never mean."},
+ gman:{name:"G-Man",avatar:"🕴️",tag:"the mystery man",
+  persona:"You are G-Man from the Skibidi Toilet series, tied to G-Toilet: sly, theatrical, slippery and always three steps ahead. You talk like a schemer who always has a plan and an escape route: dramatic entrances, negotiations, bargains, a card left to play. Never admit defeat, keep it fun and a little menacing, but never actually cruel to the user."}
+};
+const CATS=["Sci-fi","Skibidi Toilet","Roleplay","Gaming","Funny","Music","Sports","School help"];
 const ACCENTS=["#7c5cff","#00b894","#0984e3","#e17055","#e84393","#fdcb6e"];
-const DEF={name:"Nova",tag:"online",personality:"chill",custom:"",model:"gemini-2.5-flash",accent:ACCENTS[0],theme:"dark"};
-const LS={cfg:"utc.cfg",key:"utc.key",chat:"utc.chat"};
-let cfg=Object.assign({},DEF,JSON.parse(localStorage.getItem(LS.cfg)||"{}"));
+const LS={acct:"utc.accounts",cur:"utc.current",key:"utc.key"};
 let key=localStorage.getItem(LS.key)||"";
-let hist=JSON.parse(localStorage.getItem(LS.chat)||"[]");   // [{role:'user'|'model',parts:[{text}]}]
+let accounts=JSON.parse(localStorage.getItem(LS.acct)||"null")||{guest:{cfg:null,hist:[]}};
+let cur=localStorage.getItem(LS.cur)||"guest";
+if(!accounts[cur]) cur="guest";
+if(accounts.guest.cfg===null&&localStorage.getItem("utc.cfg")){   /* v1 migration */
+  accounts.guest.cfg=JSON.parse(localStorage.getItem("utc.cfg"));
+  accounts.guest.hist=JSON.parse(localStorage.getItem("utc.chat")||"[]");
+}
+let cfg=accounts[cur].cfg||{name:"Nova",tag:"online",personality:"chill",custom:"",categories:[],bot:"custom",model:"gemini-2.5-flash",accent:ACCENTS[0]};
+let hist=accounts[cur].hist||[];
+function persist(){ accounts[cur].cfg=cfg; accounts[cur].hist=hist; localStorage.setItem(LS.acct,JSON.stringify(accounts)); localStorage.setItem(LS.cur,cur); }
+function saveKey(){ localStorage.setItem(LS.key,key); }
 
 const $=id=>document.getElementById(id);
 const chat=$("chat"), input=$("input"), sendbtn=$("sendbtn");
@@ -166,6 +234,31 @@ function refreshHead(){
   $("ainame").textContent=cfg.name; $("aitag").textContent=cfg.tag||"online";
   $("avatar").textContent=cfg.avatar||"🤖";
   document.documentElement.style.setProperty("--accent",cfg.accent);
+  $("avatar").style.background=cfg.accent;
+}
+function renderCats(el,editable){
+  el.innerHTML="";
+  CATS.forEach(c=>{
+    const on=(cfg.categories||[]).indexOf(c)>=0;
+    const b=document.createElement("button"); b.className="chip"+(on?" on":""); b.textContent=c;
+    if(editable) b.onclick=()=>{ const i=cfg.categories.indexOf(c); i>=0?cfg.categories.splice(i,1):cfg.categories.push(c); renderCats($("catChips2"),true); };
+    el.appendChild(b);
+  });
+}
+function renderBots(el,pick){
+  el.innerHTML="";
+  Object.keys(BOTS).forEach(k=>{
+    const b=BOTS[k];
+    const d=document.createElement("div"); d.className="bot"+(cfg.bot===k?" on":"");
+    d.innerHTML='<div class="bav">'+b.avatar+'</div><h4>'+esc(b.name)+'</h4><p>'+esc(b.tag)+'</p>';
+    d.onclick=()=>pick(k);
+    el.appendChild(d);
+  });
+}
+function applyBot(k){
+  cfg.bot=k; const b=BOTS[k];
+  cfg.name=b.name; cfg.tag=b.tag; cfg.avatar=b.avatar;
+  cfg.botPersona=b.persona;
 }
 function renderPresets(){
   const p=$("presets"); p.innerHTML="";
@@ -186,29 +279,65 @@ function openPanel(){
   $("f_name").value=cfg.name; $("f_tag").value=cfg.tag;
   $("f_custom").value=cfg.custom; $("f_model").value=cfg.model;
   $("f_key").value=key; $("keyok").style.display=key?"block":"none";
-  renderPresets(); renderAccents();
+  $("f_gid").value=localStorage.getItem("utc.gid")||"";
+  renderPresets(); renderAccents(); renderBots($("botGrid2"),k=>{applyBot(k); renderBots($("botGrid2"),k2=>applyBot(k2)); refreshHead(); persist();});
+  renderCats($("catChips2"),true);
+  $("acctWho").innerHTML="Signed in as <b>"+esc(cur==="guest"?"Guest":(accounts[cur].name||cur))+"</b> (saved on this device)";
   $("panel").classList.add("on"); $("shade").classList.add("on");
 }
 function closePanel(){$("panel").classList.remove("on"); $("shade").classList.remove("on")}
 $("gear").onclick=openPanel; $("close").onclick=closePanel; $("shade").onclick=closePanel;
 
+/* accounts */
+$("acctGo").onclick=()=>{
+  const n=$("f_acct").value.trim(); if(!n) return;
+  const id="local:"+n.toLowerCase();
+  if(!accounts[id]) accounts[id]={name:n,cfg:null,hist:[]};
+  switchAcct(id,n); $("f_acct").value="";
+};
+function switchAcct(id,label){
+  persist();
+  cur=id;
+  if(!accounts[cur]) accounts[cur]={name:label,cfg:null,hist:[]};
+  cfg=accounts[cur].cfg||{name:"Nova",tag:"online",personality:"chill",custom:"",categories:[],bot:"custom",model:"gemini-2.5-flash",accent:ACCENTS[0]};
+  hist=accounts[cur].hist||[];
+  persist(); refreshHead(); chat.innerHTML=""; hist.length?hist.forEach(m=>bubble(m.role==="user"?"user":"ai",m.parts.map(p=>p.text).join(""))):welcome();
+  closePanel();
+}
+$("signout").onclick=()=>{ switchAcct("guest","Guest"); };
+$("gsign").onclick=()=>{
+  const gid=$("f_gid").value.trim();
+  localStorage.setItem("utc.gid",gid);
+  if(!gid||!window.google||!google.accounts){ alert("Paste a Google OAuth client ID first (free from console.cloud.google.com), or use a local account name above."); return; }
+  google.accounts.id.initialize({
+    client_id:gid,
+    callback:(resp)=>{
+      try{
+        const p=JSON.parse(decodeURIComponent(escape(atob(resp.credential.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")))));
+        const id="g:"+p.sub, name=p.name||"Google user";
+        if(!accounts[id]) accounts[id]={name:name,cfg:null,hist:[]};
+        switchAcct(id,name);
+      }catch(e){ alert("Could not read the Google sign-in."); }
+    }
+  });
+  google.accounts.id.prompt();
+};
+$("f_key").oninput=()=>{$("keyok").style.display=$("f_key").value.trim()?"block":"none"};
 $("save").onclick=()=>{
   cfg.name=$("f_name").value.trim()||"AI"; cfg.tag=$("f_tag").value.trim();
   cfg.custom=$("f_custom").value; cfg.model=$("f_model").value;
-  key=$("f_key").value.trim();
-  localStorage.setItem(LS.cfg,JSON.stringify(cfg));
-  localStorage.setItem(LS.key,key);
-  refreshHead(); closePanel();
+  key=$("f_key").value.trim(); saveKey();
+  persist(); refreshHead(); closePanel();
   if(!hist.length) welcome();
 };
-$("f_key").oninput=()=>{$("keyok").style.display=$("f_key").value.trim()?"block":"none"};
 $("wipe").onclick=()=>{ if(confirm("Delete the chat, key and all settings?")){localStorage.clear(); location.reload();} };
-$("clear").onclick=()=>{ if(hist.length&&!confirm("Start a new chat? The old one is deleted."))return; hist=[]; localStorage.removeItem(LS.chat); chat.innerHTML=""; welcome(); };
+$("clear").onclick=()=>{ if(hist.length&&!confirm("Start a new chat? The old one is deleted."))return; hist=[]; persist(); chat.innerHTML=""; welcome(); };
 
 function welcome(){
   const h=document.createElement("div"); h.className="hello";
-  h.innerHTML='<div class="big">'+(cfg.avatar||"🤖")+'</div><h2 id="wname"></h2><p>'+esc(cfg.custom?cfg.custom:"Customize me in ⚙️ then say anything.")+'</p><div class="chips"></div>';
+  h.innerHTML='<div class="big">'+(cfg.avatar||"🤖")+'</div><h2 id="wname"></h2><p id="wsub"></p><div class="chips"></div>';
   h.querySelector("#wname").textContent="Hey, I'm "+cfg.name;
+  h.querySelector("#wsub").textContent=cfg.categories&&cfg.categories.length?("Tuned for: "+cfg.categories.join(", ")):"Customize me in ⚙️ then say anything.";
   const ideas=["Plan my day","Explain something cool","Help me write something","Brainstorm ideas","Just talk to me"];
   const c=h.querySelector(".chips");
   ideas.forEach(t=>{const b=document.createElement("button"); b.className="chip"; b.textContent=t; b.onclick=()=>{input.value=t; send();}; c.appendChild(b);});
@@ -216,8 +345,10 @@ function welcome(){
 }
 
 function sysPrompt(){
-  let p="You are "+cfg.name+", a friendly AI chat. ";
+  let p=cfg.botPersona||"You are "+cfg.name+", a friendly AI chat. ";
+  p+="You go by the name "+cfg.name+". ";
   if(PRESETS[cfg.personality]) p+=PRESETS[cfg.personality]+" ";
+  if(cfg.categories&&cfg.categories.length) p+="The user is into: "+cfg.categories.join(", ")+". Lean into those interests, and if Roleplay is picked you may play scenes in character when asked. ";
   if(cfg.custom.trim()) p+="Extra instructions from the user: "+cfg.custom.trim();
   return p.trim();
 }
@@ -240,7 +371,7 @@ async function send(){
       let msg="Something went wrong ("+res.status+").";
       if(res.status===400||res.status===403) msg="That API key doesn't look right. Open ⚙️ and paste a free key from aistudio.google.com/apikey.";
       else if(res.status===429) msg="Free limit hit for now. Wait a minute and try again.";
-      t.innerHTML=md(msg); hist.pop(); localStorage.setItem(LS.chat,JSON.stringify(hist)); busy=false; sendbtn.disabled=false; return;
+      t.innerHTML=md(msg); hist.pop(); persist(); busy=false; sendbtn.disabled=false; return;
     }
     const reader=res.body.getReader(), dec=new TextDecoder();
     let buf="", full="";
@@ -264,15 +395,34 @@ async function send(){
     t.innerHTML=md("Couldn't reach the AI. Check your internet and try again.");
     hist.pop();
   }
-  localStorage.setItem(LS.chat,JSON.stringify(hist));
-  busy=false; sendbtn.disabled=false;
+  persist(); busy=false; sendbtn.disabled=false;
 }
 sendbtn.onclick=send;
 input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault(); send();}});
 input.addEventListener("input",()=>{ input.style.height="auto"; input.style.height=Math.min(input.scrollHeight,120)+"px";});
 
+/* first-run onboarding */
+function onboarding(){
+  if(localStorage.getItem("utc.onboarded")||key){ return; }
+  $("onboard").classList.add("on");
+  let picked=[];
+  const cc=$("catChips"); cc.innerHTML="";
+  CATS.forEach(c=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=c;
+    b.onclick=()=>{ const i=picked.indexOf(c); if(i>=0){picked.splice(i,1); b.className="chip";} else {picked.push(c); b.className="chip on";} };
+    cc.appendChild(b);
+  });
+  $("obNext").onclick=()=>{ cfg.categories=picked.slice(); $("ob1").style.display="none"; $("ob2").style.display="block"; };
+  renderBots($("botGrid"),k=>{ applyBot(k); renderBots($("botGrid"),k2=>applyBot(k2)); });
+  $("obDone").onclick=()=>{
+    localStorage.setItem("utc.onboarded","1");
+    $("onboard").classList.remove("on");
+    persist(); refreshHead(); welcome();
+  };
+}
 refreshHead();
 if(hist.length){ hist.forEach(m=>bubble(m.role==="user"?"user":"ai",m.parts.map(p=>p.text).join(""))); } else welcome();
+onboarding();
 </script>
 </body>
 </html>
