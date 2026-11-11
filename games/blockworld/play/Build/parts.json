@@ -1,1 +1,30 @@
-ewogIm5vdGUiOiAiTGFyZ2UgZmlsZXMgYXJlIHN0b3JlZCBpbiBwYXJ0cyAoZWFjaCB1bmRlciAyLjUgTUIpIGFuZCBqb2luZWQgaW4gdGhlIGJyb3dzZXIgYnkgZ2FtZXMvYmxvY2t3b3JsZC9wbGF5L2luZGV4Lmh0bWwuIFRoZXkgYXJlIGd6aXAgZmlsZXMgKFVuaXR5IEd6aXAgKyBEZWNvbXByZXNzaW9uIEZhbGxiYWNrKS4iLAogImJ1aWxkIjogIkJsb2Nrd29ybGQgd2ViIGJ1aWxkIHYwLjUuMTc0LWFscGhhIChibG9ja3dvcmxkIGQxMWYzYzksIGNsb3VkIGJ1aWxkKSIsCiAiZmlsZXMiOiB7CiAgImRhdGEiOiB7CiAgICJuYW1lIjogIkJsb2Nrd29ybGRXZWIuZGF0YS51bml0eXdlYiIsCiAgICJzaXplIjogNDg0NzQwMiwKICAgInNoYTEiOiAiOTgyMWFlMjFlN2IyOGQzNDNmYjViNmU5NmRlODJhMGE5ZDliOWVmNiIsCiAgICJ2IjogIjk4MjFhZTIxZTciLAogICAicGFydHMiOiBbCiAgICAiQmxvY2t3b3JsZFdlYi5kYXRhLnVuaXR5d2ViLnBhcnQwMCIsCiAgICAiQmxvY2t3b3JsZFdlYi5kYXRhLnVuaXR5d2ViLnBhcnQwMSIKICAgXSwKICAgImd6aXAiOiB0cnVlCiAgfSwKICAid2FzbSI6IHsKICAgIm5hbWUiOiAiQmxvY2t3b3JsZFdlYi53YXNtLnVuaXR5d2ViIiwKICAgInNpemUiOiA5NTE2NDE5LAogICAic2hhMSI6ICI2NWYzMzcxN2VkYTMzM2Y3ZjFhNGNkZDg2MTI2NzYyODk0YTZmZDdiIiwKICAgInYiOiAiNjVmMzM3MTdlZCIsCiAgICJwYXJ0cyI6IFsKICAgICJCbG9ja3dvcmxkV2ViLndhc20udW5pdHl3ZWIucGFydDAwIiwKICAgICJCbG9ja3dvcmxkV2ViLndhc20udW5pdHl3ZWIucGFydDAxIiwKICAgICJCbG9ja3dvcmxkV2ViLndhc20udW5pdHl3ZWIucGFydDAyIiwKICAgICJCbG9ja3dvcmxkV2ViLndhc20udW5pdHl3ZWIucGFydDAzIgogICBdLAogICAiZ3ppcCI6IHRydWUKICB9CiB9Cn0K
+{
+ "note": "Large files are stored in parts (each under 2.5 MB) and joined in the browser by games/blockworld/play/index.html. They are gzip files (Unity Gzip + Decompression Fallback).",
+ "build": "Blockworld web build v0.5.174-alpha (blockworld d11f3c9, cloud build)",
+ "files": {
+  "data": {
+   "name": "BlockworldWeb.data.unityweb",
+   "size": 4847402,
+   "sha1": "9821ae21e7b28d343fb5b6e96de82a0a9d9b9ef6",
+   "v": "9821ae21e7",
+   "parts": [
+    "BlockworldWeb.data.unityweb.part00",
+    "BlockworldWeb.data.unityweb.part01"
+   ],
+   "gzip": true
+  },
+  "wasm": {
+   "name": "BlockworldWeb.wasm.unityweb",
+   "size": 9516419,
+   "sha1": "65f33717eda333f7f1a4cdd86126762894a6fd7b",
+   "v": "65f33717ed",
+   "parts": [
+    "BlockworldWeb.wasm.unityweb.part00",
+    "BlockworldWeb.wasm.unityweb.part01",
+    "BlockworldWeb.wasm.unityweb.part02",
+    "BlockworldWeb.wasm.unityweb.part03"
+   ],
+   "gzip": true
+  }
+ }
+}
