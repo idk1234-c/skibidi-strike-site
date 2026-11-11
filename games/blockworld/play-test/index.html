@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex"><title>Play Blockworld - TTVM Studios</title>
+<meta name="description" content="Play Blockworld in your browser - the web test build of Ttvm Studios' block-building world game.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Press+Start+2P&display=swap">
+<script src="../../../js/visit.js?v=1" data-game="blockworld"></script>
+<style>
+:root{--grass:#5aa843;--grass2:#6fc255;--dirt:#7a5230;--stone:#3b3f46;--bg:#0c0d10;--panel:#14161b;--panel2:#181a20;--line:#262a33;--txt:#e8e9ee;--dim:#9ba1ac;--ui:'Oswald','Arial Narrow',Impact,sans-serif;--pix:'Press Start 2P',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--ui);line-height:1.5}
+a{color:var(--grass2)}
+header.bar{display:flex;align-items:center;gap:18px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.mark .av{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:linear-gradient(180deg,var(--grass2),var(--grass));color:#123008;font-size:.8rem;font-weight:700}
+nav.quick{display:flex;gap:18px;margin-left:auto}
+nav.quick a{color:var(--dim);text-decoration:none;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase}
+nav.quick a:hover{color:#fff}
+main{max-width:980px;margin:0 auto;padding:0 20px 40px}
+.hero{text-align:center;padding:34px 0 10px}
+.hero h1{font-family:var(--pix);font-size:clamp(1.2rem,4vw,2rem);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.5)}
+.hero h1 em{font-style:normal;color:var(--grass2)}
+.hero p{color:var(--dim);max-width:620px;margin:12px auto 0}
+.frame{position:relative;margin:26px auto 0;max-width:860px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#101319}
+.frame .sky{position:absolute;left:0;right:0;top:0;height:46%;background:linear-gradient(180deg,#6db3e8,#a9d3f2)}
+.frame .ground{position:absolute;left:0;right:0;bottom:0;height:54%;background:repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 26px),linear-gradient(180deg,var(--grass) 0 30px,var(--dirt) 30px 62px,#68452a 62px 100%)}
+.frame canvas{position:relative;display:block;width:100%;height:min(64vh,520px);background:transparent}
+.state{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;z-index:3;background:rgba(12,13,16,.72)}
+.state .box{max-width:520px}
+.state .cube{width:52px;height:52px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(180deg,#79c464 0 30%,#8a5c33 30%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 8px 0 rgba(0,0,0,.3);animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.state h2{font-family:var(--pix);font-size:.85rem;color:#fff;margin-bottom:10px}
+.state p{color:var(--dim);font-size:.95rem}
+.state .bar{width:280px;max-width:80%;height:14px;margin:16px auto 0;border:1px solid var(--line);border-radius:7px;background:var(--panel2);overflow:hidden;display:none}
+.state .bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--grass),var(--grass2));transition:width .2s}
+.hidden{display:none!important}
+.foot{color:var(--dim);font-size:.8rem;text-align:center;margin-top:14px}
+.foot a{color:var(--grass2)}
+.foot.fine{font-size:.72rem;margin-top:6px;color:#5f6570}
+.tools{display:flex;justify-content:center;gap:12px;margin-top:14px}
+.tools button{font-family:var(--ui);font-weight:600;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 16px;cursor:pointer}
+.tools button:hover{background:#fff;color:#0c0d10;border-color:#fff}
+#bwstage{position:relative}
+#bwstage:fullscreen,#bwstage:-webkit-full-screen{border:0;border-radius:0;max-width:none;margin:0}
+#bwstage:fullscreen canvas,#bwstage:-webkit-full-screen canvas{width:100vw;height:100vh}
+.state .pct{font-family:var(--pix);font-size:.7rem;color:var(--grass2);margin-top:10px;display:none}
+.state.err h2{color:#ff8a8a}
+@media(max-height:500px){header.bar{padding:8px 14px}.hero{padding:10px 0 0}.hero p{display:none}.hero h1{font-size:1rem}.frame{margin-top:10px}.frame canvas{height:calc(100vh - 120px)}}
+
+#bwcanvas{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+html.bw-mobile,html.bw-mobile body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.bw-mobile main{max-width:none;padding:0}
+html.bw-mobile header.bar,html.bw-mobile .hero,html.bw-mobile .foot,html.bw-mobile .tools{display:none}
+html.bw-mobile #bwstage{position:fixed;top:0;left:0;right:0;z-index:40;margin:0;border:0;border-radius:0;max-width:none;width:auto;background:#000;height:calc(var(--vh,1vh)*100);height:100dvh}
+html.bw-mobile #bwstage .sky,html.bw-mobile #bwstage .ground{display:none}
+html.bw-mobile #bwcanvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+.bw-mbar{display:none;position:fixed;top:0;left:0;right:0;z-index:2147483647;align-items:center;justify-content:space-between;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-right,0px) + 10px) 8px calc(env(safe-area-inset-left,0px) + 10px);background:linear-gradient(180deg,rgba(12,13,16,.82),rgba(12,13,16,0))}
+html.bw-mobile .bw-mbar{display:flex}
+.bw-mbar a,.bw-mbar button{font-family:var(--ui);font-weight:600;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:rgba(20,22,27,.8);border:1px solid var(--line);border-radius:8px;padding:9px 13px;text-decoration:none;cursor:pointer;touch-action:manipulation}
+.bw-rotate{display:none;position:fixed;inset:0;z-index:2147483647;align-items:flex-start;justify-content:center;padding:14px;padding-top:calc(env(safe-area-inset-top,0px) + 54px);pointer-events:none}
+html.bw-mobile.bw-portrait .bw-rotate{display:flex}
+.bw-rotate .card{max-width:300px;width:100%;text-align:center;background:rgba(20,22,27,.9);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.bw-rotate .ic{display:inline-block;margin-right:8px;animation:bwrot 1.6s ease-in-out infinite}
+@keyframes bwrot{0%,100%{transform:rotate(0deg)}50%{transform:rotate(90deg)}}
+.bw-rotate p{color:#fff;font-size:.8rem;margin:0;display:inline-flex;align-items:center}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="mark" href="../../"><span class="av">TS</span> TTVM Studios</a>
+  <nav class="quick"><a href="../">Blockworld</a><a href="../../">All games</a></nav>
+</header>
+<main>
+  <section class="hero">
+    <h1>PLAY <em>BLOCKWORLD</em></h1>
+    <p>Web test build. Plays best on a computer with a keyboard and mouse. Click the game to start, your worlds save in this browser.</p>
+  </section>
+  <div class="frame" id="bwstage">
+    <span class="sky" aria-hidden="true"></span>
+    <span class="ground" aria-hidden="true"></span>
+    <canvas id="bwcanvas" tabindex="0"></canvas>
+    <div class="state" id="bwstate">
+      <div class="box">
+        <div class="cube" id="bwcube"></div>
+        <h2 id="bwhead">LOADING BLOCKWORLD</h2>
+        <p id="bwmsg">Downloading the world...</p>
+        <div class="bar" id="bwbar" style="display:block"><i id="bwfill"></i></div>
+        <div class="pct" id="bwpct" style="display:block">0%</div>
+      </div>
+    </div>
+  </div>
+  <div class="tools"><button type="button" id="bwfs">Fullscreen</button></div>
+  <div class="bw-mbar" id="bwmbar"><a href="../">&larr; Back</a><button type="button" id="bwfsm">Fullscreen</button></div>
+  <div class="bw-rotate" id="bwrotate"><div class="card"><span class="ic">&#8635;</span><p>Rotate your device for full screen</p></div></div>
+  <p class="foot"><a href="../">Back to Blockworld</a> &middot; part of <a href="../../">Ttvm Studios</a></p>
+  <p class="foot fine">Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</p>
+</main>
+<script>
+(function(){
+  var canvas = document.getElementById('bwcanvas');
+  var stage = document.getElementById('bwstage');
+  var state = document.getElementById('bwstate');
+  var head = document.getElementById('bwhead');
+  var msg = document.getElementById('bwmsg');
+  var bar = document.getElementById('bwbar');
+  var fill = document.getElementById('bwfill');
+  var pct = document.getElementById('bwpct');
+  var cube = document.getElementById('bwcube');
+  var fsBtn = document.getElementById('bwfs');
+  var fsBtnM = document.getElementById('bwfsm');
+  var buildUrl = 'Build';
+  var VER = 'bf9de7d5dd';
+  var game = null;
+
+  function setPct(v){
+    v = Math.max(0, Math.min(1, v || 0));
+    fill.style.width = Math.round(v * 100) + '%';
+    pct.textContent = Math.round(v * 100) + '%';
+  }
+  function fail(title, why){
+    try { if(window.ttvmVisit) ttvmVisit.fail(title); } catch(e){}
+    state.classList.remove('hidden');
+    state.classList.add('err');
+    cube.classList.add('hidden');
+    bar.style.display = 'none';
+    pct.style.display = 'none';
+    head.textContent = title;
+    msg.textContent = why;
+  }
+
+  function hasWebGL2(){
+    try { var c = document.createElement('canvas'); return !!(window.WebGL2RenderingContext && c.getContext('webgl2')); }
+    catch(e){ return false; }
+  }
+  if (!hasWebGL2()){
+    fail("CAN'T START HERE", "This browser can't run 3D games right now. Try the latest Chrome, Edge, Firefox or Safari, and make sure hardware acceleration is on.");
+    fsBtn.style.display = 'none';
+    if (fsBtnM) fsBtnM.style.display = 'none';
+    return;
+  }
+
+  var fsOk = document.fullscreenEnabled || document.webkitFullscreenEnabled;
+  if (!fsOk) fsBtn.style.display = 'none';
+  if (!fsOk && fsBtnM) fsBtnM.style.display = 'none';
+  function goFullscreen(){
+    if (game){ game.SetFullscreen(1); return; }
+    (stage.requestFullscreen || stage.webkitRequestFullscreen || function(){}).call(stage);
+  }
+  fsBtn.addEventListener('click', goFullscreen);
+  if (fsBtnM) fsBtnM.addEventListener('click', goFullscreen);
+  canvas.addEventListener('pointerdown', function(){ canvas.focus(); });
+
+  // Big build files are stored in parts (Build/parts.json) and joined here.
+  // They are gzip files: unpacked by the browser when it can, otherwise by the Unity loader.
+  var dl = {total: 0, got: 0};
+  function dlProgress(){
+    if (!dl.total) return;
+    var v = dl.got / dl.total;
+    setPct(v * 0.8);
+    msg.textContent = 'Downloading the world... ' + (dl.got / 1048576).toFixed(1) + ' / ' + (dl.total / 1048576).toFixed(1) + ' MB';
+  }
+  function getPart(url){
+    return fetch(url).then(function(r){
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + url);
+      if (!r.body || !r.body.getReader) return r.arrayBuffer().then(function(b){ dl.got += b.byteLength; dlProgress(); return b; });
+      var reader = r.body.getReader(), chunks = [];
+      function pump(){
+        return reader.read().then(function(x){
+          if (x.done) return new Blob(chunks);
+          chunks.push(x.value); dl.got += x.value.byteLength; dlProgress();
+          return pump();
+        });
+      }
+      return pump();
+    });
+  }
+  function unpack(blob, type){
+    if (!window.DecompressionStream || !blob.stream) return Promise.resolve(blob);
+    try {
+      var s = blob.stream().pipeThrough(new DecompressionStream('gzip'));
+      return new Response(s).blob().then(function(b){ return new Blob([b], {type: type}); }).catch(function(){ return blob; });
+    } catch(e){ return Promise.resolve(blob); }
+  }
+  function joinFile(f, type){
+    var urls = f.parts.map(function(p){ return buildUrl + '/' + p + '?v=' + f.v; });
+    var out = new Array(urls.length), next = 0;
+    function worker(){
+      if (next >= urls.length) return Promise.resolve();
+      var i = next++;
+      return getPart(urls[i]).then(function(b){ out[i] = b; return worker(); });
+    }
+    var lanes = []; for (var k = 0; k < 4; k++) lanes.push(worker());
+    return Promise.all(lanes).then(function(){
+      var blob = new Blob(out, {type: f.gzip ? 'application/octet-stream' : type});
+      if (blob.size !== f.size) throw new Error('size mismatch for ' + f.name);
+      return f.gzip ? unpack(blob, type) : blob;
+    }).then(function(b){ return URL.createObjectURL(b); });
+  }
+
+
+  // Unity's own error box ("An error occurred running the Unity content...") is replaced by a friendly one
+  function crashed(m){
+    try { if(window.ttvmVisit) ttvmVisit.fail("crash: " + String(m || "").replace(/\s+/g, " ").slice(0, 90)); } catch(e){}
+    if(document.getElementById("crashBox")) return true;
+    var signed = false; try { signed = !!localStorage.getItem("ttvm_session"); } catch(e){}
+    var o = document.createElement("div"); o.id = "crashBox";
+    o.setAttribute("style", "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:20px");
+    o.innerHTML = '<button type="button" style="max-width:420px;width:100%;background:#15161c;color:#fff;border:1px solid #3a3d48;border-radius:16px;padding:22px 20px;font:600 18px system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;cursor:pointer">The game crashed \ud83d\ude35<span style="display:block;margin-top:8px;font-weight:400;font-size:15px;color:#c9c9d3">Tap to reload.' + (signed ? ' Your sign-in is still saved.' : '') + '</span></button>';
+    o.querySelector("button").onclick = function(){ location.reload(); };
+    document.body.appendChild(o);
+    return true;
+  }
+  var config = {
+    arguments: [],
+    dataUrl: buildUrl + '/BlockworldWeb.data.unityweb',
+    frameworkUrl: buildUrl + '/BlockworldWeb.framework.js.unityweb?v=' + VER,
+    codeUrl: buildUrl + '/BlockworldWeb.wasm.unityweb',
+    streamingAssetsUrl: 'StreamingAssets',
+    companyName: 'DefaultCompany',
+    productName: 'blockworld',
+    productVersion: '0.1.0',
+    autoSyncPersistentDataPath: true,
+    fullscreenElementID: 'bwstage',
+    showBanner: function(m, type){ if (type === 'error') console.error(String(m).replace(/<[^>]*>/g, '')); else console.warn(String(m).replace(/<[^>]*>/g, '')); },
+    errorHandler: function(msg){ return crashed(msg); }
+  };
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  if (isMobile) config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+
+  // Mobile layout: canvas fills the screen, page chrome steps aside, taps reach
+  // the game instead of the browser (pinch/double-tap zoom, pull-to-scroll).
+  if (isMobile) {
+    document.documentElement.classList.add('bw-mobile');
+
+    function setVH(){
+      document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+    }
+    function updateOrientation(){
+      var portrait = (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) || (window.innerHeight > window.innerWidth);
+      document.documentElement.classList.toggle('bw-portrait', !!portrait);
+    }
+    setVH();
+    updateOrientation();
+    window.addEventListener('resize', function(){ setVH(); updateOrientation(); });
+    window.addEventListener('orientationchange', function(){ setTimeout(function(){ setVH(); updateOrientation(); }, 60); });
+
+    // Belt-and-braces pinch/double-tap zoom block on top of touch-action:none,
+    // for browsers that still fire the gesture before honoring the CSS.
+    canvas.addEventListener('touchstart', function(e){ if (e.touches && e.touches.length > 1) e.preventDefault(); }, {passive: false});
+    var lastTouchEnd = 0;
+    canvas.addEventListener('touchend', function(e){
+      var now = Date.now();
+      if (now - lastTouchEnd <= 350) e.preventDefault();
+      lastTouchEnd = now;
+    }, false);
+
+    // First touch means they're playing; stop nagging about orientation until
+    // it actually flips back to portrait again.
+    canvas.addEventListener('touchstart', function(){
+      document.documentElement.classList.remove('bw-portrait');
+    }, {passive: true, once: true});
+  }
+
+  function prepare(){
+    return fetch(buildUrl + '/parts.json?v=' + VER, {cache: 'no-cache'}).then(function(r){
+      if (!r.ok) throw new Error('parts.json HTTP ' + r.status);
+      return r.json();
+    }).then(function(m){
+      dl.total = (m.files.data ? m.files.data.size : 0) + (m.files.wasm ? m.files.wasm.size : 0);
+      var jobs = [];
+      if (m.files.data) jobs.push(joinFile(m.files.data, 'application/octet-stream').then(function(u){ config.dataUrl = u; }));
+      if (m.files.wasm) jobs.push(joinFile(m.files.wasm, 'application/wasm').then(function(u){ config.codeUrl = u; }));
+      config.cacheControl = function(){ return 'no-store'; };
+      return Promise.all(jobs);
+    });
+  }
+
+  function start(){
+    msg.textContent = 'Building the world...';
+    var s = document.createElement('script');
+    s.src = buildUrl + '/BlockworldWeb.loader.js?v=' + VER;
+    s.onerror = function(){ fail("COULDN'T LOAD", "The game files didn't download. Check your connection and reload the page."); };
+    s.onload = function(){
+      createUnityInstance(canvas, config, function(p){
+        setPct(0.8 + 0.2 * Math.max(0, Math.min(1, p || 0)));
+      }).then(function(inst){
+        game = inst;
+        try { if(window.ttvmVisit) ttvmVisit.ok(); } catch(e){}
+        setPct(1);
+        state.classList.add('hidden');
+        canvas.focus();
+      }).catch(function(err){
+        console.error(err);
+        try { if(window.ttvmVisit) ttvmVisit.fail('start: ' + String((err && err.message) || err).slice(0, 90)); } catch(e){}
+        fail('THE GAME HIT A PROBLEM', 'Something went wrong while starting Blockworld. Reload the page to try again, or try another browser like Chrome or Edge.');
+      });
+    };
+    document.body.appendChild(s);
+  }
+
+  prepare().then(start).catch(function(err){
+    console.error(err);
+    fail("COULDN'T LOAD", "Part of the game didn't download. Check your connection and reload the page.");
+  });
+})();
+</script>
+</body>
+</html>
