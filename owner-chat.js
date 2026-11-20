@@ -14,7 +14,8 @@ var Store;  // the storage adapter (see ChatStore below); the UI only talks to i
 var TOKEN_KEY = "ss_chat_token";
 var ME = "Amos";
 var POLL_OPEN_MS = 15000;   // open thread
-var POLL_ALL_MS = 60000;    // the other threads (unread dots) + the chat list
+var POLL_ALL_MS = 30000;    // the other threads (unread dots) + the chat list
+var BASE_TITLE = document.title || "Studio chats \u2014 Skibidi Strike";
 
 var PEOPLE = {
   "Amos":         {ini:"A",  cls:"p-amos"},
@@ -58,6 +59,7 @@ var state = {
   overlay: {},         // msg id -> {text, editedAt} or {deleted} while an edit/delete is saving
   sheet: null,         // msg id the Hold menu is open for
   hl: null,            // {id, until} message briefly highlighted after tapping a quote
+  pingTry: {},         // chat key -> last ping-flag write attempt (throttle)
   sig: ""
 };
 
@@ -336,6 +338,7 @@ function GitHubChatStore(){
     });
     BASE_THREADS.forEach(function(t){ if(!seen[t.file]) doc.threads.push({file:t.file, title:t.title, section:"ai", pinned:false}); });
     if(doc.reads !== undefined && (!doc.reads || typeof doc.reads !== "object" || Array.isArray(doc.reads))) doc.reads = {};
+    if(doc.ping !== undefined && (!doc.ping || typeof doc.ping !== "object" || Array.isArray(doc.ping))) doc.ping = {};
     return doc;
   }
   function readsOf(doc, file){
@@ -348,7 +351,7 @@ function GitHubChatStore(){
     return doc.threads.map(function(e){
       return {id: idOf(e.file), title: String(e.title || idOf(e.file)).slice(0, 80),
               section: (e.section === "team" || e.section === "requests") ? e.section : "ai", pinned: e.pinned === true,
-              reads: readsOf(doc, e.file)};
+              reads: readsOf(doc, e.file), ping: (doc.ping && doc.ping[e.file]) || null};
     });
   }
   function saveIndex(change, message){
@@ -483,6 +486,18 @@ function GitHubChatStore(){
         if(r[reader] && Date.parse(r[reader]) >= Date.parse(iso)) return false;
         r[reader] = iso;
       }, "chat(index): " + reader + " read " + id);
+    },
+    // the ping flag: one small record per chat, updated by this page the moment a new
+    // message lands, so an agent reading chat/index.json sees the latest message instantly
+    setPing: function(id, entry){
+      var file = fileOf(id);
+      return saveIndex(function(doc){
+        if(!doc.ping || typeof doc.ping !== "object" || Array.isArray(doc.ping)) doc.ping = {};
+        var cur = doc.ping[file];
+        if(cur && typeof cur === "object" && cur.lastId === entry.lastId && cur.lastTime === entry.lastTime
+           && cur.lastFrom === entry.lastFrom && cur.unread === entry.unread) return false;
+        doc.ping[file] = entry;
+      }, "chat(index): ping " + id);
     }
   };
 }
@@ -537,8 +552,19 @@ function refresh(t, quiet){
   return Store.readThread(t.key, false).then(function(r){
     var d = state.data[t.key] || (state.data[t.key] = {});
     d.loadedAt = Date.now(); d.error = null;
-    if(r.changed){ d.doc = {messages: r.messages}; d.missing = !!r.missing; }
-    if(state.open === t.key){ renderThread(); markSeen(t.key); markReadRemote(t); }
+    if(r.changed){
+      var had = !!d.doc;
+      var prevLive = {};
+      if(d.doc && d.doc.messages) d.doc.messages.forEach(function(m){ if(isLive(m)) prevLive[m.id] = 1; });
+      d.doc = {messages: r.messages}; d.missing = !!r.missing;
+      if(had){
+        var fresh = [];
+        visibleOf(t.key).forEach(function(m){ if(m.from !== ME && isLive(m) && !prevLive[m.id]) fresh.push(m); });
+        if(fresh.length) pingIncoming(t, fresh);
+      }
+    }
+    if(state.open === t.key){ renderThread(); if(!document.hidden){ markSeen(t.key); markReadRemote(t); } }
+    syncPing(t);
     renderSide();
   }).catch(function(err){
     var d = state.data[t.key] || (state.data[t.key] = {});
@@ -552,6 +578,7 @@ function afterWrite(t){
   return Store.readThread(t.key, true).then(function(r){
     var d = state.data[t.key] || (state.data[t.key] = {});
     d.doc = {messages: r.messages}; d.missing = !!r.missing; d.loadedAt = Date.now(); d.error = null;
+    syncPing(t);
   }, function(){});
 }
 // o: {voice, sendAt, style, photo:{b64, url}, image (already uploaded ref)}
@@ -726,6 +753,65 @@ function unread(k){
   return localStorage.getItem(seenKey(k)) !== String(l.id);
 }
 function markSeen(k){ var l = lastMsg(k); if(l) localStorage.setItem(seenKey(k), String(l.id)); }
+
+// ---------- new-message ping ----------
+// when a message lands in a chat file: tell the owner right away (badge, buzz, soft ping)
+// and record the flag in chat/index.json so any agent run sees it instantly.
+var pingAudio = null;
+function ensurePingAudio(){
+  if(pingAudio !== null) return pingAudio;
+  try{ var AC = window.AudioContext || window.webkitAudioContext; pingAudio = AC ? new AC() : false; }
+  catch(e){ pingAudio = false; }
+  return pingAudio;
+}
+function beepPing(){
+  var ac = ensurePingAudio();
+  if(!ac) return;
+  try{
+    if(ac.state === "suspended") ac.resume();
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = "sine"; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.07, ac.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.3);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime + 0.32);
+  }catch(e){}
+}
+document.addEventListener("pointerdown", function(){
+  ensurePingAudio();
+  if(pingAudio && pingAudio.state === "suspended"){ try{ pingAudio.resume(); }catch(e){} }
+}, {passive:true});
+function unreadCount(){
+  var n = 0;
+  state.threads.forEach(function(t){ if(unread(t.key)) n++; });
+  return n;
+}
+function refreshTitle(){
+  var n = unreadCount();
+  var tt = n ? "(" + n + ") " + BASE_TITLE : BASE_TITLE;
+  if(document.title !== tt) document.title = tt;
+}
+function pingIncoming(t, fresh){
+  var m = fresh[fresh.length - 1];
+  var label = t.title + " \u2014 " + (fresh.length > 1 ? fresh.length + " new messages from " : "new message from ") + whoName(m.from);
+  flash(label);
+  if(document.hidden || state.open !== t.key){
+    beepPing();
+    try{ if(navigator.vibrate) navigator.vibrate([90,50,90]); }catch(e){}
+  }
+  refreshTitle();
+}
+function syncPing(t){
+  if(!Store || !Store.setPing) return;
+  if(document.hidden) return;   // only the live page writes the ping flag
+  var l = lastMsg(t.key);
+  if(!l || !isLive(l)) return;
+  if(state.pingTry[t.key] && Date.now() - state.pingTry[t.key] < 20000) return;
+  state.pingTry[t.key] = Date.now();
+  var entry = { lastId: String(l.id), lastTime: String(shownTime(l) || ""), lastFrom: String(l.from || ""), unread: unread(t.key) === true };
+  Store.setPing(t.key, entry).then(function(){ renderSide(); }, function(){ /* not important; next refresh retries */ });
+}
 function tabHtml(t){
   var l = lastMsg(t.key), on = state.open === t.key, sch = scheduledOf(t.key).length;
   var prev = l ? ((l.from === ME ? "You: " : (t.who.length !== 1 ? String(l.from || "?").split(" ")[0] + ": " : "")) + (l.deleted ? "message deleted" : String(l.text || "")))
@@ -1268,6 +1354,7 @@ function logout(msg){
 }
 function tick(){
   renderStatus();
+  refreshTitle();
   // a scheduled message just became due (or a new one appeared): redraw
   var sig = schedSig();
   if(sig !== state.sig){ state.sig = sig; renderThread(); renderSide(); }

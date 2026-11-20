@@ -382,3 +382,7 @@ b.p-titan{color:#ff8a63}b.p-utc{color:#c48bff}b.p-amos{color:#5fb0ff}
 .oc-sheet-box .oc-sheet-cancel{justify-content:center;margin-top:4px;border-top:1px solid var(--line);border-radius:0 0 10px 10px;color:var(--dim)}
 @media(min-width:761px){.oc-sheet{align-items:center}}
 @media(prefers-reduced-motion:reduce){.oc-row,.oc-sheet-box{transition:none;animation:none}.oc-row.oc-hl .oc-bub{animation:none;box-shadow:0 0 0 3px var(--accent)}}
+
+/* new-message ping: the unread dot breathes so it reads as live */
+.oc-tab.unread .oc-dot, .oc-seg.unread .oc-dot{ animation: oc-pulse 1.5s ease-in-out infinite; }
+@keyframes oc-pulse{ 0%,100%{opacity:1} 50%{opacity:.4} }
