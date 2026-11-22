@@ -1,7 +1,11 @@
 (function(){
 "use strict";
 var $ = function(id){ return document.getElementById(id); };
-var T = window.TTVM, esc = T.esc;
+var T = window.TTVM || {};
+var esc = T.esc || (function(){
+  var M = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return function(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return M[c]; }); };
+})();
 var ST = { working: "Working", queued: "Queued", paused: "On hold", done: "Done" };
 function allowed(){ return !!(T && T.allowed && T.allowed("mod")); }
 function chip(cls, txt){ return '<i class="pr-chip ' + cls + '">' + esc(txt) + "</i>"; }
