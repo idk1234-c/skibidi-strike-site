@@ -49,6 +49,7 @@ function render(d){
 }
 function init(){
   var root = $("pr-list");
+  if(!root) return;
   if(!allowed()){ root.innerHTML = '<p class="pf-empty">Owner and moderators only.</p>'; return; }
   fetch("../data/projects.json?v=" + Date.now()).then(function(r){ return r.json(); }).then(render)
     .catch(function(){ root.innerHTML = '<p class="pf-empty">Couldn\'t load the project list. Try again in a minute.</p>'; });
