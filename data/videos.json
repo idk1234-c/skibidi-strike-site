@@ -1,21 +1,22 @@
 {
-  "_about": "Amos's video workshop. He drops in a video (link or small upload) and picks the job: edit it for YouTube, count how many times something appears, screenshot a character or detail, or something else. Fo does the work and posts the result back here: an edited video link, counts and screenshots.",
-  "videos": [
-    {
-      "id": "vmwrbejlq",
-      "by": "amos ashby",
-      "role": "owner",
-      "date": "2026-11-22T04:06:25.982Z",
-      "what": "Space engineers ep 1",
-      "job": "edit",
-      "video": "https://youtu.be/kxw74yUgRdQ?is=w63_yX7VNGkK3pDT",
-      "text": "",
-      "status": "working",
-      "notes": [
-        "Nov 21 11:08 PM: Fo picked it up. Plan: cut the slow stretches, speed up the grindy parts, hook in the first 10 seconds, captions where it helps."
-      ],
-      "results": []
-    }
-  ],
-  "people": {}
+ "_about": "Amos's video workshop. He drops in a video (link or small upload) and picks the job: edit it for YouTube, count how many times something appears, screenshot a character or detail, or something else. Fo does the work and posts the result back here: an edited video link, counts and screenshots.",
+ "videos": [
+  {
+   "id": "vmwrbejlq",
+   "by": "amos ashby",
+   "role": "owner",
+   "date": "2026-11-22T04:06:25.982Z",
+   "what": "Space engineers ep 1",
+   "job": "edit",
+   "video": "https://youtu.be/kxw74yUgRdQ?is=w63_yX7VNGkK3pDT",
+   "text": "",
+   "status": "done",
+   "notes": [
+    "Nov 21 11:08 PM: Fo picked it up. Plan: cut the slow stretches, speed up the grindy parts, hook in the first 10 seconds, captions where it helps."
+   ],
+   "results": [],
+   "note": "Done: edited cut is 19:30 (from 26:04), music + cards included."
+  }
+ ],
+ "people": {}
 }
