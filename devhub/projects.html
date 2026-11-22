@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Current projects — TTVM Studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../acct.css?v=9">
+<meta name="robots" content="noindex,nofollow">
+<style>
+html:not(.acct-mod) .pr-owneronly{display:none}
+.pr-list{display:grid;gap:12px}
+.pr-card{background:#11161c;border:1px solid #30363d;border-radius:12px;padding:14px 16px}
+.pr-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.pr-top h3{margin:0;font-size:1.1rem}
+.pr-chip{font-style:normal;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid #30363d;color:#9a9ba8}
+.pr-st-working{color:#58a6ff;border-color:#1f4470}
+.pr-st-queued{color:#ffd933;border-color:#5c4a12}
+.pr-st-paused{color:#ff7b72;border-color:#5c2321}
+.pr-st-done{color:#3fb950;border-color:#1d4a28}
+.pr-eta{margin:6px 0 0;font-size:.92rem;color:#e6edf3}
+.pr-eta b{color:#ffd933;font-weight:600}
+.pr-what{margin:6px 0 0;color:#9a9ba8}
+.pr-notes{margin:8px 0 0;padding-left:18px;color:#8b8c98}
+.pr-notes li{margin-top:3px;font-size:.9rem}
+.pr-updated{margin:8px 0 0;font-size:.78rem;color:#6e7480}
+</style>
+</head>
+<body class="ac-page" data-page="projects" data-acct-lock="staff">
+<header class="ac-bar">
+  <div class="acct" data-acct><a class="acct-chip is-guest" href="../profile/"><span class="acct-avw"><span class="acct-av is-guest" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="12.5" r="6"/><path d="M4.5 29c1.6-6.2 6.2-9.4 11.5-9.4S25.9 22.8 27.5 29z"/></svg></span></span><span class="acct-txt"><span class="acct-name">Guest</span><span class="acct-sub">Not signed in</span></span></a></div>
+  <a class="ac-logo" href="../">SKIBIDI <span>STRIKE</span></a>
+  <nav class="ac-links" aria-label="Main"><a href="../games/">Games</a><a href="../devhub/" aria-current="page">Dev</a><a href="../">Site</a></nav>
+</header>
+<main class="ac-wrap">
+  <div class="ac-panel pr-owneronly">
+    <h1>Current projects</h1>
+    <p class="pf-note">What's in flight right now, with time estimates. Fo keeps this updated as work moves.</p>
+    <div id="pr-list" class="pr-list"><p class="pf-empty">Loading…</p></div>
+  </div>
+</main>
+<footer class="ac-foot">TTVM Studios · devhub · staff only</footer>
+<script src="../acct.js?v=9"></script>
+<script src="projects.js"></script>
+</body>
+</html>

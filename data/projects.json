@@ -1,0 +1,57 @@
+{
+  "updated": "2026-11-21T23:15:00-05:00",
+  "projects": [
+    {
+      "id": "p-video-edit",
+      "title": "Space engineers ep 1 YouTube edit",
+      "status": "working",
+      "what": "Cutting the 26-minute raw episode into a tighter YouTube cut: dead stretches out, the grind sped up, a 10-second hook up top, captions where they help, and a custom-made music track.",
+      "eta": "tonight, around 1 AM ET",
+      "since": "2026-11-21",
+      "notes": [
+        "Nov 21 11:06 PM: queued by Amos on the video workshop.",
+        "Nov 21 11:09 PM: picked up, download done, cut plan being built."
+      ]
+    },
+    {
+      "id": "p-textures",
+      "title": "Skibidi Strike texture build",
+      "status": "paused",
+      "what": "The texture pass for the web build. The last two cloud builds failed; waiting on the error text from the two red-X runs on GitHub.",
+      "eta": "as soon as the build error text lands",
+      "since": "2026-11-20",
+      "notes": [
+        "Two failed runs (v0.1.0-7bd2ae1 and its retry), waiting on the error details."
+      ]
+    },
+    {
+      "id": "p-blockworld",
+      "title": "Blockworld: oversized block-target box",
+      "status": "queued",
+      "what": "Patch's report: the wireframe box around a targeted block is far bigger than the block it should hug. Fix + test on the web build.",
+      "eta": "next Blockworld session",
+      "since": "2026-11-15",
+      "notes": []
+    },
+    {
+      "id": "p-models",
+      "title": "Skibidi Strike realistic model remakes",
+      "status": "queued",
+      "what": "Remaking the pixelated models (cameraman, armored/upgraded Skibidi) so they look realistic instead of blocky. Credit-safe sources only.",
+      "eta": "after the texture build is unblocked",
+      "since": "2026-11-12",
+      "notes": []
+    },
+    {
+      "id": "p-devhub-tools",
+      "title": "Character requests + video workshop",
+      "status": "done",
+      "what": "Two new devhub sections, both live: the character-request board and the owner video workshop.",
+      "eta": "shipped Nov 21",
+      "since": "2026-11-21",
+      "notes": [
+        "Both verified live on the site Nov 21 ~11 PM."
+      ]
+    }
+  ]
+}
