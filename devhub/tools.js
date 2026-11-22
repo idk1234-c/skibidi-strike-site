@@ -15,7 +15,7 @@ var openId = null;
 try { openId = new URLSearchParams(location.search).get("id"); } catch(e) { openId = null; }
 var DOC = null;
 
-function allowed(){ return !!(T && T.allowed && T.allowed("owner")); }
+function allowed(){ return !!(T && T.allowed && T.allowed("mod")); }
 function media(u){
   u = String(u || "");
   return /^https?:/i.test(u) ? u : "../data/" + u.replace(/^\.\//, "");
@@ -36,7 +36,7 @@ function reload(){ return T.data("videos", true).then(function(d){ DOC = d; rend
 
 function render(){
   var root = $("vtRoot"); if(!root) return;
-  if(!allowed()){ root.innerHTML = '<p class="pf-empty">Owner only.</p>'; return; }
+  if(!allowed()){ root.innerHTML = '<p class="pf-empty">Owner and moderators only.</p>'; return; }
   if(!DOC){ root.innerHTML = '<p class="pf-empty">Loading...</p>'; return; }
   if(openId){ detail(root); return; }
   gallery(root);
