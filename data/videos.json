@@ -1,4 +1,19 @@
 {
   "_about": "Amos's video workshop. He drops in a video (link or small upload) and picks the job: edit it for YouTube, count how many times something appears, screenshot a character or detail, or something else. Fo does the work and posts the result back here: an edited video link, counts and screenshots.",
-  "videos": []
+  "videos": [
+    {
+      "id": "vmwrbejlq",
+      "by": "amos ashby",
+      "role": "owner",
+      "date": "2026-11-22T04:06:25.982Z",
+      "what": "Space engineers ep 1",
+      "job": "edit",
+      "video": "https://youtu.be/kxw74yUgRdQ?is=w63_yX7VNGkK3pDT",
+      "text": "",
+      "status": "new",
+      "notes": [],
+      "results": []
+    }
+  ],
+  "people": {}
 }
