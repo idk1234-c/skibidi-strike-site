@@ -150,12 +150,13 @@ function wireForm(){
   form.onsubmit = function(e){
     e.preventDefault();
     var what = $("vtWhat").value.trim(); if(!what) return;
-    var job = $("vtJob").value, video = $("vtVideo").value.trim(), text = $("vtText").value.trim();
+    var job = $("vtJob").value || "edit", video = $("vtVideo").value.trim(), text = $("vtText").value.trim();
     var file = $("vtFile").files[0];
     var msg = $("vtFormMsg");
     var entry = {id:"v" + Date.now().toString(36), by:T.me().name, role:T.effectiveRole(), date:T.iso(), what:what, job:job, video:video, text:text, status:"new", notes:[], results:[]};
+    var clearF = function(){ $("vtWhat").value = ""; $("vtVideo").value = ""; $("vtText").value = ""; $("vtFile").value = ""; };
     var fin = function(t){
-      msg.textContent = t; $("vtWhat").value = ""; $("vtVideo").value = ""; $("vtText").value = ""; $("vtFile").value = "";
+      msg.textContent = t; clearF();
       reload();
     };
     if(file){
@@ -173,7 +174,7 @@ function wireForm(){
     }
     if(T.token()){
       T.save("videos", function(d){ d.videos.unshift(entry); }, "Video job from " + T.me().name)
-        .then(function(res){ DOC = res && res.doc ? res.doc : DOC; msg.textContent = savedMsg(res); render(); }, function(e2){ msg.textContent = e2.message; });
+        .then(function(res){ DOC = res && res.doc ? res.doc : DOC; msg.textContent = savedMsg(res); clearF(); render(); }, function(e2){ msg.textContent = e2.message; });
       return;
     }
     msg.textContent = "Sending...";

@@ -151,12 +151,13 @@ function wireForm(){
   form.onsubmit = function(e){
     e.preventDefault();
     var character = $("rqChar").value.trim(); if(!character) return;
-    var ask = $("rqAsk").value, video = $("rqVideo").value.trim(), text = $("rqText").value.trim();
+    var ask = $("rqAsk").value || "shots", video = $("rqVideo").value.trim(), text = $("rqText").value.trim();
     var file = $("rqFile").files[0];
     var msg = $("rqFormMsg");
     var entry = {id:"r" + Date.now().toString(36), by:T.me().name, role:T.effectiveRole(), date:T.iso(), character:character, ask:ask, video:video, text:text, status:"new", notes:[], results:[]};
+    var clearF = function(){ $("rqChar").value = ""; $("rqVideo").value = ""; $("rqText").value = ""; $("rqFile").value = ""; };
     var fin = function(t){
-      msg.textContent = t; $("rqChar").value = ""; $("rqVideo").value = ""; $("rqText").value = ""; $("rqFile").value = "";
+      msg.textContent = t; clearF();
       reload();
     };
     if(file){
@@ -174,7 +175,7 @@ function wireForm(){
     }
     if(T.token()){
       T.save("requests", function(d){ d.requests.unshift(entry); }, "Request from " + T.me().name)
-        .then(function(res){ DOC = res && res.doc ? res.doc : DOC; msg.textContent = savedMsg(res); render(); }, function(e2){ msg.textContent = e2.message; });
+        .then(function(res){ DOC = res && res.doc ? res.doc : DOC; msg.textContent = savedMsg(res); clearF(); render(); }, function(e2){ msg.textContent = e2.message; });
       return;
     }
     msg.textContent = "Sending...";
