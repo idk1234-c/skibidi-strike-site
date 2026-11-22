@@ -185,7 +185,7 @@ function staffFlags(){
   de.classList.toggle("acct-mod", allowed("mod"));
 }
 function lockHtml(level){
-  var who = level === "owner" ? "Owner only" : level === "mod" ? "Owner/Moderator only" : "Owner/Dev only";
+  var who = level === "owner" ? "Owner only" : level === "mod" ? "Owner/Moderator only" : level === "staff" ? "Staff only" : "Owner/Dev only";
   return '<div class="ac-card acct-locked" data-acct-locked><div class="acct-lockico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></div>' +
     '<h1 class="ac-h1">' + who + '</h1><p class="ac-lead">' + who + ' \u2014 sign in with an approved Google account.</p>' +
     (READY ? '<p><a class="acct-btn" href="' + link("signin/?next=" + encodeURIComponent(location.pathname)) + '">Sign in with Google</a></p>' : '<p class="acct-small">Google sign-in isn\'t switched on yet, so the studio tools are locked for everyone.</p>') +
