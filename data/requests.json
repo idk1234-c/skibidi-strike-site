@@ -1,0 +1,51 @@
+{
+  "_about": "Character requests for the owner and moderators, made on devhub/requests.html. A request asks something about a character (screenshots of details, how many times they appear, their abilities, who they are). Results get attached once done.",
+  "requests": [
+    {
+      "id": "r-v83-female",
+      "by": "Amos",
+      "role": "owner",
+      "date": "2026-11-21T21:55:00-05:00",
+      "character": "The female clock character (red ring, dark hair)",
+      "ask": "shots",
+      "video": "https://youtu.be/tJv1Ta29zS8",
+      "text": "Screenshot her makeup and crop a picture of every time she appears, every frame. Full-body shots too.",
+      "status": "done",
+      "notes": [
+        "Nov 21: Fo cut 27 shots out of the whole video: makeup close-ups, full-body walking and flying shots, far shots and the fight frames. All delivered in chat."
+      ],
+      "results": [
+        {
+          "type": "image",
+          "label": "Face close-up 0:21",
+          "src": "req-media/v83-face-021.jpg"
+        },
+        {
+          "type": "image",
+          "label": "Full body walking 2:06",
+          "src": "req-media/v83-full-206.jpg"
+        },
+        {
+          "type": "image",
+          "label": "Flying 4:23",
+          "src": "req-media/v83-fly-423.jpg"
+        },
+        {
+          "type": "image",
+          "label": "Face close-up 5:08",
+          "src": "req-media/v83-face-508.jpg"
+        },
+        {
+          "type": "image",
+          "label": "Full body 4:35",
+          "src": "req-media/v83-full-435.jpg"
+        },
+        {
+          "type": "image",
+          "label": "Close-up 6:51",
+          "src": "req-media/v83-close-651.jpg"
+        }
+      ]
+    }
+  ]
+}
