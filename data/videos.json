@@ -2,6 +2,43 @@
  "_about": "Amos's video workshop. He drops in a video (link or small upload) and picks the job: edit it for YouTube, count how many times something appears, screenshot a character or detail, or something else. Fo does the work and posts the result back here: an edited video link, counts and screenshots.",
  "videos": [
   {
+   "id": "se1ep1full",
+   "by": "amos ashby",
+   "role": "owner",
+   "date": "2026-11-25T19:45:00.000Z",
+   "what": "Space Engineers ep 1 - full episode edit + TikTok clips",
+   "job": "edit",
+   "video": "",
+   "text": "Full survival episode 1: body-location GPS markers scrubbed, admin/creative segments cut, pauses tightened. Plus 3 vertical TikTok clips.",
+   "status": "done",
+   "notes": [
+    "Nov 25 6:55 AM: final cut done (2h06, 59 GPS-marker blur windows + pause trims verified).",
+    "Nov 25 3:30 PM: 3 vertical TikTok clips cut and uploaded."
+   ],
+   "results": [
+    {
+     "type": "link",
+     "url": "https://github.com/idk1234-c/skibidi-strike-site/releases/download/se-ep1/ep1_final.mp4",
+     "label": "Full edited episode (2h06) - download"
+    },
+    {
+     "type": "link",
+     "url": "https://github.com/idk1234-c/skibidi-strike-site/releases/download/se-ep1/ep1_clip1.mp4",
+     "label": "TikTok clip 1 - sunset rover (20s)"
+    },
+    {
+     "type": "link",
+     "url": "https://github.com/idk1234-c/skibidi-strike-site/releases/download/se-ep1/ep1_clip2.mp4",
+     "label": "TikTok clip 2 - daylight welding montage (47s)"
+    },
+    {
+     "type": "link",
+     "url": "https://github.com/idk1234-c/skibidi-strike-site/releases/download/se-ep1/ep1_clip3.mp4",
+     "label": "TikTok clip 3 - rover sparks into dusk (47s)"
+    }
+   ]
+  },
+  {
    "id": "vmwrbejlq",
    "by": "amos ashby",
    "role": "owner",
