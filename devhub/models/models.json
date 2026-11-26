@@ -143,6 +143,51 @@
       "by": "TheDirector, Sketchfab (CC BY 4.0)",
       "notes": "Game-ready textured TV Man humanoid. In the game repo as TVMan.fbx.",
       "date": "2026-11-25"
+    },
+    {
+      "id": "redtitan",
+      "name": "Red Titan",
+      "glb": "files/redtitan.glb",
+      "thumb": "files/redtitan.jpg",
+      "by": "Titan TV Man",
+      "notes": "v2: Dark speaker-head Titan in a long black coat, with a glowing red sword, two Titan Speakerman blasters, a jetpack with glowing thrusters and a big red shield disc on his back. 43 separate parts you can pose. Design inspired by @upgraded_titan_drillman0 (TikTok). Blasters: \"Titan Speakerman's New Blaster\" by ~Drift~ (QuickDriftVR, Sketchfab, CC BY 4.0).",
+      "date": "2026-11-06"
+    },
+    {
+      "id": "scientistmk2",
+      "name": "Scientist MK2",
+      "glb": "files/scientistmk2.glb",
+      "thumb": "files/scientistmk2.jpg",
+      "by": "Titan TV Man",
+      "notes": "Upgraded unit (MK2). Heavy dark exo-armor over a long coat, gas-mask helmet with a glowing yellow visor, two forearm energy blades and two yellow energy halo rings on his back. Smooth separate parts you can pose, playable in the game.",
+      "date": "2026-11-07"
+    },
+    {
+      "id": "engineermk2",
+      "name": "Engineer MK2",
+      "glb": "files/engineermk2.glb",
+      "thumb": "files/engineermk2.jpg",
+      "by": "Titan TV Man",
+      "notes": "Upgraded unit (MK2). Heavy dark exo-armor over a long coat, masked face with glowing yellow goggles, a huge right arm cannon with glowing rings and a short energy blade on the left arm. Smooth separate parts you can pose, playable in the game.",
+      "date": "2026-11-07"
+    },
+    {
+      "id": "spiderrigmk2",
+      "name": "Spider Rig MK2",
+      "glb": "files/spiderrigmk2.glb",
+      "thumb": "files/spiderrigmk2.jpg",
+      "by": "Titan TV Man",
+      "notes": "Upgraded unit (MK2). Armored pilot in black sunglasses riding a rounded pod on six long spider legs with glowing yellow joints. Energy blade on the left arm, gatling arm cannon on the right. Smooth separate parts you can pose, playable in the game.",
+      "date": "2026-11-07"
+    },
+    {
+      "id": "tcm1",
+      "name": "Titan Cameraman 1.0",
+      "glb": "files/tcm1.glb",
+      "thumb": "files/tcm1.jpg",
+      "by": "Count!?dow! (adapted by Titan TV Man)",
+      "notes": "Titan Cameraman 1.0 with a glowing blue core, blue camera lenses and a shield with a blue eye. Model by Count!?dow! (YouTube 'Big pack'), assets by @Gabs92FG67, @IlhmDoodles, @AbytronGC_P3D and Sketchfab artists. Playable in the game (Titans > Fan-Made Titans).",
+      "date": "2026-11-08"
     }
   ]
 }
