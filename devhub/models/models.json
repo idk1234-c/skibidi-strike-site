@@ -107,6 +107,42 @@
       "by": "Titan TV Man",
       "notes": "Supply helicopter, TV Man version: troop cabin with the side door open and a big TV with a glowing blue screen on the nose. Built from the Camera Helicopter by KonoDioDaD (Sketchfab, CC BY 4.0).",
       "date": "2026-11-03"
+    },
+    {
+      "id": "monitormanarmored",
+      "name": "Monitor Man Armored",
+      "glb": "files/monitormanarmored.glb",
+      "thumb": "files/monitormanarmored.jpg",
+      "by": "Built by Fo from Monitor_man101's design",
+      "notes": "The [REWORK] armored version: black armor over a long coat, green-edged shoulder spikes, a glowing green chest core in a ring, CRT monitor head with the green code screen, sunglasses and headphones.",
+      "date": "2026-11-25"
+    },
+    {
+      "id": "monitorman",
+      "name": "Monitor Man",
+      "glb": "files/monitorman.glb",
+      "thumb": "files/monitorman.jpg",
+      "by": "Built by Fo from Monitor_man101's design",
+      "notes": "Black-clad humanoid with a CRT monitor head showing green code rain, sunglasses and headphones, from the [Monitor-man 1.5] TikTok reference.",
+      "date": "2026-11-25"
+    },
+    {
+      "id": "stridertv",
+      "name": "Strider TV",
+      "glb": "files/stridertv.glb",
+      "thumb": "files/stridertv.jpg",
+      "by": "AGI (aka A Goofy Idiot), Sketchfab (CC BY 4.0)",
+      "notes": "Fan-made three-legged TV strider with full textures, converted from Sketchfab and lightly reduced for the web. In the game repo as StriderTV.obj.",
+      "date": "2026-11-25"
+    },
+    {
+      "id": "tvman",
+      "name": "TV Man",
+      "glb": "files/tvman.glb",
+      "thumb": "files/tvman.jpg",
+      "by": "TheDirector, Sketchfab (CC BY 4.0)",
+      "notes": "Game-ready textured TV Man humanoid. In the game repo as TVMan.fbx.",
+      "date": "2026-11-25"
     }
   ]
 }
