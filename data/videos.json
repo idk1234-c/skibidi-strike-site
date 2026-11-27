@@ -13,7 +13,8 @@
    "status": "done",
    "notes": [
     "Nov 25 6:55 AM: final cut done (2h06, 59 GPS-marker blur windows + pause trims verified).",
-    "Nov 25 3:30 PM: 3 vertical TikTok clips cut and uploaded."
+    "Nov 25 3:30 PM: 3 vertical TikTok clips cut and uploaded.",
+    "Nov 27 ~12:45 PM: publish kit + YouTube thumbnail uploaded to the release; full-episode link live on the site Videos page."
    ],
    "results": [
     {
@@ -35,6 +36,16 @@
      "type": "link",
      "url": "https://github.com/idk1234-c/skibidi-strike-site/releases/download/se-ep1/ep1_clip3.mp4",
      "label": "TikTok clip 3 - rover sparks into dusk (47s)"
+    },
+    {
+     "type": "link",
+     "url": "https://github.com/idk1234-c/skibidi-strike-site/releases/download/se-ep1/ep1_publish_kit.txt",
+     "label": "Publish kit - titles, description, hashtags, captions (copy-paste)"
+    },
+    {
+     "type": "link",
+     "url": "https://github.com/idk1234-c/skibidi-strike-site/releases/download/se-ep1/ep1_thumbnail.jpg",
+     "label": "YouTube thumbnail (1280x720)"
     }
    ]
   },
